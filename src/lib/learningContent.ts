@@ -344,7 +344,7 @@ study.optimize(objective, n_trials=100)`,
     id: "neural-networks",
     tagline: "Universal approximators built from threshold logic, optimized by calculus",
     accentColor: "#ec4899",
-    visualization: "arch-mlp",
+    visualization: "backprop",
     keyFormulas: [
       { name: "Forward Pass", latex: "\\mathbf{z}^{[l]} = \\mathbf{W}^{[l]}\\mathbf{a}^{[l-1]} + \\mathbf{b}^{[l]}", meaning: "Linear transformation at layer l" },
       { name: "Activation", latex: "\\mathbf{a}^{[l]} = g^{[l]}(\\mathbf{z}^{[l]})", meaning: "Non-linear activation applied element-wise" },
@@ -451,7 +451,7 @@ for x_batch, y_batch in dataloader:
     id: "transformers-attention",
     tagline: "Every word speaks directly to every other word — attending to the whole sentence at once",
     accentColor: "#06b6d4",
-    visualization: "arch-transformer",
+    visualization: "attention",
     keyFormulas: [
       { name: "Scaled Dot-Product", latex: "\\text{Attention}(Q,K,V) = \\text{softmax}\\!\\left(\\frac{QK^\\top}{\\sqrt{d_k}}\\right)V", meaning: "Core attention: how much each query attends to each key" },
       { name: "Multi-Head", latex: "\\text{MH}(Q,K,V) = \\text{Concat}(\\text{head}_1,\\ldots,\\text{head}_h)\\mathbf{W}^O", meaning: "H parallel attention functions joined and projected" },
@@ -551,7 +551,7 @@ class MultiHeadAttention(torch.nn.Module):
     id: "cnn-architectures",
     tagline: "Local pattern detectors that see edges, then textures, then faces — by stacking filters",
     accentColor: "#8b5cf6",
-    visualization: "arch-cnn",
+    visualization: "convolution",
     keyFormulas: [
       { name: "Convolution", latex: "(I * K)[i,j] = \\sum_{m}\\sum_{n} I[i+m,j+n] \\cdot K[m,n]", meaning: "Slide a kernel K over input I, computing dot products" },
       { name: "Output Size", latex: "H_{out} = \\left\\lfloor \\frac{H_{in} - k + 2p}{s} \\right\\rfloor + 1", meaning: "H=height, k=kernel size, p=padding, s=stride" },
@@ -884,7 +884,7 @@ svr = Pipeline([
     id: "rnn-lstm-gru",
     tagline: "Teaching networks to remember — from catastrophic forgetting to selective gated memory",
     accentColor: "#8b5cf6",
-    visualization: "arch-lstm",
+    visualization: "lstm",
     keyFormulas: [
       { name: "RNN Hidden State", latex: "h_t = \\tanh(W_h h_{t-1} + W_x x_t + b)", meaning: "Hidden state mixes previous memory with current input" },
       { name: "LSTM Cell State", latex: "c_t = f_t \\odot c_{t-1} + i_t \\odot \\tilde{c}_t", meaning: "Cell state updated by forget gate and input gate" },
@@ -957,7 +957,7 @@ for x, y in dataloader:
     id: "generative-models",
     tagline: "Learning the shape of data — then sampling new reality from the learned distribution",
     accentColor: "#ec4899",
-    visualization: "arch-gan",
+    visualization: "gan",
     keyFormulas: [
       { name: "ELBO (VAE)", latex: "\\mathcal{L} = \\mathbb{E}_{q}[\\log p(x|z)] - D_{KL}(q(z|x) \\| p(z))", meaning: "Reconstruction term − KL divergence (regularizes latent space)" },
       { name: "Reparameterization", latex: "z = \\mu + \\sigma \\odot \\varepsilon, \\quad \\varepsilon \\sim \\mathcal{N}(0,I)", meaning: "Allows gradients to flow through the sampling operation" },
@@ -1032,7 +1032,7 @@ def gradient_penalty(D, real, fake, device):
     id: "bagging-stacking",
     tagline: "The wisdom of diverse crowds — combining imperfect models into something stronger than any individual",
     accentColor: "#06b6d4",
-    visualization: "ensemble",
+    visualization: "bagging",
     keyFormulas: [
       { name: "Bias-Variance of Ensemble", latex: "\\text{Var}(\\bar{f}) = \\rho \\sigma^2 + \\frac{1-\\rho}{n}\\sigma^2", meaning: "Ensemble variance: reducing correlation ρ is the key gain" },
       { name: "AdaBoost Weight", latex: "\\alpha_t = \\frac{1}{2}\\ln\\frac{1-\\epsilon_t}{\\epsilon_t}", meaning: "Higher weight for more accurate weak learners" },

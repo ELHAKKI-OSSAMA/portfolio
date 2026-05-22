@@ -6,19 +6,49 @@ import { useVizTheme } from "@/hooks/useVizTheme";
 
 const W = 520, H = 320, PAD = 36;
 
-// Training data — two classes
-const SEED = (i: number) => Math.sin(i * 31.4 + 7.1) * 0.5 + 0.5;
+// Training data — two well-separated classes spread across the space
+// Class A (purple): top-left cluster centered ~(2.5, 7.5) with spread
+// Class B (red): bottom-right cluster centered ~(7.5, 2.5) with spread
+// Some overlap near the middle to make KNN interesting
+const SEED = (i: number) => (Math.sin(i * 37.3 + 5.1) * 0.5 + 0.5);
+const SEED2 = (i: number) => (Math.sin(i * 19.7 + 2.3) * 0.5 + 0.5);
+
 const TRAIN: Array<{ x: number; y: number; label: 0 | 1 }> = [
-  ...Array.from({ length: 15 }, (_, i) => ({
-    x: Math.max(0.5, Math.min(9.5, 2.5 + SEED(i) * 4)),
-    y: Math.max(0.5, Math.min(9.5, 6.5 + SEED(i + 50) * 3)),
-    label: 0 as const,
-  })),
-  ...Array.from({ length: 15 }, (_, i) => ({
-    x: Math.max(0.5, Math.min(9.5, 6 + SEED(i + 100) * 3.5)),
-    y: Math.max(0.5, Math.min(9.5, 2 + SEED(i + 150) * 4)),
-    label: 1 as const,
-  })),
+  // Class A: top-left region (x: 0.8-5.5, y: 5.0-9.5) — spread & diverse
+  { x: 1.2, y: 8.8, label: 0 },
+  { x: 2.1, y: 9.1, label: 0 },
+  { x: 0.9, y: 7.2, label: 0 },
+  { x: 3.4, y: 8.4, label: 0 },
+  { x: 1.8, y: 6.5, label: 0 },
+  { x: 4.2, y: 9.3, label: 0 },
+  { x: 2.8, y: 7.0, label: 0 },
+  { x: 0.7, y: 5.8, label: 0 },
+  { x: 3.9, y: 6.2, label: 0 },
+  { x: 1.5, y: 5.2, label: 0 },
+  { x: 5.1, y: 8.0, label: 0 },
+  { x: 4.7, y: 6.9, label: 0 },
+  // Near-boundary (interesting for KNN)
+  { x: 4.5, y: 5.5, label: 0 },
+  { x: 3.2, y: 5.8, label: 0 },
+  { x: 5.3, y: 5.2, label: 0 },
+
+  // Class B: bottom-right region (x: 4.5-9.5, y: 0.8-5.0) — spread & diverse
+  { x: 8.8, y: 1.2, label: 1 },
+  { x: 9.1, y: 2.5, label: 1 },
+  { x: 7.3, y: 0.9, label: 1 },
+  { x: 8.2, y: 3.8, label: 1 },
+  { x: 6.5, y: 1.7, label: 1 },
+  { x: 9.3, y: 4.1, label: 1 },
+  { x: 7.1, y: 3.0, label: 1 },
+  { x: 5.9, y: 0.7, label: 1 },
+  { x: 6.3, y: 3.8, label: 1 },
+  { x: 5.2, y: 1.5, label: 1 },
+  { x: 8.0, y: 4.9, label: 1 },
+  { x: 6.9, y: 4.6, label: 1 },
+  // Near-boundary
+  { x: 5.5, y: 4.5, label: 1 },
+  { x: 5.8, y: 3.2, label: 1 },
+  { x: 4.8, y: 5.3, label: 1 },
 ];
 
 const toSVGX = (x: number) => PAD + (x / 10) * (W - 2 * PAD);

@@ -9,8 +9,9 @@ import InsightBox from "@/components/learning/InsightBox";
 import AlgorithmSteps from "@/components/learning/AlgorithmSteps";
 import FormulaCard from "@/components/learning/FormulaCard";
 import dynamic from "next/dynamic";
+import type { ArchType } from "@/components/learning/visualizations/ArchDiagram";
 
-// Lazy-loaded visualizations
+// ── Lazy-loaded interactive visualizations ────────────────────────────────────
 const LinearRegressionViz = dynamic(
   () => import("@/components/learning/visualizations/LinearRegressionViz"),
   { ssr: false, loading: () => <VizPlaceholder /> }
@@ -75,22 +76,32 @@ const SVRViz = dynamic(
   () => import("@/components/learning/visualizations/SVRViz"),
   { ssr: false, loading: () => <VizPlaceholder /> }
 );
-const ModelArchViz = dynamic(
-  () => import("@/components/learning/visualizations/ModelArchViz"),
+const BaggingViz = dynamic(
+  () => import("@/components/learning/visualizations/BaggingViz"),
   { ssr: false, loading: () => <VizPlaceholder /> }
 );
 
+// ── Architecture diagrams (topic-specific, no switcher) ───────────────────────
+const ArchDiagram = dynamic(
+  () => import("@/components/learning/visualizations/ArchDiagram"),
+  { ssr: false, loading: () => <VizPlaceholder /> }
+);
+
+// ── Placeholder ───────────────────────────────────────────────────────────────
 function VizPlaceholder() {
   return (
     <div
-      className="h-64 rounded-2xl border flex items-center justify-center"
+      className="h-56 rounded-2xl border flex items-center justify-center"
       style={{ backgroundColor: "var(--bg-card)", borderColor: "var(--border)" }}
     >
-      <div className="text-sm" style={{ color: "var(--text-muted)" }}>Loading visualization…</div>
+      <div className="text-sm animate-pulse" style={{ color: "var(--text-muted)" }}>
+        Loading visualization…
+      </div>
     </div>
   );
 }
 
+// ── Interactive simulation selector ──────────────────────────────────────────
 function VisualizationSelector({ type, accentColor }: { type: string; accentColor: string }) {
   switch (type) {
     case "linear-regression":  return <LinearRegressionViz accentColor={accentColor} />;
@@ -115,52 +126,46 @@ function VisualizationSelector({ type, accentColor }: { type: string; accentColo
     case "convolution":        return <ConvolutionViz accentColor={accentColor} />;
     case "lstm":               return <LSTMViz accentColor={accentColor} />;
     case "gan":                return <GANViz accentColor={accentColor} />;
+    case "bagging":            return <BaggingViz accentColor={accentColor} />;
     case "ensemble":           return <EnsembleViz accentColor={accentColor} />;
     case "multiclass":         return <MulticlassViz accentColor={accentColor} />;
-    case "arch-mlp":           return (
-      <div className="space-y-4">
-        <BackpropViz accentColor={accentColor} />
-        <ModelArchViz accentColor={accentColor} defaultType="mlp" />
-      </div>
-    );
-    case "arch-cnn":           return (
-      <div className="space-y-4">
-        <ConvolutionViz accentColor={accentColor} />
-        <ModelArchViz accentColor={accentColor} defaultType="cnn" />
-      </div>
-    );
-    case "arch-transformer":   return (
-      <div className="space-y-4">
-        <AttentionViz accentColor={accentColor} />
-        <ModelArchViz accentColor={accentColor} defaultType="transformer" />
-      </div>
-    );
-    case "arch-lstm":          return (
-      <div className="space-y-4">
-        <LSTMViz accentColor={accentColor} />
-        <ModelArchViz accentColor={accentColor} defaultType="lstm" />
-      </div>
-    );
-    case "arch-gan":           return (
-      <div className="space-y-4">
-        <GANViz accentColor={accentColor} />
-        <ModelArchViz accentColor={accentColor} defaultType="gan" />
-      </div>
-    );
     default:                   return null;
   }
 }
 
+// ── Architecture maps ─────────────────────────────────────────────────────────
+// Single architecture per topic
+const ARCH_MAP: Partial<Record<string, ArchType>> = {
+  "linear-regression":    "linear-regression",
+  "decision-tree-rf":     "decision-tree",
+  "gradient-boosting":    "gradient-boosting",
+  "neural-networks":      "mlp",
+  "transformers-attention": "transformer",
+  "cnn-architectures":    "cnn",
+  "model-evaluation":     "evaluation",
+  "error-analysis":       "bias-variance",
+  "rnn-lstm-gru":         "lstm",
+  "generative-models":    "gan",
+  "bagging-stacking":     "bagging",
+  "ova-ovo":              "multiclass",
+};
+
+// Topics with multiple architectures shown stacked
+const MULTI_ARCH_MAP: Partial<Record<string, ArchType[]>> = {
+  "svm-knn-svr": ["svm", "knn", "svr"],
+};
+
+// ── Section icons & animations ────────────────────────────────────────────────
 const sectionIcons: Record<string, string> = {
   motivation: "🎯",
-  intuition: "💡",
-  math: "∑",
-  algorithm: "⚙️",
-  code: "</>",
-  insight: "🔭",
-  pitfall: "⚠️",
+  intuition:  "💡",
+  math:       "∑",
+  algorithm:  "⚙️",
+  code:       "</>",
+  insight:    "🔭",
+  pitfall:    "⚠️",
   comparison: "⚖️",
-  deepdive: "🔬",
+  deepdive:   "🔬",
 };
 
 const sectionVariants = {
@@ -171,6 +176,7 @@ const sectionVariants = {
   }),
 };
 
+// ── Props & component ─────────────────────────────────────────────────────────
 interface Props {
   topicId: string;
   accentColor: string;
@@ -193,19 +199,22 @@ export default function TopicDetailClient({ topicId, accentColor, visualization 
     );
   }
 
+  const archType  = ARCH_MAP[topicId];
+  const multiArch = MULTI_ARCH_MAP[topicId];
+  const hasArch   = Boolean(archType || multiArch);
+
   return (
     <div className="space-y-2">
-      {/* Key Formulas Grid */}
+
+      {/* ── Key Formulas ─────────────────────────────────────────────── */}
       {content.keyFormulas.length > 0 && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <h2
-            className="text-xl font-bold mb-4 flex items-center gap-2"
-            style={{ color: "var(--text-primary)" }}
-          >
+          <h2 className="text-xl font-bold mb-4 flex items-center gap-2"
+            style={{ color: "var(--text-primary)" }}>
             <span style={{ color: accentColor }}>∑</span>
             {t("key_formulas")}
           </h2>
@@ -213,28 +222,54 @@ export default function TopicDetailClient({ topicId, accentColor, visualization 
         </motion.div>
       )}
 
-      {/* Interactive Visualization */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.1 }}
-        className="my-8"
-      >
-        {visualization !== "generic" && (
-          <>
-            <h2
-              className="text-xl font-bold mb-4 flex items-center gap-2"
-              style={{ color: "var(--text-primary)" }}
-            >
-              <span style={{ color: accentColor }}>▶</span>
-              {t("interactive_simulation")}
-            </h2>
-            <VisualizationSelector type={visualization} accentColor={accentColor} />
-          </>
-        )}
-      </motion.div>
+      {/* ── Interactive Simulation ────────────────────────────────────── */}
+      {visualization !== "generic" && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.1 }}
+          className="my-8"
+        >
+          <h2 className="text-xl font-bold mb-4 flex items-center gap-2"
+            style={{ color: "var(--text-primary)" }}>
+            <span style={{ color: accentColor }}>▶</span>
+            {t("interactive_simulation")}
+          </h2>
+          <VisualizationSelector type={visualization} accentColor={accentColor} />
+        </motion.div>
+      )}
 
-      {/* Content Sections */}
+      {/* ── Architecture Diagram ──────────────────────────────────────── */}
+      {hasArch && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+          className="my-8"
+        >
+          <h2 className="text-xl font-bold mb-4 flex items-center gap-2"
+            style={{ color: "var(--text-primary)" }}>
+            <span style={{ color: accentColor }}>⬡</span>
+            Model Architecture
+          </h2>
+
+          {/* Multiple architectures (e.g. SVM + KNN + SVR) */}
+          {multiArch && (
+            <div className="space-y-4">
+              {multiArch.map(atype => (
+                <ArchDiagram key={atype} type={atype} accentColor={accentColor} />
+              ))}
+            </div>
+          )}
+
+          {/* Single architecture */}
+          {archType && !multiArch && (
+            <ArchDiagram type={archType} accentColor={accentColor} />
+          )}
+        </motion.div>
+      )}
+
+      {/* ── Content Sections ──────────────────────────────────────────── */}
       {content.sections.map((section, i) => (
         <motion.div
           key={i}
@@ -265,7 +300,8 @@ export default function TopicDetailClient({ topicId, accentColor, visualization 
           </div>
 
           {section.text && (
-            <p className="leading-relaxed mb-4 text-base" style={{ color: "var(--text-secondary)" }}>
+            <p className="leading-relaxed mb-4 text-base"
+              style={{ color: "var(--text-secondary)" }}>
               {section.text}
             </p>
           )}
