@@ -150,7 +150,7 @@ beta_ridge = np.linalg.solve(X.T @ X + lam*np.eye(p), X.T @ y)`,
     id: "decision-tree-rf",
     tagline: "Recursive 20 questions: splitting reality into ever-purer regions",
     accentColor: "#00d4aa",
-    visualization: "decision-tree",
+    visualization: "decision-tree-rf",
     keyFormulas: [
       { name: "Gini Impurity", latex: "G(t) = 1 - \\sum_{k=1}^{K} p_k^2", meaning: "Probability of misclassifying a random sample. Zero = perfect purity." },
       { name: "Information Gain", latex: "IG = H(\\text{parent}) - \\sum_{j} \\frac{n_j}{n} H(\\text{child}_j)", meaning: "Entropy reduction achieved by a split" },
@@ -551,7 +551,7 @@ class MultiHeadAttention(torch.nn.Module):
     id: "cnn-architectures",
     tagline: "Local pattern detectors that see edges, then textures, then faces — by stacking filters",
     accentColor: "#8b5cf6",
-    visualization: "convolution",
+    visualization: "convolution-resnet-vit",
     keyFormulas: [
       { name: "Convolution", latex: "(I * K)[i,j] = \\sum_{m}\\sum_{n} I[i+m,j+n] \\cdot K[m,n]", meaning: "Slide a kernel K over input I, computing dot products" },
       { name: "Output Size", latex: "H_{out} = \\left\\lfloor \\frac{H_{in} - k + 2p}{s} \\right\\rfloor + 1", meaning: "H=height, k=kernel size, p=padding, s=stride" },
@@ -884,7 +884,7 @@ svr = Pipeline([
     id: "rnn-lstm-gru",
     tagline: "Teaching networks to remember — from catastrophic forgetting to selective gated memory",
     accentColor: "#8b5cf6",
-    visualization: "lstm",
+    visualization: "rnn-lstm",
     keyFormulas: [
       { name: "RNN Hidden State", latex: "h_t = \\tanh(W_h h_{t-1} + W_x x_t + b)", meaning: "Hidden state mixes previous memory with current input" },
       { name: "LSTM Cell State", latex: "c_t = f_t \\odot c_{t-1} + i_t \\odot \\tilde{c}_t", meaning: "Cell state updated by forget gate and input gate" },
@@ -957,7 +957,7 @@ for x, y in dataloader:
     id: "generative-models",
     tagline: "Learning the shape of data — then sampling new reality from the learned distribution",
     accentColor: "#ec4899",
-    visualization: "gan",
+    visualization: "gan-vae",
     keyFormulas: [
       { name: "ELBO (VAE)", latex: "\\mathcal{L} = \\mathbb{E}_{q}[\\log p(x|z)] - D_{KL}(q(z|x) \\| p(z))", meaning: "Reconstruction term − KL divergence (regularizes latent space)" },
       { name: "Reparameterization", latex: "z = \\mu + \\sigma \\odot \\varepsilon, \\quad \\varepsilon \\sim \\mathcal{N}(0,I)", meaning: "Allows gradients to flow through the sampling operation" },

@@ -80,6 +80,22 @@ const BaggingViz = dynamic(
   () => import("@/components/learning/visualizations/BaggingViz"),
   { ssr: false, loading: () => <VizPlaceholder /> }
 );
+const RandomForestViz = dynamic(
+  () => import("@/components/learning/visualizations/RandomForestViz"),
+  { ssr: false, loading: () => <VizPlaceholder /> }
+);
+const RNNViz = dynamic(
+  () => import("@/components/learning/visualizations/RNNViz"),
+  { ssr: false, loading: () => <VizPlaceholder /> }
+);
+const ResNetViTViz = dynamic(
+  () => import("@/components/learning/visualizations/ResNetViTViz"),
+  { ssr: false, loading: () => <VizPlaceholder /> }
+);
+const VAEViz = dynamic(
+  () => import("@/components/learning/visualizations/VAEViz"),
+  { ssr: false, loading: () => <VizPlaceholder /> }
+);
 
 // ── Architecture diagrams (topic-specific, no switcher) ───────────────────────
 const ArchDiagram = dynamic(
@@ -129,6 +145,34 @@ function VisualizationSelector({ type, accentColor }: { type: string; accentColo
     case "bagging":            return <BaggingViz accentColor={accentColor} />;
     case "ensemble":           return <EnsembleViz accentColor={accentColor} />;
     case "multiclass":         return <MulticlassViz accentColor={accentColor} />;
+    case "decision-tree-rf":
+      return (
+        <div className="space-y-6">
+          <DecisionTreeViz accentColor={accentColor} />
+          <RandomForestViz accentColor={accentColor} />
+        </div>
+      );
+    case "rnn-lstm":
+      return (
+        <div className="space-y-6">
+          <RNNViz accentColor={accentColor} />
+          <LSTMViz accentColor={accentColor} />
+        </div>
+      );
+    case "gan-vae":
+      return (
+        <div className="space-y-6">
+          <GANViz accentColor={accentColor} />
+          <VAEViz accentColor={accentColor} />
+        </div>
+      );
+    case "convolution-resnet-vit":
+      return (
+        <div className="space-y-6">
+          <ConvolutionViz accentColor={accentColor} />
+          <ResNetViTViz accentColor={accentColor} />
+        </div>
+      );
     default:                   return null;
   }
 }
@@ -136,23 +180,23 @@ function VisualizationSelector({ type, accentColor }: { type: string; accentColo
 // ── Architecture maps ─────────────────────────────────────────────────────────
 // Single architecture per topic
 const ARCH_MAP: Partial<Record<string, ArchType>> = {
-  "linear-regression":    "linear-regression",
-  "decision-tree-rf":     "decision-tree",
-  "gradient-boosting":    "gradient-boosting",
-  "neural-networks":      "mlp",
+  "linear-regression":      "linear-regression",
+  "neural-networks":        "mlp",
   "transformers-attention": "transformer",
-  "cnn-architectures":    "cnn",
-  "model-evaluation":     "evaluation",
-  "error-analysis":       "bias-variance",
-  "rnn-lstm-gru":         "lstm",
-  "generative-models":    "gan",
-  "bagging-stacking":     "bagging",
-  "ova-ovo":              "multiclass",
+  "model-evaluation":       "evaluation",
+  "error-analysis":         "bias-variance",
+  "bagging-stacking":       "bagging",
+  "ova-ovo":                "multiclass",
 };
 
 // Topics with multiple architectures shown stacked
 const MULTI_ARCH_MAP: Partial<Record<string, ArchType[]>> = {
-  "svm-knn-svr": ["svm", "knn", "svr"],
+  "svm-knn-svr":       ["svm", "knn", "svr"],
+  "decision-tree-rf":  ["decision-tree", "random-forest"],
+  "gradient-boosting": ["gradient-boosting", "xgboost", "lightgbm"],
+  "rnn-lstm-gru":      ["rnn", "lstm", "gru"],
+  "generative-models": ["gan", "vae"],
+  "cnn-architectures": ["cnn", "resnet", "vit"],
 };
 
 // ── Section icons & animations ────────────────────────────────────────────────

@@ -11,15 +11,22 @@ import { useVizTheme } from "@/hooks/useVizTheme";
 export type ArchType =
   | "linear-regression"
   | "decision-tree"
+  | "random-forest"
   | "gradient-boosting"
+  | "xgboost"
+  | "lightgbm"
   | "bagging"
   | "svm"
   | "knn"
   | "svr"
   | "mlp"
   | "cnn"
+  | "resnet"
+  | "vit"
   | "transformer"
+  | "rnn"
   | "lstm"
+  | "gru"
   | "gan"
   | "vae"
   | "evaluation"
@@ -948,57 +955,526 @@ function BiasVarianceArch({ accent, vt }: { accent: string; vt: VT }) {
   );
 }
 
-// 15. Multiclass (OvA / OvO)
+// 15. Multiclass (OvA / OvO) — fixed text layout
 function MulticlassArch({ accent, vt }: { accent: string; vt: VT }) {
-  const W = 540, H = 190;
+  const W = 540, H = 210;
   const arrowColor = vt.isDark ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.35)";
-  const classes = ["A", "B", "C"];
 
   return (
     <svg viewBox={`0 0 ${W} ${H}`} className="w-full">
       {ARROW_DEFS("arr-mc", arrowColor)}
 
       {/* Input */}
-      <Box x={10} y={75} w={70} h={40} label="Input x" sublabel="features"
+      <Box x={8} y={82} w={64} h={40} label="Input x" sublabel="features"
         bg={vt.isDark ? "#334155" : "#e2e8f0"} textColor={vt.text} rx={8} />
 
-      {/* OvA section */}
-      <text x={165} y={18} textAnchor="middle" fontSize={10} fill={vt.text} fontWeight="bold">
+      {/* ── OvA section ─────────── */}
+      <rect x={76} y={14} width={170} height={170} rx={8}
+        fill={`${accent}06`} stroke={`${accent}20`} strokeWidth={1} strokeDasharray="4,3" />
+      <text x={161} y={30} textAnchor="middle" fontSize={9} fill={accent} fontWeight="bold">
         One-vs-All (OvA)
       </text>
-      {classes.map((c, i) => {
-        const y = 28 + i * 44;
+      {["A","B","C"].map((c, i) => {
+        const y = 38 + i * 46;
         return (
           <g key={`ova-${c}`}>
-            <Arrow x1={80} y1={95} x2={98} y2={y + 16} color={arrowColor} markerId="arr-mc" />
-            <Box x={98} y={y} w={88} h={32} label={`cls ${c} vs rest`} sublabel="binary"
+            <Arrow x1={72} y1={102} x2={86} y2={y + 17} color={arrowColor} markerId="arr-mc" />
+            <Box x={86} y={y} w={96} h={34}
+              label={`Class ${c} vs Rest`}
               bg={accent} textColor={textOn(accent)} rx={6} />
-            <text x={196} y={y + 20} fontSize={9} fill={vt.textMuted}>→ P(y={c}|x)</text>
+            <text x={192} y={y + 22} fontSize={8} fill={vt.textMuted}>P(y={c}|x)</text>
           </g>
         );
       })}
-      <Box x={218} y={75} w={72} h={40} label="argmax P" sublabel="→ class"
+      <Arrow x1={202} y1={102} x2={250} y2={102} color={arrowColor} markerId="arr-mc" />
+      <Box x={250} y={82} w={80} h={40} label="argmax" sublabel="→ class label"
         bg={vt.isDark ? "#059669" : "#34d399"} textColor={textOn("#34d399")} rx={8} />
 
-      {/* OvO section */}
-      <text x={405} y={18} textAnchor="middle" fontSize={10} fill={vt.text} fontWeight="bold">
+      {/* ── OvO section ─────────── */}
+      <rect x={290} y={14} width={170} height={170} rx={8}
+        fill={`${vt.isDark ? "#7c3aed" : "#8b5cf6"}08`}
+        stroke={`${vt.isDark ? "#7c3aed" : "#8b5cf6"}25`} strokeWidth={1} strokeDasharray="4,3" />
+      <text x={375} y={30} textAnchor="middle" fontSize={9}
+        fill={vt.isDark ? "#7c3aed" : "#8b5cf6"} fontWeight="bold">
         One-vs-One (OvO)
       </text>
       {[["A","B"],["A","C"],["B","C"]].map(([c1,c2], i) => {
-        const y = 28 + i * 44;
+        const y = 38 + i * 46;
         return (
           <g key={`ovo-${c1}${c2}`}>
-            <Box x={298} y={y} w={90} h={32} label={`${c1} vs ${c2}`} sublabel="binary"
+            <Box x={296} y={y} w={86} h={34}
+              label={`${c1}  vs  ${c2}`}
               bg={vt.isDark ? "#7c3aed" : "#8b5cf6"} textColor="white" rx={6} />
-            <Arrow x1={388} y1={y + 16} x2={414} y2={95} color={arrowColor} markerId="arr-mc" />
+            <Arrow x1={382} y1={y + 17} x2={416} y2={102} color={arrowColor} markerId="arr-mc" />
           </g>
         );
       })}
-      <Box x={414} y={75} w={78} h={40} label="Majority vote" sublabel={`C(C-1)/2=${classes.length*(classes.length-1)/2}`}
+      <Box x={416} y={82} w={84} h={40} label="Majority" sublabel={`Vote (3 cls)`}
         bg={vt.isDark ? "#059669" : "#34d399"} textColor={textOn("#34d399")} rx={8} />
 
       <text x={W/2} y={H - 4} textAnchor="middle" fontSize={9} fill={vt.textMuted}>
-        OvA: C classifiers · OvO: C(C-1)/2 classifiers · Softmax: single C-output network
+        OvA: C binary classifiers · OvO: C(C-1)/2 classifiers · Softmax: direct C-class output
+      </text>
+    </svg>
+  );
+}
+
+// ══ NEW ARCHITECTURES ══════════════════════════════════════════════════════════
+
+// 16. Random Forest — parallel trees with bootstrap + feature random
+function RandomForestArch({ accent, vt }: { accent: string; vt: VT }) {
+  const W = 540, H = 210;
+  const ac = vt.isDark ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.35)";
+  const trees = [
+    { label: "Tree 1", sub: "B₁ + feat⊂F", y: 24  },
+    { label: "Tree 2", sub: "B₂ + feat⊂F", y: 86  },
+    { label: "Tree 3", sub: "B₃ + feat⊂F", y: 148 },
+  ];
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} className="w-full">
+      {ARROW_DEFS("arr-rf", ac)}
+      {/* Dataset */}
+      <Box x={8} y={84} w={72} h={42} label="Dataset" sublabel="N samples"
+        bg={vt.isDark ? "#334155" : "#e2e8f0"} textColor={vt.text} rx={8} />
+      {/* Feature random label */}
+      <text x={140} y={12} textAnchor="middle" fontSize={9} fill={accent} fontWeight="bold">
+        Random Feature Subset at each split: √p features
+      </text>
+      {trees.map((t) => (
+        <g key={t.label}>
+          <Arrow x1={80} y1={105} x2={106} y2={t.y + 21} color={ac} markerId="arr-rf" />
+          <Box x={106} y={t.y} w={92} h={42}
+            label={t.label} sublabel={t.sub}
+            bg={accent} textColor={textOn(accent)} rx={8} />
+          <Arrow x1={198} y1={t.y + 21} x2={318} y2={105} color={ac} markerId="arr-rf" />
+        </g>
+      ))}
+      <text x={154} y={195} textAnchor="middle" fontSize={8} fill={vt.textMuted}>⋮</text>
+      <Box x={318} y={76} w={102} h={58}
+        label="Aggregate" sublabel="Majority vote (class) / Average (reg)"
+        bg={vt.isDark ? "#7c3aed" : "#8b5cf6"} textColor="white" rx={8} />
+      <Arrow x1={420} y1={105} x2={464} y2={105} color={ac} markerId="arr-rf" />
+      <Box x={464} y={86} w={64} h={38}
+        label="ŷ final" sublabel="low var"
+        bg={vt.isDark ? "#059669" : "#34d399"} textColor={textOn("#059669")} rx={8} />
+      <text x={W/2} y={H - 4} textAnchor="middle" fontSize={9} fill={vt.textMuted}>
+        RF = Bagging + random feature splits → decorrelated trees → lower variance than single tree
+      </text>
+    </svg>
+  );
+}
+
+// 17. XGBoost — gradient + hessian + regularized objective
+function XGBoostArch({ accent, vt }: { accent: string; vt: VT }) {
+  const W = 540, H = 185;
+  const ac = vt.isDark ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.35)";
+  const nb = vt.isDark ? "#334155" : "#e2e8f0";
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} className="w-full">
+      {ARROW_DEFS("arr-xgb", ac)}
+      <Box x={6} y={68} w={66} h={44} label="Data" sublabel="(x, y)"
+        bg={nb} textColor={vt.text} rx={8} />
+      <Arrow x1={72} y1={90} x2={96} y2={90} color={ac} markerId="arr-xgb" />
+      <Box x={96} y={56} w={110} h={68}
+        label="Gradient & Hessian" sublabel="gᵢ=∂L/∂F · hᵢ=∂²L/∂F²"
+        bg={nb} textColor={vt.text} rx={8} />
+      <Arrow x1={206} y1={90} x2={226} y2={90} color={ac} markerId="arr-xgb" />
+      <Box x={226} y={44} w={118} h={92}
+        label="Reg. Objective" sublabel={"Σ[gᵢfₜ+½hᵢfₜ²]+γT+½λ‖w‖²"}
+        bg={accent} textColor={textOn(accent)} rx={8} />
+      <Arrow x1={344} y1={90} x2={366} y2={90} color={ac} markerId="arr-xgb" />
+      <Box x={366} y={56} w={80} h={68}
+        label="Histogram Split" sublabel="bin features for speed"
+        bg={nb} textColor={vt.text} rx={8} />
+      <Arrow x1={446} y1={90} x2={470} y2={90} color={ac} markerId="arr-xgb" />
+      <Box x={470} y={72} w={60} h={36}
+        label="Tree hₜ" sublabel="→ F+=η·h"
+        bg={vt.isDark ? "#059669" : "#34d399"} textColor={textOn("#059669")} rx={8} />
+      <text x={W/2} y={H - 4} textAnchor="middle" fontSize={9} fill={vt.textMuted}>
+        XGBoost: Newton boosting with exact gradient + hessian · L1/L2 regularization · column subsampling
+      </text>
+    </svg>
+  );
+}
+
+// 18. LightGBM — leaf-wise growth vs level-wise
+function LightGBMArch({ accent, vt }: { accent: string; vt: VT }) {
+  const W = 540, H = 200;
+  const ac = vt.isDark ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.35)";
+  const nb = vt.isDark ? "#334155" : "#e2e8f0";
+
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} className="w-full">
+      {ARROW_DEFS("arr-lgb", ac)}
+      {/* Level-wise */}
+      <text x={130} y={18} textAnchor="middle" fontSize={9} fill={vt.textMuted} fontWeight="bold">
+        Level-wise (XGBoost)
+      </text>
+      {/* root → 2 children → 4 grandchildren */}
+      <rect x={110} y={24} width={40} height={22} rx={4} fill={nb} stroke={vt.border} strokeWidth={1} />
+      <text x={130} y={39} textAnchor="middle" fontSize={9} fill={vt.text}>Root</text>
+      {[60, 160].map((cx2, i) => (
+        <g key={i}>
+          <line x1={130} y1={46} x2={cx2} y2={62} stroke={ac} strokeWidth={1} />
+          <rect x={cx2 - 24} y={62} width={48} height={20} rx={4}
+            fill={nb} stroke={vt.border} strokeWidth={1} />
+          <text x={cx2} y={76} textAnchor="middle" fontSize={8} fill={vt.text}>Level 1</text>
+          {[cx2 - 16, cx2 + 16].map((cx3, j) => (
+            <g key={j}>
+              <line x1={cx2} y1={82} x2={cx3} y2={98} stroke={ac} strokeWidth={1} />
+              <rect x={cx3 - 14} y={98} width={28} height={18} rx={3}
+                fill={nb} stroke={vt.border} strokeWidth={1} />
+              <text x={cx3} y={111} textAnchor="middle" fontSize={7} fill={vt.text}>L2</text>
+            </g>
+          ))}
+        </g>
+      ))}
+
+      {/* LightGBM leaf-wise */}
+      <text x={400} y={18} textAnchor="middle" fontSize={9} fill={accent} fontWeight="bold">
+        Leaf-wise (LightGBM)
+      </text>
+      <rect x={380} y={24} width={40} height={22} rx={4}
+        fill={accent + "30"} stroke={accent} strokeWidth={1.5} />
+      <text x={400} y={39} textAnchor="middle" fontSize={9} fill={accent} fontWeight="bold">Root</text>
+      {/* Best-gain leaf split */}
+      <line x1={400} y1={46} x2={365} y2={62} stroke={accent} strokeWidth={1.5} />
+      <rect x={341} y={62} width={48} height={20} rx={4}
+        fill={accent + "30"} stroke={accent} strokeWidth={1.5} />
+      <text x={365} y={76} textAnchor="middle" fontSize={8} fill={accent} fontWeight="bold">Best</text>
+      <line x1={400} y1={46} x2={435} y2={62} stroke={ac} strokeWidth={1} />
+      <rect x={411} y={62} width={48} height={20} rx={4}
+        fill={nb} stroke={vt.border} strokeWidth={1} />
+      <text x={435} y={76} textAnchor="middle" fontSize={8} fill={vt.text}>other</text>
+      {/* Best leaf splits again */}
+      <line x1={365} y1={82} x2={350} y2={98} stroke={accent} strokeWidth={1.5} />
+      <rect x={326} y={98} width={48} height={20} rx={4}
+        fill={accent + "30"} stroke={accent} strokeWidth={1.5} />
+      <text x={350} y={112} textAnchor="middle" fontSize={8} fill={accent} fontWeight="bold">Best²</text>
+      <line x1={365} y1={82} x2={380} y2={98} stroke={ac} strokeWidth={1} />
+      <rect x={356} y={98} width={48} height={20} rx={4}
+        fill={nb} stroke={vt.border} strokeWidth={1} />
+      <text x={380} y={112} textAnchor="middle" fontSize={8} fill={vt.text}>other</text>
+
+      {/* Features */}
+      <Box x={60} y={140} w={150} h={36} label="GOSS: keep large-gradient samples"
+        bg={nb} textColor={vt.text} rx={6} />
+      <Box x={220} y={140} w={140} h={36} label="EFB: bundle sparse features"
+        bg={accent} textColor={textOn(accent)} rx={6} />
+      <Box x={370} y={140} w={112} h={36} label="Histogram binning"
+        bg={nb} textColor={vt.text} rx={6} />
+
+      <text x={W/2} y={H - 4} textAnchor="middle" fontSize={9} fill={vt.textMuted}>
+        LightGBM: leaf-wise growth + GOSS + EFB → faster training, comparable accuracy to XGBoost
+      </text>
+    </svg>
+  );
+}
+
+// 19. RNN — unrolled recurrent cell
+function RNNArch({ accent, vt }: { accent: string; vt: VT }) {
+  const W = 540, H = 185;
+  const ac = vt.isDark ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.35)";
+  const tokens = ["x₁", "x₂", "x₃", "x₄"];
+  const NW = 64, NH = 38, CY = 90;
+  const spacing = (W - 48 - tokens.length * NW) / (tokens.length - 1);
+
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} className="w-full">
+      {ARROW_DEFS("arr-rnn", ac)}
+      {/* Initial hidden state */}
+      <Box x={6} y={CY - NH / 2} w={38} h={NH} label="h₀" sublabel="zeros"
+        bg={vt.isDark ? "#334155" : "#e2e8f0"} textColor={vt.text} rx={6} />
+      <Arrow x1={44} y1={CY} x2={60} y2={CY} color={ac} markerId="arr-rnn" />
+
+      {tokens.map((tok, i) => {
+        const cx = 60 + i * (NW + spacing) + NW / 2;
+        return (
+          <g key={tok}>
+            {/* Hidden cell */}
+            <Box x={cx - NW / 2} y={CY - NH / 2} w={NW} h={NH}
+              label={`h${i + 1}`} sublabel={tok}
+              bg={accent} textColor={textOn(accent)} rx={8} />
+            {/* Input arrow (from below) */}
+            <Arrow x1={cx} y1={CY + NH / 2 + 28} x2={cx} y2={CY + NH / 2}
+              color={ac} markerId="arr-rnn" />
+            <text x={cx} y={CY + NH / 2 + 42} textAnchor="middle" fontSize={9}
+              fill={vt.textMuted} fontStyle="italic">{tok}</text>
+            {/* Output arrow (above) */}
+            <Arrow x1={cx} y1={CY - NH / 2} x2={cx} y2={CY - NH / 2 - 22}
+              color={ac} markerId="arr-rnn" />
+            <text x={cx} y={CY - NH / 2 - 28} textAnchor="middle" fontSize={9}
+              fill={vt.textMuted}>y{i + 1}</text>
+            {/* Recurrence arrow */}
+            {i < tokens.length - 1 && (
+              <Arrow x1={cx + NW / 2} y1={CY}
+                x2={cx + NW / 2 + spacing} y2={CY}
+                color={accent} markerId="arr-rnn" />
+            )}
+          </g>
+        );
+      })}
+      {/* Final hidden */}
+      <text x={W - 24} y={CY + 4} textAnchor="middle" fontSize={9} fill={vt.textMuted}>→ …</text>
+
+      {/* Formula */}
+      <rect x={20} y={H - 28} width={W - 40} height={20} rx={6}
+        fill={vt.surface} />
+      <text x={W / 2} y={H - 14} textAnchor="middle" fontSize={9} fill={vt.text}
+        fontFamily="monospace">
+        hₜ = tanh(Wₓ·xₜ + Wₕ·hₜ₋₁ + b)    yₜ = Wᵧ·hₜ
+      </text>
+      <text x={W / 2} y={H - 2} textAnchor="middle" fontSize={8} fill={vt.textMuted}>
+        RNN: shared weights across all timesteps — vanishing gradient problem at long sequences
+      </text>
+    </svg>
+  );
+}
+
+// 20. GRU cell
+function GRUArch({ accent, vt }: { accent: string; vt: VT }) {
+  const W = 540, H = 220;
+  const ac = vt.isDark ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.35)";
+  const GATE_W = 116, GATE_H = 44, GATE_Y = 90;
+
+  const gates = [
+    { label: "Reset Gate rₜ",  eq: "σ(Wr·[hₜ₋₁,xₜ])", color: "#ef4444", x: 80  },
+    { label: "Update Gate zₜ", eq: "σ(Wz·[hₜ₋₁,xₜ])", color: "#f59e0b", x: 230 },
+    { label: "Candidate h̃ₜ",  eq: "tanh(Wh·[rₜ·h,xₜ])", color: accent,  x: 390 },
+  ];
+
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} className="w-full">
+      {ARROW_DEFS("arr-gru", ac)}
+
+      {/* Shared input row */}
+      <rect x={16} y={158} width={W - 32} height={26} rx={8}
+        fill={vt.surface} stroke={vt.border} strokeWidth={1} />
+      <text x={W / 2} y={175} textAnchor="middle" fontSize={9} fill={vt.textMuted}>
+        Shared input: [hₜ₋₁, xₜ]  →  fed to all 3 gates
+      </text>
+
+      {/* Gate boxes */}
+      {gates.map(g => (
+        <g key={g.label}>
+          <rect x={g.x - GATE_W / 2} y={GATE_Y} width={GATE_W} height={GATE_H} rx={8}
+            fill={`${g.color}18`} stroke={g.color} strokeWidth={1.5} />
+          <text x={g.x} y={GATE_Y + 16} textAnchor="middle" fontSize={9}
+            fontWeight="bold" fill={g.color}>{g.label}</text>
+          <text x={g.x} y={GATE_Y + 32} textAnchor="middle" fontSize={7.5}
+            fill={g.color} fontFamily="monospace">{g.eq}</text>
+          <Arrow x1={g.x} y1={158} x2={g.x} y2={GATE_Y + GATE_H}
+            color={ac} markerId="arr-gru" />
+        </g>
+      ))}
+
+      {/* Output equation */}
+      <rect x={16} y={36} width={W - 32} height={38} rx={8}
+        fill={`${accent}12`} stroke={`${accent}35`} strokeWidth={1.5} />
+      <text x={W / 2} y={53} textAnchor="middle" fontSize={10} fill={accent} fontWeight="bold">
+        hₜ = (1 − zₜ) · hₜ₋₁ + zₜ · h̃ₜ
+      </text>
+      <text x={W / 2} y={68} textAnchor="middle" fontSize={8} fill={vt.textMuted}>
+        update gate blends old memory (1−zₜ) with new candidate (zₜ)
+      </text>
+
+      {/* Arrows from gates to output */}
+      {gates.map(g => (
+        <Arrow key={`go-${g.label}`} x1={g.x} y1={GATE_Y} x2={g.x} y2={74}
+          color={g.color} markerId="arr-gru" />
+      ))}
+
+      <text x={W / 2} y={H - 4} textAnchor="middle" fontSize={8} fill={vt.textMuted}>
+        GRU: 2 gates (vs LSTM 4) · no separate cell state · faster · comparable performance
+      </text>
+    </svg>
+  );
+}
+
+// 21. ResNet — skip connections
+function ResNetArch({ accent, vt }: { accent: string; vt: VT }) {
+  const W = 540, H = 200;
+  const ac = vt.isDark ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.35)";
+  const nb = vt.isDark ? "#334155" : "#e2e8f0";
+  const BH = 36, BY = 60;
+
+  const blocks = [
+    { label: "Conv 3×3", sub: "BN + ReLU", x: 82,  bg: accent },
+    { label: "Conv 3×3", sub: "BN",         x: 200, bg: accent },
+    { label: "+",         sub: "merge",     x: 320, bg: vt.isDark ? "#059669" : "#34d399", w: 36 },
+    { label: "ReLU",      sub: "output",   x: 390, bg: vt.isDark ? "#7c3aed" : "#8b5cf6" },
+  ];
+
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} className="w-full">
+      {ARROW_DEFS("arr-res", ac)}
+
+      {/* Input */}
+      <Box x={8} y={BY} w={64} h={BH} label="x" sublabel="feature map"
+        bg={nb} textColor={vt.text} rx={8} />
+      <Arrow x1={72} y1={BY + BH/2} x2={82} y2={BY + BH/2} color={ac} markerId="arr-res" />
+
+      {/* Main path */}
+      {blocks.map((b, i) => {
+        const bw = b.w ?? 92;
+        const nx = i < blocks.length - 1 ? blocks[i + 1].x : b.x + bw + 10;
+        return (
+          <g key={i}>
+            <Box x={b.x} y={BY} w={bw} h={BH}
+              label={b.label} sublabel={b.sub}
+              bg={b.bg} textColor={textOn(b.bg)} rx={8} />
+            {i < blocks.length - 1 && (
+              <Arrow x1={b.x + bw} y1={BY + BH/2} x2={nx} y2={BY + BH/2}
+                color={ac} markerId="arr-res" />
+            )}
+          </g>
+        );
+      })}
+      <Arrow x1={426} y1={BY + BH/2} x2={468} y2={BY + BH/2} color={ac} markerId="arr-res" />
+      <Box x={468} y={BY} w={62} h={BH} label="F(x)+x" sublabel="output"
+        bg={nb} textColor={vt.text} rx={8} />
+
+      {/* Skip connection arc */}
+      <path d={`M 72 ${BY + BH/2 - 4} C 72 ${BY - 30}, 316 ${BY - 30}, 316 ${BY + BH/2 - 4}`}
+        fill="none" stroke="#f59e0b" strokeWidth={2} strokeDasharray="6,3" />
+      <text x={194} y={BY - 14} textAnchor="middle" fontSize={9} fill="#f59e0b" fontWeight="bold">
+        Identity shortcut: x
+      </text>
+      <Arrow x1={316} y1={BY - 4} x2={320} y2={BY} color="#f59e0b" markerId="arr-res" />
+
+      {/* ResNet depth variants */}
+      {[
+        { label: "ResNet-18",  sub: "18 layers", x: 50,  bg: nb },
+        { label: "ResNet-50",  sub: "bottleneck", x: 186, bg: accent },
+        { label: "ResNet-152", sub: "deep",       x: 322, bg: accent },
+        { label: "ResNeXt",    sub: "+ grouped",  x: 446, bg: nb },
+      ].map(v => (
+        <Box key={v.label} x={v.x} y={140} w={110} h={32}
+          label={v.label} sublabel={v.sub}
+          bg={v.bg} textColor={textOn(v.bg)} rx={6} />
+      ))}
+
+      <text x={W/2} y={H - 4} textAnchor="middle" fontSize={9} fill={vt.textMuted}>
+        ResNet: F(x)+x — skip connections solve vanishing gradients, enable training 100s of layers
+      </text>
+    </svg>
+  );
+}
+
+// 22. ViT — Vision Transformer
+function ViTArch({ accent, vt }: { accent: string; vt: VT }) {
+  const W = 540, H = 190;
+  const ac = vt.isDark ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.35)";
+  const nb = vt.isDark ? "#334155" : "#e2e8f0";
+
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} className="w-full">
+      {ARROW_DEFS("arr-vit", ac)}
+
+      {/* Image → patches */}
+      <rect x={8} y={60} width={48} height={48} rx={4}
+        fill={accent + "25"} stroke={accent} strokeWidth={1.5} />
+      <text x={32} y={82} textAnchor="middle" fontSize={8} fill={accent} fontWeight="bold">Image</text>
+      <text x={32} y={95} textAnchor="middle" fontSize={7} fill={accent}>H×W×C</text>
+      {/* Patch grid lines */}
+      {[16,32].map(o => (
+        <g key={o}>
+          <line x1={8} y1={60 + o} x2={56} y2={60 + o} stroke={accent} strokeWidth={0.5} opacity={0.5} />
+          <line x1={8 + o} y1={60} x2={8 + o} y2={108} stroke={accent} strokeWidth={0.5} opacity={0.5} />
+        </g>
+      ))}
+
+      <Arrow x1={56} y1={84} x2={76} y2={84} color={ac} markerId="arr-vit" />
+      <Box x={76} y={64} w={84} h={40} label="Flatten Patches" sublabel="N×(P²·C)"
+        bg={nb} textColor={vt.text} rx={8} />
+      <Arrow x1={160} y1={84} x2={178} y2={84} color={ac} markerId="arr-vit" />
+      <Box x={178} y={64} w={76} h={40} label="Linear Embed" sublabel="Proj to D"
+        bg={accent} textColor={textOn(accent)} rx={8} />
+      <Arrow x1={254} y1={84} x2={272} y2={84} color={ac} markerId="arr-vit" />
+
+      {/* [CLS] + Pos embed */}
+      <Box x={272} y={50} w={78} h={68}
+        label="[CLS] + Pos" sublabel="E_pos added to each token"
+        bg={vt.isDark ? "#7c3aed" : "#8b5cf6"} textColor="white" rx={8} />
+      <Arrow x1={350} y1={84} x2={368} y2={84} color={ac} markerId="arr-vit" />
+
+      {/* Transformer encoder */}
+      <Box x={368} y={44} w={80} h={80}
+        label="Transformer" sublabel={"Encoder × L\nMHSA + FFN"}
+        bg={accent} textColor={textOn(accent)} rx={8} />
+      <Arrow x1={448} y1={84} x2={464} y2={84} color={ac} markerId="arr-vit" />
+
+      {/* Classification head */}
+      <Box x={464} y={60} w={66} h={48}
+        label="[CLS]" sublabel="MLP → class"
+        bg={vt.isDark ? "#059669" : "#34d399"} textColor={textOn("#059669")} rx={8} />
+
+      {/* Patch size notes */}
+      <text x={W/2} y={148} textAnchor="middle" fontSize={9} fill={vt.textMuted}>
+        Patch size 16×16: 224×224 image → 196 patches + 1 [CLS] = 197 tokens
+      </text>
+      <text x={W/2} y={H - 4} textAnchor="middle" fontSize={9} fill={vt.textMuted}>
+        ViT: no convolutions — pure self-attention over image patches (ViT-B/16, ViT-L/32…)
+      </text>
+    </svg>
+  );
+}
+
+// 23. VAE — Variational Autoencoder
+function VAEArch({ accent, vt }: { accent: string; vt: VT }) {
+  const W = 540, H = 200;
+  const ac = vt.isDark ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.35)";
+  const nb = vt.isDark ? "#334155" : "#e2e8f0";
+
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} className="w-full">
+      {ARROW_DEFS("arr-vae", ac)}
+
+      {/* Input */}
+      <Box x={6} y={76} w={58} h={44} label="Input x" sublabel="data"
+        bg={nb} textColor={vt.text} rx={8} />
+      <Arrow x1={64} y1={98} x2={84} y2={98} color={ac} markerId="arr-vae" />
+
+      {/* Encoder */}
+      <Box x={84} y={60} w={88} h={76} label="Encoder" sublabel="q_φ(z|x)"
+        bg={accent} textColor={textOn(accent)} rx={8} />
+      <Arrow x1={172} y1={78} x2={194} y2={74} color={ac} markerId="arr-vae" />
+      <Arrow x1={172} y1={118} x2={194} y2={122} color={ac} markerId="arr-vae" />
+
+      {/* μ and σ */}
+      <Box x={194} y={56} w={58} h={30} label="μ(x)" sublabel="mean"
+        bg={vt.isDark ? "#7c3aed" : "#8b5cf6"} textColor="white" rx={6} />
+      <Box x={194} y={100} w={58} h={30} label="σ(x)" sublabel="std dev"
+        bg={vt.isDark ? "#7c3aed" : "#8b5cf6"} textColor="white" rx={6} />
+      <Arrow x1={252} y1={71} x2={274} y2={90} color={ac} markerId="arr-vae" />
+      <Arrow x1={252} y1={115} x2={274} y2={106} color={ac} markerId="arr-vae" />
+
+      {/* Reparameterization */}
+      <Box x={274} y={72} w={76} h={52}
+        label="z = μ+ε·σ" sublabel="ε~N(0,I) reparam"
+        bg={vt.isDark ? "#0891b2" : "#22d3ee"} textColor={textOn("#22d3ee")} rx={8} />
+      <Arrow x1={350} y1={98} x2={372} y2={98} color={ac} markerId="arr-vae" />
+
+      {/* Decoder */}
+      <Box x={372} y={60} w={88} h={76} label="Decoder" sublabel="p_θ(x|z)"
+        bg={accent} textColor={textOn(accent)} rx={8} />
+      <Arrow x1={460} y1={98} x2={478} y2={98} color={ac} markerId="arr-vae" />
+
+      {/* Reconstruction */}
+      <Box x={478} y={76} w={54} h={44} label="x̂" sublabel="recon"
+        bg={vt.isDark ? "#059669" : "#34d399"} textColor={textOn("#059669")} rx={8} />
+
+      {/* Loss */}
+      <rect x={60} y={150} width={W - 80} height={30} rx={6}
+        fill={vt.surface} stroke={vt.border} strokeWidth={1} />
+      <text x={W / 2} y={163} textAnchor="middle" fontSize={9} fill={vt.text} fontFamily="monospace">
+        L = E[log p(x|z)] − KL[q(z|x) ‖ p(z)]
+      </text>
+      <text x={W / 2} y={177} textAnchor="middle" fontSize={8} fill={vt.textMuted}>
+        reconstruction loss − KL regularization (forces z → N(0,I))
+      </text>
+      <text x={W/2} y={H - 4} textAnchor="middle" fontSize={8} fill={vt.textMuted}>
+        VAE learns a smooth, continuous latent space — enables interpolation and generation
       </text>
     </svg>
   );
@@ -1017,17 +1493,24 @@ export default function ArchDiagram({
   const LABELS: Record<ArchType, string> = {
     "linear-regression":  "Linear & Logistic Regression Architecture",
     "decision-tree":      "Decision Tree Architecture",
+    "random-forest":      "Random Forest Architecture",
     "gradient-boosting":  "Gradient Boosting Architecture",
+    "xgboost":            "XGBoost Architecture",
+    "lightgbm":           "LightGBM — Leaf-wise Growth",
     "bagging":            "Bagging (Bootstrap Aggregating) Architecture",
     "svm":                "Support Vector Machine Geometry",
     "knn":                "K-Nearest Neighbors Algorithm",
     "svr":                "Support Vector Regression",
     "mlp":                "Multi-Layer Perceptron (MLP) Architecture",
     "cnn":                "Convolutional Neural Network Architecture",
+    "resnet":             "ResNet — Residual Connections",
+    "vit":                "Vision Transformer (ViT)",
     "transformer":        "Transformer Encoder Architecture",
+    "rnn":                "RNN — Recurrent Neural Network",
     "lstm":               "LSTM Cell Architecture",
+    "gru":                "GRU — Gated Recurrent Unit",
     "gan":                "GAN Training Loop",
-    "vae":                "Variational Autoencoder",
+    "vae":                "Variational Autoencoder (VAE)",
     "evaluation":         "Model Evaluation Pipeline",
     "bias-variance":      "Bias–Variance Decomposition",
     "multiclass":         "Multi-Class Classification Strategies",
@@ -1038,16 +1521,24 @@ export default function ArchDiagram({
     switch (type) {
       case "linear-regression":  return <LinearRegressionArch {...props} />;
       case "decision-tree":      return <DecisionTreeArch {...props} />;
+      case "random-forest":      return <RandomForestArch {...props} />;
       case "gradient-boosting":  return <GradientBoostingArch {...props} />;
+      case "xgboost":            return <XGBoostArch {...props} />;
+      case "lightgbm":           return <LightGBMArch {...props} />;
       case "bagging":            return <BaggingArch {...props} />;
       case "svm":                return <SVMArch {...props} />;
       case "knn":                return <KNNArch {...props} />;
       case "svr":                return <SVRArch {...props} />;
       case "mlp":                return <MLPArch {...props} />;
       case "cnn":                return <CNNArch {...props} />;
+      case "resnet":             return <ResNetArch {...props} />;
+      case "vit":                return <ViTArch {...props} />;
       case "transformer":        return <TransformerArch {...props} />;
+      case "rnn":                return <RNNArch {...props} />;
       case "lstm":               return <LSTMArch {...props} />;
+      case "gru":                return <GRUArch {...props} />;
       case "gan":                return <GANArch {...props} />;
+      case "vae":                return <VAEArch {...props} />;
       case "evaluation":         return <EvaluationArch {...props} />;
       case "bias-variance":      return <BiasVarianceArch {...props} />;
       case "multiclass":         return <MulticlassArch {...props} />;

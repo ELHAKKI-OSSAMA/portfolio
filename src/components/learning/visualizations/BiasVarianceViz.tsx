@@ -12,12 +12,18 @@ const MAX_DEGREE = 11;
 
 // ── Ground truth + noisy data ────────────────────────────────────────────────
 const TRUE_FN = (x: number) => Math.sin(2 * Math.PI * x);
-const SEED = (i: number) => Math.sin(i * 53.1 + 7.9) * 0.5 + 0.5;
+// Two seeds for more realistic scattered x positions and noise
+const SEED  = (i: number) => Math.abs(Math.sin(i * 53.1 + 7.9));
+const SEED2 = (i: number) => Math.abs(Math.sin(i * 37.7 + 3.1));
 
-const N = 36;
+// Fewer, noisier points — makes underfitting and overfitting much more visible
+const N = 24;
 const ALL_DATA = Array.from({ length: N }, (_, i) => {
-  const x = 0.05 + (i / (N - 1)) * 0.88;
-  return { x, y: TRUE_FN(x) + (SEED(i) - 0.5) * 1.2 };
+  // Jittered x positions so the curve isn't perfectly regular
+  const x = 0.04 + (i / (N - 1)) * 0.92 + (SEED2(i) - 0.5) * 0.03;
+  // Larger noise amplitude: ±0.85 so high-degree polynomials visibly overfit
+  const noise = (SEED(i) - 0.5) * 1.7;
+  return { x: Math.max(0.02, Math.min(0.98, x)), y: TRUE_FN(x) + noise };
 });
 
 // 2-out-of-3 train, 1-out-of-3 test
@@ -146,10 +152,10 @@ export default function BiasVarianceViz({ accentColor = "#10b981" }: { accentCol
   const overfit = (currentErr.testMSE - currentErr.trainMSE).toFixed(3);
 
   const diagnosis =
-    degree <= 2
-      ? { label: "Underfitting (High Bias)", color: "#ff6b6b", hint: "Too simple — raise degree" }
-      : degree >= 9
-      ? { label: "Overfitting (High Variance)", color: "#f59e0b", hint: "Fits noise — lower degree or regularize" }
+    degree <= 3
+      ? { label: "Underfitting (High Bias)", color: "#ff6b6b", hint: "Too simple — model misses the true pattern" }
+      : degree >= 8
+      ? { label: "Overfitting (High Variance)", color: "#f59e0b", hint: "Memorizing noise — fails on new data" }
       : { label: "Good Balance", color: accentColor, hint: "Train ≈ Test error — sweet spot" };
 
   const optDeg = ERRORS.reduce((best, e) => (e.testMSE < best.testMSE ? e : best)).degree;
@@ -206,10 +212,10 @@ export default function BiasVarianceViz({ accentColor = "#10b981" }: { accentCol
             fill="#ff6b6b10" stroke="#ff6b6b30" strokeWidth={1} />
         )}
 
-        {/* True function (ghost) */}
+        {/* True function (ghost) — bright coral so it's always visible */}
         {showTrue && (
-          <path d={truePath} fill="none" stroke={vt.gridStrong}
-            strokeWidth={1.5} strokeDasharray="6,4" opacity={0.7} />
+          <path d={truePath} fill="none" stroke="#e94560"
+            strokeWidth={2} strokeDasharray="7,4" opacity={0.85} />
         )}
 
         {/* Fitted polynomial */}
@@ -247,8 +253,8 @@ export default function BiasVarianceViz({ accentColor = "#10b981" }: { accentCol
         {showTrue && (
           <>
             <line x1={PAD + 98} y1={H_TOP - 22} x2={PAD + 116} y2={H_TOP - 22}
-              stroke={vt.gridStrong} strokeWidth={1.5} strokeDasharray="5,3" />
-            <text x={PAD + 120} y={H_TOP - 18} fontSize={8} fill={vt.textMuted}>True fn</text>
+              stroke="#e94560" strokeWidth={2} strokeDasharray="6,3" />
+            <text x={PAD + 120} y={H_TOP - 18} fontSize={8} fill="#e94560">True fn</text>
           </>
         )}
 
