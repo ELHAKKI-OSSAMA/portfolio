@@ -84,6 +84,10 @@ const RandomForestViz = dynamic(
   () => import("@/components/learning/visualizations/RandomForestViz"),
   { ssr: false, loading: () => <VizPlaceholder /> }
 );
+const GradientBoostingVariantsViz = dynamic(
+  () => import("@/components/learning/visualizations/GradientBoostingVariantsViz"),
+  { ssr: false, loading: () => <VizPlaceholder /> }
+);
 const RNNViz = dynamic(
   () => import("@/components/learning/visualizations/RNNViz"),
   { ssr: false, loading: () => <VizPlaceholder /> }
@@ -122,6 +126,13 @@ function VisualizationSelector({ type, accentColor }: { type: string; accentColo
   switch (type) {
     case "linear-regression":  return <LinearRegressionViz accentColor={accentColor} />;
     case "gradient-boosting":  return <GradientBoostingViz accentColor={accentColor} />;
+    case "gradient-boosting-all":
+      return (
+        <div className="space-y-6">
+          <GradientBoostingViz accentColor={accentColor} />
+          <GradientBoostingVariantsViz accentColor={accentColor} />
+        </div>
+      );
     case "neural-network":     return <NeuralNetworkViz accentColor={accentColor} />;
     case "attention":          return <AttentionViz accentColor={accentColor} />;
     case "roc-curve":          return <ROCCurveViz accentColor={accentColor} />;
@@ -180,23 +191,23 @@ function VisualizationSelector({ type, accentColor }: { type: string; accentColo
 // ── Architecture maps ─────────────────────────────────────────────────────────
 // Single architecture per topic
 const ARCH_MAP: Partial<Record<string, ArchType>> = {
-  "linear-regression":      "linear-regression",
-  "neural-networks":        "mlp",
-  "transformers-attention": "transformer",
-  "model-evaluation":       "evaluation",
-  "error-analysis":         "bias-variance",
-  "bagging-stacking":       "bagging",
-  "ova-ovo":                "multiclass",
+  "linear-regression": "linear-regression",
+  "neural-networks":   "mlp",
+  "model-evaluation":  "evaluation",
+  "error-analysis":    "bias-variance",
+  "bagging-stacking":  "bagging",
+  "ova-ovo":           "multiclass",
 };
 
 // Topics with multiple architectures shown stacked
 const MULTI_ARCH_MAP: Partial<Record<string, ArchType[]>> = {
-  "svm-knn-svr":       ["svm", "knn", "svr"],
-  "decision-tree-rf":  ["decision-tree", "random-forest"],
-  "gradient-boosting": ["gradient-boosting", "xgboost", "lightgbm"],
-  "rnn-lstm-gru":      ["rnn", "lstm", "gru"],
-  "generative-models": ["gan", "vae"],
-  "cnn-architectures": ["cnn", "resnet", "vit"],
+  "svm-knn-svr":         ["svm", "knn", "svr"],
+  "decision-tree-rf":    ["decision-tree", "random-forest"],
+  "gradient-boosting":   ["gradient-boosting", "xgboost", "lightgbm", "catboost"],
+  "rnn-lstm-gru":        ["rnn", "lstm", "gru"],
+  "generative-models":   ["gan", "vae"],
+  "cnn-architectures":   ["cnn", "resnet", "vit"],
+  "transformers-attention": ["transformer", "bert"],
 };
 
 // ── Section icons & animations ────────────────────────────────────────────────

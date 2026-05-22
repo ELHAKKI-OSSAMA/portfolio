@@ -15,6 +15,7 @@ export type ArchType =
   | "gradient-boosting"
   | "xgboost"
   | "lightgbm"
+  | "catboost"
   | "bagging"
   | "svm"
   | "knn"
@@ -24,6 +25,7 @@ export type ArchType =
   | "resnet"
   | "vit"
   | "transformer"
+  | "bert"
   | "rnn"
   | "lstm"
   | "gru"
@@ -640,69 +642,96 @@ function CNNArch({ accent, vt }: { accent: string; vt: VT }) {
   );
 }
 
-// 10. Transformer Encoder
+// 10. Transformer Encoder  — redesigned with proper spacing + BERT note
 function TransformerArch({ accent, vt }: { accent: string; vt: VT }) {
-  const W = 540, H = 290;
-  const arrowColor = vt.isDark ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.35)";
-  const BW = 160, CX = W / 2, BX = CX - BW / 2, BH = 36;
+  const W = 540, H = 340;
+  const ac = vt.isDark ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.35)";
+  const BW = 170, CX = W / 2, BX = CX - BW / 2;
   const neutralBg = vt.isDark ? "#374151" : "#e2e8f0";
-  const neutralTxt = vt.text;
+  const purple = vt.isDark ? "#7c3aed" : "#8b5cf6";
+  const green  = vt.isDark ? "#059669" : "#34d399";
+
+  // Layout (bottom-to-top in SVG, so lower y = visually higher):
+  // y=290 → Token Embed (h=40)
+  // y=248 → MHA (h=40)  ← arrow 290→252
+  // y=210 → Add&Norm1 (h=30) ← arrow 248→214
+  // y=166 → FFN (h=38) ← arrow 210→170
+  // y=128 → Add&Norm2 (h=30) ← arrow 166→132
+  // y= 82 → Linear+Softmax (h=40) ← arrow 128→90
+  // y= 38 → Output label
 
   return (
     <svg viewBox={`0 0 ${W} ${H}`} className="w-full">
-      {ARROW_DEFS("arr-tr", arrowColor)}
+      {ARROW_DEFS("arr-tr", ac)}
 
-      {/* Input embedding */}
-      <Box x={BX} y={250} w={BW} h={BH}
+      {/* ── Input ── */}
+      <Box x={BX} y={290} w={BW} h={40}
         label="Token Embedding" sublabel="+ Positional Encoding"
-        bg={neutralBg} textColor={neutralTxt} rx={8} />
-      <Arrow x1={CX} y1={250} x2={CX} y2={236} color={arrowColor} markerId="arr-tr" />
+        bg={neutralBg} textColor={vt.text} rx={8} />
+      <Arrow x1={CX} y1={290} x2={CX} y2={292} color={ac} markerId="arr-tr" />
 
-      {/* Encoder block border */}
-      <rect x={BX - 22} y={98} width={BW + 44} height={136} rx={10}
-        fill={`${accent}08`} stroke={`${accent}35`} strokeWidth={1.5} strokeDasharray="6,3" />
-      <text x={BX + BW + 28} y={168} textAnchor="start" fontSize={10}
+      {/* ── Encoder block border ── */}
+      <rect x={BX - 28} y={124} width={BW + 56} height={158} rx={10}
+        fill={`${accent}07`} stroke={`${accent}30`} strokeWidth={1.5} strokeDasharray="6,3" />
+      <text x={BX + BW + 36} y={206} textAnchor="start" fontSize={12}
         fill={accent} fontWeight="bold">×N</text>
 
-      {/* Add & Norm 2 */}
-      <Box x={BX} y={100} w={BW} h={30}
-        label="Add & LayerNorm" bg={neutralBg} textColor={neutralTxt} rx={6} />
-      <Arrow x1={CX} y1={100} x2={CX} y2={90} color={arrowColor} markerId="arr-tr" />
-
-      {/* FFN */}
-      <Box x={BX} y={136} w={BW} h={BH}
-        label="Feed-Forward" sublabel="2×Linear + ReLU"
-        bg={vt.isDark ? "#7c3aed" : "#8b5cf6"} textColor="white" rx={8} />
-      <Arrow x1={CX} y1={136} x2={CX} y2={130} color={arrowColor} markerId="arr-tr" />
-
-      {/* Add & Norm 1 */}
-      <Box x={BX} y={178} w={BW} h={30}
-        label="Add & LayerNorm" bg={neutralBg} textColor={neutralTxt} rx={6} />
-      <Arrow x1={CX} y1={178} x2={CX} y2={172} color={arrowColor} markerId="arr-tr" />
-
-      {/* Multi-Head Attention */}
-      <Box x={BX} y={214} w={BW} h={BH}
-        label="Multi-Head Attention" sublabel="Q, K, V projections"
+      {/* ── Multi-Head Attention ── */}
+      <Arrow x1={CX} y1={289} x2={CX} y2={291} color={ac} markerId="arr-tr" />
+      <Arrow x1={CX} y1={289} x2={CX} y2={290} color={ac} markerId="arr-tr" />
+      {/* real gap arrow */}
+      <line x1={CX} y1={330} x2={CX} y2={292} stroke={ac} strokeWidth={1.5} markerEnd={`url(#arr-tr)`} />
+      <Box x={BX} y={248} w={BW} h={40}
+        label="Multi-Head Self-Attention" sublabel="Q·Kᵀ/√d → softmax → ×V"
         bg={accent} textColor={textOn(accent)} rx={8} />
-      <Arrow x1={CX} y1={214} x2={CX} y2={208} color={arrowColor} markerId="arr-tr" />
+      <Arrow x1={CX} y1={248} x2={CX} y2={251} color={ac} markerId="arr-tr" />
 
-      {/* Output */}
-      <Arrow x1={CX} y1={98} x2={CX} y2={84} color={arrowColor} markerId="arr-tr" />
-      <Box x={BX} y={52} w={BW} h={30}
-        label="Linear + Softmax" bg={vt.isDark ? "#059669" : "#34d399"}
-        textColor={textOn("#34d399")} rx={8} />
+      {/* ── Add & Norm 1 ── */}
+      <line x1={CX} y1={247} x2={CX} y2={242} stroke={ac} strokeWidth={1.5} markerEnd={`url(#arr-tr)`} />
+      <Box x={BX} y={210} w={BW} h={30}
+        label="Add & LayerNorm ①" bg={neutralBg} textColor={vt.text} rx={6} />
 
-      {/* Residual connections */}
-      {[[218, 176], [174, 130]].map(([y1, y2], i) => (
-        <path key={i}
-          d={`M ${BX - 10} ${y1} L ${BX - 22} ${y1} L ${BX - 22} ${y2} L ${BX - 10} ${y2}`}
-          fill="none" stroke="#f59e0b" strokeWidth={1.5} strokeDasharray="4,2" />
-      ))}
-      <text x={BX - 28} y={168} fontSize={8} fill="#f59e0b"
-        transform={`rotate(-90,${BX-28},168)`}>skip</text>
+      {/* ── FFN ── */}
+      <line x1={CX} y1={209} x2={CX} y2={206} stroke={ac} strokeWidth={1.5} markerEnd={`url(#arr-tr)`} />
+      <Box x={BX} y={166} w={BW} h={38}
+        label="Feed-Forward Network" sublabel="Linear(ReLU(Linear(x)))  d→4d→d"
+        bg={purple} textColor="white" rx={8} />
 
-      <text x={W/2} y={H - 4} textAnchor="middle" fontSize={8} fill={vt.textMuted}>
-        Transformer Encoder: attention is O(n²) but parallelizable — no recurrence
+      {/* ── Add & Norm 2 ── */}
+      <line x1={CX} y1={165} x2={CX} y2={161} stroke={ac} strokeWidth={1.5} markerEnd={`url(#arr-tr)`} />
+      <Box x={BX} y={128} w={BW} h={30}
+        label="Add & LayerNorm ②" bg={neutralBg} textColor={vt.text} rx={6} />
+
+      {/* ── Output head ── */}
+      <line x1={CX} y1={127} x2={CX} y2={123} stroke={ac} strokeWidth={1.5} markerEnd={`url(#arr-tr)`} />
+      <Box x={BX} y={82} w={BW} h={38}
+        label="Linear + Softmax" sublabel="→ vocabulary / class logits"
+        bg={green} textColor={textOn(green)} rx={8} />
+      <line x1={CX} y1={81} x2={CX} y2={52} stroke={ac} strokeWidth={1.5} markerEnd={`url(#arr-tr)`} />
+      <Box x={BX} y={30} w={BW} h={26} label="Output: token probs / class"
+        bg={neutralBg} textColor={vt.text} rx={6} />
+
+      {/* ── Residual skip connections ── */}
+      {/* Skip around MHA: from before MHA (y=289) to after Add&Norm1 (y=240) */}
+      <path d={`M ${BX - 8} 289 L ${BX - 22} 289 L ${BX - 22} 240 L ${BX - 8} 240`}
+        fill="none" stroke="#f59e0b" strokeWidth={1.5} strokeDasharray="4,2" />
+      {/* Skip around FFN: from Add&Norm1 output (y=209) to Add&Norm2 (y=158) */}
+      <path d={`M ${BX - 8} 209 L ${BX - 22} 209 L ${BX - 22} 158 L ${BX - 8} 158`}
+        fill="none" stroke="#f59e0b" strokeWidth={1.5} strokeDasharray="4,2" />
+      <text x={BX - 30} y={220} fontSize={8} fill="#f59e0b" fontWeight="bold"
+        transform={`rotate(-90,${BX-30},220)`}>residual</text>
+
+      {/* ── BERT annotation ── */}
+      <rect x={W - 140} y={248} width={128} height={72} rx={8}
+        fill={vt.isDark ? "#1e3a5f30" : "#dbeafe50"} stroke="#3b82f6" strokeWidth={1} strokeDasharray="4,2" />
+      <text x={W - 76} y={264} textAnchor="middle" fontSize={9} fill="#3b82f6" fontWeight="bold">BERT uses encoder</text>
+      <text x={W - 76} y={278} textAnchor="middle" fontSize={8} fill="#3b82f6">bidirectional attention</text>
+      <text x={W - 76} y={292} textAnchor="middle" fontSize={8} fill="#3b82f6">[CLS] cls token</text>
+      <text x={W - 76} y={306} textAnchor="middle" fontSize={8} fill="#3b82f6">MLM + NSP pretrain</text>
+      <text x={W - 76} y={320} textAnchor="middle" fontSize={8} fill="#3b82f6">fine-tune: add head</text>
+
+      <text x={W/2} y={H - 6} textAnchor="middle" fontSize={8} fill={vt.textMuted}>
+        Transformer Encoder: O(n²) attention — fully parallelizable — no recurrence
       </text>
     </svg>
   );
@@ -955,65 +984,89 @@ function BiasVarianceArch({ accent, vt }: { accent: string; vt: VT }) {
   );
 }
 
-// 15. Multiclass (OvA / OvO) — fixed text layout
+// 15. Multiclass — two-row layout (OvA top, OvO bottom), all text inside boxes
 function MulticlassArch({ accent, vt }: { accent: string; vt: VT }) {
-  const W = 540, H = 210;
-  const arrowColor = vt.isDark ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.35)";
+  const W = 540, H = 250;
+  const ac = vt.isDark ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.35)";
+  const purple = vt.isDark ? "#7c3aed" : "#8b5cf6";
+  const green  = vt.isDark ? "#059669" : "#34d399";
+  const nb     = vt.isDark ? "#334155" : "#e2e8f0";
+
+  // Common classifier box dimensions (wide enough for all labels)
+  const BX = 14, BW = 230, BH = 24;
+
+  // OvA row: y range 8..118 (h=110)
+  const OVA_BG_Y = 8, OVA_H = 110;
+  const ovaYs = [26, 54, 82];
+
+  // OvO row: y range 126..236 (h=110)
+  const OVO_BG_Y = 126, OVO_H = 110;
+  const ovoYs = [144, 172, 200];
+
+  // Aggregation boxes on the right
+  const AGG_X = 258, AGG_W = 92, AGG_H = 52;
+  // Output boxes
+  const OUT_X = 360, OUT_W = 76;
 
   return (
     <svg viewBox={`0 0 ${W} ${H}`} className="w-full">
-      {ARROW_DEFS("arr-mc", arrowColor)}
+      {ARROW_DEFS("arr-mc", ac)}
 
-      {/* Input */}
-      <Box x={8} y={82} w={64} h={40} label="Input x" sublabel="features"
-        bg={vt.isDark ? "#334155" : "#e2e8f0"} textColor={vt.text} rx={8} />
-
-      {/* ── OvA section ─────────── */}
-      <rect x={76} y={14} width={170} height={170} rx={8}
-        fill={`${accent}06`} stroke={`${accent}20`} strokeWidth={1} strokeDasharray="4,3" />
-      <text x={161} y={30} textAnchor="middle" fontSize={9} fill={accent} fontWeight="bold">
-        One-vs-All (OvA)
+      {/* ── OvA section (top row) ── */}
+      <rect x={6} y={OVA_BG_Y} width={246} height={OVA_H} rx={8}
+        fill={`${accent}07`} stroke={`${accent}25`} strokeWidth={1} strokeDasharray="4,3" />
+      <text x={129} y={OVA_BG_Y + 14} textAnchor="middle" fontSize={9} fontWeight="bold" fill={accent}>
+        One-vs-All (OvA) — 3 classifiers
       </text>
-      {["A","B","C"].map((c, i) => {
-        const y = 38 + i * 46;
-        return (
-          <g key={`ova-${c}`}>
-            <Arrow x1={72} y1={102} x2={86} y2={y + 17} color={arrowColor} markerId="arr-mc" />
-            <Box x={86} y={y} w={96} h={34}
-              label={`Class ${c} vs Rest`}
-              bg={accent} textColor={textOn(accent)} rx={6} />
-            <text x={192} y={y + 22} fontSize={8} fill={vt.textMuted}>P(y={c}|x)</text>
-          </g>
-        );
-      })}
-      <Arrow x1={202} y1={102} x2={250} y2={102} color={arrowColor} markerId="arr-mc" />
-      <Box x={250} y={82} w={80} h={40} label="argmax" sublabel="→ class label"
-        bg={vt.isDark ? "#059669" : "#34d399"} textColor={textOn("#34d399")} rx={8} />
+      {["A","B","C"].map((c, i) => (
+        <Box key={`ova-${c}`} x={BX} y={ovaYs[i]} w={BW} h={BH}
+          label={`Class ${c}  vs  All Others  →  P(y=${c}|x)`}
+          bg={accent} textColor={textOn(accent)} rx={5} />
+      ))}
+      {/* Arrows from each OvA box to argmax */}
+      {ovaYs.map((y, i) => (
+        <Arrow key={`ova-arr-${i}`} x1={BX + BW} y1={y + BH/2}
+          x2={AGG_X} y2={OVA_BG_Y + OVA_H/2}
+          color={ac} markerId="arr-mc" />
+      ))}
+      <Box x={AGG_X} y={OVA_BG_Y + (OVA_H - AGG_H)/2} w={AGG_W} h={AGG_H}
+        label="argmax" sublabel="→ class ĉ"
+        bg={green} textColor={textOn(green)} rx={8} />
+      <Arrow x1={AGG_X + AGG_W} y1={OVA_BG_Y + OVA_H/2}
+        x2={OUT_X} y2={OVA_BG_Y + OVA_H/2}
+        color={ac} markerId="arr-mc" />
+      <Box x={OUT_X} y={OVA_BG_Y + (OVA_H - 36)/2} w={OUT_W} h={36}
+        label="Class A|B|C" sublabel="max softmax"
+        bg={nb} textColor={vt.text} rx={8} />
 
-      {/* ── OvO section ─────────── */}
-      <rect x={290} y={14} width={170} height={170} rx={8}
-        fill={`${vt.isDark ? "#7c3aed" : "#8b5cf6"}08`}
-        stroke={`${vt.isDark ? "#7c3aed" : "#8b5cf6"}25`} strokeWidth={1} strokeDasharray="4,3" />
-      <text x={375} y={30} textAnchor="middle" fontSize={9}
-        fill={vt.isDark ? "#7c3aed" : "#8b5cf6"} fontWeight="bold">
-        One-vs-One (OvO)
+      {/* ── OvO section (bottom row) ── */}
+      <rect x={6} y={OVO_BG_Y} width={246} height={OVO_H} rx={8}
+        fill={`${purple}08`} stroke={`${purple}25`} strokeWidth={1} strokeDasharray="4,3" />
+      <text x={129} y={OVO_BG_Y + 14} textAnchor="middle" fontSize={9} fontWeight="bold" fill={purple}>
+        One-vs-One (OvO) — C(C−1)/2 = 3 classifiers
       </text>
-      {[["A","B"],["A","C"],["B","C"]].map(([c1,c2], i) => {
-        const y = 38 + i * 46;
-        return (
-          <g key={`ovo-${c1}${c2}`}>
-            <Box x={296} y={y} w={86} h={34}
-              label={`${c1}  vs  ${c2}`}
-              bg={vt.isDark ? "#7c3aed" : "#8b5cf6"} textColor="white" rx={6} />
-            <Arrow x1={382} y1={y + 17} x2={416} y2={102} color={arrowColor} markerId="arr-mc" />
-          </g>
-        );
-      })}
-      <Box x={416} y={82} w={84} h={40} label="Majority" sublabel={`Vote (3 cls)`}
-        bg={vt.isDark ? "#059669" : "#34d399"} textColor={textOn("#34d399")} rx={8} />
+      {[["A","B"],["A","C"],["B","C"]].map(([c1,c2], i) => (
+        <Box key={`ovo-${c1}${c2}`} x={BX} y={ovoYs[i]} w={BW} h={BH}
+          label={`${c1}  vs  ${c2}  →  binary decision`}
+          bg={purple} textColor="white" rx={5} />
+      ))}
+      {ovoYs.map((y, i) => (
+        <Arrow key={`ovo-arr-${i}`} x1={BX + BW} y1={y + BH/2}
+          x2={AGG_X} y2={OVO_BG_Y + OVO_H/2}
+          color={ac} markerId="arr-mc" />
+      ))}
+      <Box x={AGG_X} y={OVO_BG_Y + (OVO_H - AGG_H)/2} w={AGG_W} h={AGG_H}
+        label="Majority Vote" sublabel="most votes wins"
+        bg={green} textColor={textOn(green)} rx={8} />
+      <Arrow x1={AGG_X + AGG_W} y1={OVO_BG_Y + OVO_H/2}
+        x2={OUT_X} y2={OVO_BG_Y + OVO_H/2}
+        color={ac} markerId="arr-mc" />
+      <Box x={OUT_X} y={OVO_BG_Y + (OVO_H - 36)/2} w={OUT_W} h={36}
+        label="Class A|B|C" sublabel="by vote count"
+        bg={nb} textColor={vt.text} rx={8} />
 
-      <text x={W/2} y={H - 4} textAnchor="middle" fontSize={9} fill={vt.textMuted}>
-        OvA: C binary classifiers · OvO: C(C-1)/2 classifiers · Softmax: direct C-class output
+      <text x={W/2} y={H - 6} textAnchor="middle" fontSize={9} fill={vt.textMuted}>
+        OvA: C binary classifiers  ·  OvO: C(C−1)/2  ·  Softmax: direct multi-class output
       </text>
     </svg>
   );
@@ -1480,6 +1533,185 @@ function VAEArch({ accent, vt }: { accent: string; vt: VT }) {
   );
 }
 
+// 24. CatBoost — ordered boosting + symmetric (oblivious) trees
+function CatBoostArch({ accent, vt }: { accent: string; vt: VT }) {
+  const W = 540, H = 210;
+  const ac = vt.isDark ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.35)";
+  const nb = vt.isDark ? "#334155" : "#e2e8f0";
+
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} className="w-full">
+      {ARROW_DEFS("arr-cat", ac)}
+
+      {/* ── Pipeline row ── */}
+      {/* Dataset */}
+      <Box x={6} y={60} w={62} h={50} label="Data" sublabel="cat+num"
+        bg={nb} textColor={vt.text} rx={8} />
+      <Arrow x1={68} y1={85} x2={88} y2={85} color={ac} markerId="arr-cat" />
+
+      {/* Ordered Target Statistics (key differentiator) */}
+      <Box x={88} y={44} w={118} h={82}
+        label="Ordered TS" sublabel={"cat feature encoding\nno target leakage"}
+        bg={nb} textColor={vt.text} rx={8} />
+      <text x={147} y={100} textAnchor="middle" fontSize={7.5} fill={accent} fontFamily="monospace">
+        TS(xᵢ) = Σy[xⱼ=xᵢ,j&lt;i] / count
+      </text>
+      <Arrow x1={206} y1={85} x2={226} y2={85} color={ac} markerId="arr-cat" />
+
+      {/* Ordered Boosting */}
+      <Box x={226} y={52} w={110} h={66}
+        label="Ordered Boosting" sublabel="permuted dataset: train hₜ on Dₜ ≠ Dₜ₋₁"
+        bg={accent} textColor={textOn(accent)} rx={8} />
+      <Arrow x1={336} y1={85} x2={356} y2={85} color={ac} markerId="arr-cat" />
+
+      {/* Symmetric (Oblivious) Tree */}
+      <rect x={356} y={34} width={118} height={102} rx={8}
+        fill={`${accent}12`} stroke={`${accent}35`} strokeWidth={1.5} />
+      <text x={415} y={50} textAnchor="middle" fontSize={9} fill={accent} fontWeight="bold">Symmetric Tree</text>
+      {/* Tree structure — same split at each level */}
+      {/* Level 0 root */}
+      <rect x={398} y={56} width={34} height={18} rx={3} fill={accent + "50"} />
+      <text x={415} y={68} textAnchor="middle" fontSize={7} fill={vt.text}>x≤t</text>
+      {/* Level 1 — same split condition */}
+      {[380, 430].map((cx, i) => (
+        <g key={i}>
+          <line x1={415} y1={74} x2={cx} y2={84} stroke={ac} strokeWidth={1} />
+          <rect x={cx - 16} y={84} width={32} height={14} rx={3} fill={accent + "35"} />
+          <text x={cx} y={94} textAnchor="middle" fontSize={7} fill={vt.text}>x≤t</text>
+          {/* Level 2 leaves */}
+          {[cx - 12, cx + 12].map((lx, j) => (
+            <g key={j}>
+              <line x1={cx} y1={98} x2={lx} y2={108} stroke={ac} strokeWidth={0.8} />
+              <rect x={lx - 9} y={108} width={18} height={14} rx={3}
+                fill={vt.isDark ? "#059669" : "#34d399"} opacity={0.7} />
+              <text x={lx} y={118} textAnchor="middle" fontSize={6.5} fill="#fff">leaf</text>
+            </g>
+          ))}
+        </g>
+      ))}
+      <text x={415} y={143} textAnchor="middle" fontSize={7} fill={vt.textMuted}>same split at each level</text>
+
+      <Arrow x1={474} y1={85} x2={502} y2={85} color={ac} markerId="arr-cat" />
+      <Box x={502} y={68} w={30} h={34} label="ŷ" sublabel=""
+        bg={vt.isDark ? "#059669" : "#34d399"} textColor={textOn("#059669")} rx={6} />
+
+      {/* Key features row */}
+      {[
+        { x: 6,   label: "GPU training", sub: "fast" },
+        { x: 148, label: "No tuning needed", sub: "auto cat encoding" },
+        { x: 300, label: "Ordered boosting", sub: "prevents overfitting" },
+      ].map(f => (
+        <Box key={f.label} x={f.x} y={158} w={136} h={34}
+          label={f.label} sublabel={f.sub}
+          bg={nb} textColor={vt.text} rx={6} />
+      ))}
+
+      <text x={W/2} y={H - 4} textAnchor="middle" fontSize={9} fill={vt.textMuted}>
+        CatBoost: ordered boosting + symmetric trees — best out-of-box for categorical-heavy datasets
+      </text>
+    </svg>
+  );
+}
+
+// 25. BERT — bidirectional encoder
+function BERTArch({ accent, vt }: { accent: string; vt: VT }) {
+  const W = 540, H = 230;
+  const ac = vt.isDark ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.35)";
+  const nb = vt.isDark ? "#334155" : "#e2e8f0";
+  const green = vt.isDark ? "#059669" : "#34d399";
+  const purple = vt.isDark ? "#7c3aed" : "#8b5cf6";
+  const blue = "#3b82f6";
+
+  const tokens = ["[CLS]", "The", "cat", "[MASK]", "[SEP]"];
+  const CELL_W = 72, CELL_H = 28, TOK_Y = 162;
+  const totalW = tokens.length * CELL_W;
+  const startX = (W - totalW) / 2;
+
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} className="w-full">
+      {ARROW_DEFS("arr-bert", ac)}
+
+      {/* Title */}
+      <text x={W/2} y={14} textAnchor="middle" fontSize={10} fill={accent} fontWeight="bold">
+        BERT: Bidirectional Encoder Representations from Transformers
+      </text>
+
+      {/* Input tokens */}
+      {tokens.map((tok, i) => {
+        const x = startX + i * CELL_W;
+        const isCLS  = tok === "[CLS]";
+        const isMASK = tok === "[MASK]";
+        const isSEP  = tok === "[SEP]";
+        const bg = isCLS ? accent : isMASK ? "#ef4444" : isSEP ? purple : nb;
+        const tc = isCLS || isMASK || isSEP ? textOn(bg) : vt.text;
+        return (
+          <g key={tok}>
+            <rect x={x + 2} y={TOK_Y} width={CELL_W - 4} height={CELL_H} rx={5}
+              fill={bg} stroke={isMASK ? "#ef4444" : "transparent"} strokeWidth={1.5} />
+            <text x={x + CELL_W/2} y={TOK_Y + CELL_H/2 + 4}
+              textAnchor="middle" fontSize={9} fontWeight="bold" fill={tc}>{tok}</text>
+            {/* Token embedding → encoder arrow */}
+            <line x1={x + CELL_W/2} y1={TOK_Y} x2={x + CELL_W/2} y2={94}
+              stroke={ac} strokeWidth={1} />
+          </g>
+        );
+      })}
+
+      {/* Bidirectional arrows between tokens at embedding level */}
+      {tokens.slice(0, -1).map((_, i) => {
+        const x1 = startX + i * CELL_W + CELL_W - 4;
+        const x2 = startX + (i+1) * CELL_W + 4;
+        const my = TOK_Y + CELL_H + 8;
+        return (
+          <g key={i}>
+            <line x1={x1} y1={my} x2={x2} y2={my} stroke={blue} strokeWidth={1}
+              markerEnd={`url(#arr-bert)`} markerStart={`url(#arr-bert)`} opacity={0.5} />
+          </g>
+        );
+      })}
+      <text x={W/2} y={TOK_Y + CELL_H + 22} textAnchor="middle" fontSize={8} fill={blue}>
+        ← bidirectional attention: all tokens attend to all tokens simultaneously →
+      </text>
+
+      {/* Transformer encoder block (N=12 for BERT-base) */}
+      <rect x={startX - 8} y={50} width={totalW + 16} height={42} rx={8}
+        fill={`${accent}10`} stroke={`${accent}35`} strokeWidth={1.5} strokeDasharray="5,3" />
+      <text x={W/2} y={67} textAnchor="middle" fontSize={9} fill={accent} fontWeight="bold">
+        Transformer Encoder × 12 layers (BERT-base)   |   × 24 (BERT-large)
+      </text>
+      <text x={W/2} y={82} textAnchor="middle" fontSize={8} fill={vt.textMuted}>
+        MH-Attention (12 heads) → Add&Norm → FFN(3072) → Add&Norm
+      </text>
+
+      {/* Output representations */}
+      <text x={W/2} y={46} textAnchor="middle" fontSize={9} fill={accent} fontWeight="bold">
+        Contextual token representations
+      </text>
+
+      {/* Pre-training tasks */}
+      <rect x={6} y={10} width={160} height={34} rx={6}
+        fill={vt.isDark ? "#7f1d1d30" : "#fee2e220"} stroke="#ef4444" strokeWidth={1} />
+      <text x={86} y={24} textAnchor="middle" fontSize={8} fill="#ef4444" fontWeight="bold">MLM: Masked LM</text>
+      <text x={86} y={37} textAnchor="middle" fontSize={7} fill="#ef4444">predict [MASK] tokens</text>
+
+      <rect x={W - 166} y={10} width={160} height={34} rx={6}
+        fill={`${purple}20`} stroke={purple} strokeWidth={1} />
+      <text x={W - 86} y={24} textAnchor="middle" fontSize={8} fill={purple} fontWeight="bold">NSP: Next Sentence</text>
+      <text x={W - 86} y={37} textAnchor="middle" fontSize={7} fill={purple}>Is B the next sentence?</text>
+
+      {/* Fine-tune head */}
+      <rect x={startX} y={6} width={CELL_W - 4} height={22} rx={4}
+        fill={green} />
+      <text x={startX + CELL_W/2 - 2} y={20} textAnchor="middle" fontSize={7.5}
+        fill={textOn(green)} fontWeight="bold">[CLS]→task</text>
+
+      <text x={W/2} y={H - 5} textAnchor="middle" fontSize={9} fill={vt.textMuted}>
+        BERT pre-trains with MLM + NSP → fine-tune with [CLS] head for classification, NER, QA, etc.
+      </text>
+    </svg>
+  );
+}
+
 // ── Main export ───────────────────────────────────────────────────────────────
 export default function ArchDiagram({
   type,
@@ -1497,6 +1729,7 @@ export default function ArchDiagram({
     "gradient-boosting":  "Gradient Boosting Architecture",
     "xgboost":            "XGBoost Architecture",
     "lightgbm":           "LightGBM — Leaf-wise Growth",
+    "catboost":           "CatBoost — Ordered Boosting + Symmetric Trees",
     "bagging":            "Bagging (Bootstrap Aggregating) Architecture",
     "svm":                "Support Vector Machine Geometry",
     "knn":                "K-Nearest Neighbors Algorithm",
@@ -1506,6 +1739,7 @@ export default function ArchDiagram({
     "resnet":             "ResNet — Residual Connections",
     "vit":                "Vision Transformer (ViT)",
     "transformer":        "Transformer Encoder Architecture",
+    "bert":               "BERT — Bidirectional Encoder Representations",
     "rnn":                "RNN — Recurrent Neural Network",
     "lstm":               "LSTM Cell Architecture",
     "gru":                "GRU — Gated Recurrent Unit",
@@ -1525,6 +1759,7 @@ export default function ArchDiagram({
       case "gradient-boosting":  return <GradientBoostingArch {...props} />;
       case "xgboost":            return <XGBoostArch {...props} />;
       case "lightgbm":           return <LightGBMArch {...props} />;
+      case "catboost":           return <CatBoostArch {...props} />;
       case "bagging":            return <BaggingArch {...props} />;
       case "svm":                return <SVMArch {...props} />;
       case "knn":                return <KNNArch {...props} />;
@@ -1534,6 +1769,7 @@ export default function ArchDiagram({
       case "resnet":             return <ResNetArch {...props} />;
       case "vit":                return <ViTArch {...props} />;
       case "transformer":        return <TransformerArch {...props} />;
+      case "bert":               return <BERTArch {...props} />;
       case "rnn":                return <RNNArch {...props} />;
       case "lstm":               return <LSTMArch {...props} />;
       case "gru":                return <GRUArch {...props} />;

@@ -171,8 +171,12 @@ export default function BiasVarianceViz({ accentColor = "#10b981" }: { accentCol
           <span className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
             Bias–Variance Tradeoff
           </span>
-          <span className="text-xs ml-2" style={{ color: "var(--text-muted)" }}>
-            degree {degree} polynomial · real fitting on noisy data
+          <span className="text-xs ml-2" style={{ color: diagnosis.color }}>
+            {degree <= 3
+              ? `degree ${degree} — high bias · fails to capture sine curve`
+              : degree >= 8
+              ? `degree ${degree} — high variance · memorising noise`
+              : `degree ${degree} — balanced fit on noisy data`}
           </span>
         </div>
         <button

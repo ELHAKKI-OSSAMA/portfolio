@@ -134,37 +134,38 @@ function ResNetTab({ step, accentColor, vt }: {
   vt: ReturnType<typeof import("@/hooks/useVizTheme").useVizTheme>;
 }) {
   const W = 520, H = 240;
-  const fmCellSize = 15;
-  const fmSize = 6 * fmCellSize;
+  const fmCellSize = 11;
+  const fmSize = 6 * fmCellSize; // 66px
 
-  // Layout: FM at left (x=28), blocks in middle, FM at right
-  const fmX = 28, fmY = (H - fmSize) / 2 - 10;
-  const blockStartX = 130, blockY = H / 2 - BLOCK_H / 2 - 14;
-  const bSpacing = 84;
+  // Tighter layout so output FM fits within W=520
+  const fmX = 8, fmY = (H - fmSize) / 2 - 8; // fmY≈79
+  const blockStartX = 90;
+  const bSpacing = 70;
+  const BW_BLOCK = 62; // local block width override
 
   // Block positions
   const blocks = [
     { label: "Conv 3×3", x: blockStartX },
     { label: "BN + ReLU", x: blockStartX + bSpacing },
     { label: "Conv 3×3", x: blockStartX + bSpacing * 2 },
-    { label: "BN", x: blockStartX + bSpacing * 3 },
+    { label: "BN",       x: blockStartX + bSpacing * 3 },
   ];
 
-  const plusX = blockStartX + bSpacing * 4 - 10;
-  const plusY = blockY + BLOCK_H / 2;
-  const reluX = plusX + 40;
-  const outFmX = reluX + 55;
+  // blockStartX + 4*bSpacing - 6 = 90+280-6 = 364
+  const plusX = blockStartX + bSpacing * 4 - 6;   // 364
+  const plusY = H / 2 - BLOCK_H / 2 - 14 + BLOCK_H / 2; // same as blockY + BLOCK_H/2
+  const blockY = H / 2 - BLOCK_H / 2 - 14;
+  const reluX = plusX + 32;   // 396
+  const outFmX = reluX + BW_BLOCK + 4; // 462 — fits in 520 ✓
 
   const skipActive = step >= 4;
   const outActive = step >= 5;
 
-  // Which FM to show on left / right
-  const leftData = step === 0 ? INPUT_FM : step <= 2 ? AFTER_CONV1 : AFTER_CONV2;
   const rightData = OUTPUT_FM;
 
   return (
     <svg viewBox={`0 0 ${W} ${H}`} className="w-full">
-      {/* Input feature map */}
+      {/* Input feature map label */}
       <text x={fmX + fmSize / 2} y={fmY - 8} textAnchor="middle" fontSize={9} fill={vt.textMuted}>
         Input x
       </text>
@@ -176,7 +177,7 @@ function ResNetTab({ step, accentColor, vt }: {
         highlightColor={accentColor}
       />
 
-      {/* Arrow: input → first conv */}
+      {/* Arrow: input FM → first conv */}
       <Arrow x1={fmX + fmSize + 4} y1={fmY + fmSize / 2}
         x2={blockStartX - 4} y2={blockY + BLOCK_H / 2}
         color={vt.axis} />
@@ -188,8 +189,8 @@ function ResNetTab({ step, accentColor, vt }: {
             active={step >= i + 1} vt={vt} />
           {i < blocks.length - 1 && (
             <Arrow
-              x1={b.x + BLOCK_W} y1={blockY + BLOCK_H / 2}
-              x2={b.x + bSpacing} y2={blockY + BLOCK_H / 2}
+              x1={b.x + BW_BLOCK} y1={blockY + BLOCK_H / 2}
+              x2={b.x + bSpacing}  y2={blockY + BLOCK_H / 2}
               color={step >= i + 2 ? vt.axis : vt.border}
             />
           )}
@@ -198,25 +199,25 @@ function ResNetTab({ step, accentColor, vt }: {
 
       {/* Arrow: last block → + node */}
       <Arrow
-        x1={blockStartX + bSpacing * 3 + BLOCK_W} y1={blockY + BLOCK_H / 2}
-        x2={plusX - 4} y2={plusY}
+        x1={blockStartX + bSpacing * 3 + BW_BLOCK} y1={blockY + BLOCK_H / 2}
+        x2={plusX - 10} y2={plusY}
         color={step >= 5 ? vt.axis : vt.border}
       />
 
       {/* Skip connection (dashed arc over blocks) */}
       <motion.path
-        d={`M ${fmX + fmSize + 4},${fmY + fmSize / 2 - 10} C ${blockStartX + bSpacing},${blockY - 42} ${plusX - 20},${blockY - 42} ${plusX - 2},${plusY - 4}`}
+        d={`M ${fmX + fmSize + 4},${fmY + fmSize / 2 - 8} C ${blockStartX + bSpacing},${blockY - 38} ${plusX - 16},${blockY - 38} ${plusX - 8},${plusY - 10}`}
         fill="none" stroke="#f59e0b" strokeWidth={2} strokeDasharray="6,4"
         animate={{ opacity: skipActive ? 1 : 0.25 }}
         transition={{ duration: 0.4 }}
       />
-      <text x={blockStartX + bSpacing * 1.5 + BLOCK_W / 2} y={blockY - 46}
+      <text x={blockStartX + bSpacing * 1.8} y={blockY - 40}
         textAnchor="middle" fontSize={8} fill="#f59e0b" opacity={skipActive ? 0.9 : 0.3}>
         skip: x
       </text>
 
       {/* + node */}
-      <motion.circle cx={plusX} cy={plusY} r={12}
+      <motion.circle cx={plusX} cy={plusY} r={11}
         fill={step >= 5 ? accentColor + "30" : "transparent"}
         stroke={step >= 5 ? accentColor : vt.border}
         strokeWidth={1.5}
@@ -224,15 +225,15 @@ function ResNetTab({ step, accentColor, vt }: {
       />
       <text x={plusX} y={plusY + 5} textAnchor="middle" fontSize={14} fill={step >= 5 ? accentColor : vt.textFaint}>+</text>
 
-      {/* ReLU */}
-      <Arrow x1={plusX + 13} y1={plusY} x2={reluX - 4} y2={blockY + BLOCK_H / 2} color={step >= 5 ? vt.axis : vt.border} />
+      {/* Arrow: + → ReLU */}
+      <Arrow x1={plusX + 12} y1={plusY} x2={reluX - 4} y2={blockY + BLOCK_H / 2} color={step >= 5 ? vt.axis : vt.border} />
       <Block x={reluX} y={blockY} label="ReLU" color="#22c55e" active={outActive} vt={vt} />
 
-      {/* Output FM */}
-      <Arrow x1={reluX + BLOCK_W + 4} y1={blockY + BLOCK_H / 2} x2={outFmX - 4} y2={fmY + fmSize / 2} color={outActive ? vt.axis : vt.border} />
+      {/* Arrow: ReLU → output FM */}
+      <Arrow x1={reluX + BW_BLOCK + 4} y1={blockY + BLOCK_H / 2} x2={outFmX - 4} y2={fmY + fmSize / 2} color={outActive ? vt.axis : vt.border} />
       <motion.g animate={{ opacity: outActive ? 1 : 0.25 }} transition={{ duration: 0.4 }}>
         <text x={outFmX + fmSize / 2} y={fmY - 8} textAnchor="middle" fontSize={9} fill={vt.textMuted}>
-          Output
+          F(x)+x
         </text>
         <FeatureMap data={rightData} x={outFmX} y={fmY} cellSize={fmCellSize} vt={vt}
           highlight={outActive} highlightColor="#22c55e" />
@@ -240,7 +241,7 @@ function ResNetTab({ step, accentColor, vt }: {
 
       {/* Formula */}
       <text x={W / 2} y={H - 12} textAnchor="middle" fontSize={9} fill={vt.textMuted}>
-        F(x) + x = output (residual mapping) — gradients flow through skip path unchanged
+        F(x) + x  →  gradients flow through skip path unchanged  →  train 100s of layers
       </text>
     </svg>
   );

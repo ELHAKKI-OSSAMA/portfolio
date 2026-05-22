@@ -167,6 +167,11 @@ export default function LSTMViz({ accentColor = "#a855f7" }: { accentColor?: str
       </div>
 
       <svg viewBox={`0 0 ${W} ${H}`} className="w-full">
+        <defs>
+          <marker id="arr-lstm-arrow" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto">
+            <path d="M0,0 L0,6 L7,3 Z" fill={vt.axis} />
+          </marker>
+        </defs>
 
         {/* ── CONVEYOR BELT: cell state ── */}
         {/* Background rail */}
@@ -211,7 +216,7 @@ export default function LSTMViz({ accentColor = "#a855f7" }: { accentColor?: str
 
         {/* Arrow from last cell to output */}
         <line x1={W - PAD - 10} y1={TRACK_Y} x2={W - PAD - 2} y2={TRACK_Y}
-          stroke={vt.axis} strokeWidth={1} markerEnd="url(#arr)" />
+          stroke={vt.axis} strokeWidth={1} markerEnd="url(#arr-lstm-arrow)" />
 
         {/* ── TOKEN RIBBON ── */}
         {TOKENS.map((tok, ti) => {

@@ -245,7 +245,7 @@ shap_values = explainer.shap_values(X_test)`,
     id: "gradient-boosting",
     tagline: "Many small corrections beat one big guess — sequentially chasing the residuals",
     accentColor: "#f59e0b",
-    visualization: "gradient-boosting",
+    visualization: "gradient-boosting-all",
     keyFormulas: [
       { name: "Boosting Ensemble", latex: "F_M(x) = \\sum_{m=0}^{M} \\gamma_m h_m(x)", meaning: "Final prediction = sum of M weak learners, each weighted by γ" },
       { name: "Pseudo-Residuals", latex: "r_{im} = -\\left[\\frac{\\partial \\mathcal{L}(y_i, F(x_i))}{\\partial F(x_i)}\\right]_{F=F_{m-1}}", meaning: "Negative gradient of loss — what the next tree should learn" },
@@ -649,6 +649,9 @@ optimizer = optim.AdamW([
       { name: "F1 Score", latex: "F_1 = \\frac{2 \\cdot \\text{Precision} \\cdot \\text{Recall}}{\\text{Precision} + \\text{Recall}} = \\frac{2\\,TP}{2\\,TP + FP + FN}", meaning: "Harmonic mean of precision and recall" },
       { name: "AUC-ROC", latex: "\\text{AUC} = \\int_0^1 \\text{TPR}(\\text{FPR}) \\, d(\\text{FPR})", meaning: "Probability that a random positive ranks higher than a random negative" },
       { name: "MCC", latex: "\\text{MCC} = \\frac{TP \\cdot TN - FP \\cdot FN}{\\sqrt{(TP+FP)(TP+FN)(TN+FP)(TN+FN)}}", meaning: "Matthews Correlation Coefficient — best single metric for imbalance" },
+      { name: "RMSE", latex: "\\text{RMSE} = \\sqrt{\\frac{1}{n}\\sum_{i=1}^{n}(y_i - \\hat{y}_i)^2}", meaning: "Root Mean Squared Error — penalizes large errors, same units as target" },
+      { name: "R² Score", latex: "R^2 = 1 - \\frac{\\sum(y_i - \\hat{y}_i)^2}{\\sum(y_i - \\bar{y})^2}", meaning: "Fraction of variance explained; 1=perfect, 0=predict mean, <0=worse than mean" },
+      { name: "MAE", latex: "\\text{MAE} = \\frac{1}{n}\\sum_{i=1}^{n}|y_i - \\hat{y}_i|", meaning: "Mean Absolute Error — robust to outliers, interpretable in target units" },
     ],
     sections: [
       {
@@ -710,6 +713,37 @@ f1s = [f1_score(y_train, oof_probs > t) for t in thresholds]
 best_threshold = thresholds[np.argmax(f1s)]
 print(f"Optimal threshold: {best_threshold:.3f}, F1: {max(f1s):.4f}")`,
         language: "python",
+      },
+      {
+        type: "comparison",
+        heading: "Regression Metrics: When MSE Isn't Enough",
+        text: "Classification has accuracy, F1, AUC. Regression has a whole family of metrics — each sensitive to different types of errors. Choosing the wrong one can hide catastrophic failures in your model.",
+        steps: [
+          "MAE (Mean Absolute Error): Σ|yᵢ−ŷᵢ|/n — robust to outliers, same units as target, intuitive. Lower is better.",
+          "MSE (Mean Squared Error): Σ(yᵢ−ŷᵢ)²/n — penalizes large errors heavily. Differentiable everywhere. Lower is better.",
+          "RMSE: √MSE — same units as target, penalizes large errors. The most common regression metric in Kaggle.",
+          "R² (coefficient of determination): 1 − MSE/Var(y) — fraction of variance explained. 1=perfect, 0=predicts mean, <0=worse than mean.",
+          "MAPE: Σ|yᵢ−ŷᵢ|/yᵢ/n — percentage error. Intuitive for business. Undefined when yᵢ=0, biased toward small values.",
+          "RMSLE (log-scale RMSE): √Σ(log(ŷ+1)−log(y+1))²/n — robust to outliers, penalizes under-predictions. Used for count data.",
+          "Huber Loss: quadratic for small errors, linear for large — best of MAE+MSE, robust to outliers AND differentiable.",
+        ],
+      },
+      {
+        type: "comparison",
+        heading: "Ranking & Calibration Metrics",
+        text: "Beyond point prediction accuracy, models must sometimes rank correctly (recommendation, search) or produce well-calibrated probabilities (medical risk, finance).",
+        steps: [
+          "Spearman ρ: rank correlation between predicted and actual — measures monotone relationship, not magnitude.",
+          "NDCG (Normalized Discounted Cumulative Gain): graded relevance, position-discounted. Used in search/recommendation.",
+          "Calibration (ECE): Expected Calibration Error — do confidence=80% predictions come true 80% of the time?",
+          "Brier Score: MSE on probabilities for binary classification — lower is better. Good for probabilistic forecasts.",
+          "Log-Loss (Cross-Entropy): −Σyᵢ·log(pᵢ)+(1−yᵢ)·log(1−pᵢ) — penalizes confident wrong predictions heavily.",
+        ],
+      },
+      {
+        type: "insight",
+        heading: "Metric Choice is a Business Decision",
+        callout: "Rule: choose the metric that matches the cost of errors in your application. RMSE for house prices (large errors matter more). MAE for delivery time (outlier days don't change business behavior). MAPE when relative error matters. R² to explain variance explained to stakeholders. AUC when class balance changes. F1 when both FP and FN have costs. MCC for the most balanced single metric on imbalanced data.",
       },
     ],
   },
