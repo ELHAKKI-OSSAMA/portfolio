@@ -5,7 +5,7 @@ export * from './experience';
 export * from './education';
 export * from './certifications';
 export * from './achievements';
-export * from './projects';
+export * from './projects/index';
 export * from './skills';
 export * from './services';
 export * from './learningTopics';

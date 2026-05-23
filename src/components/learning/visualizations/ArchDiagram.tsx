@@ -7,8 +7,8 @@
 
 import { useVizTheme }                                         from "@/hooks/useVizTheme";
 import { LinearRegressionArch, SVMArch, KNNArch, SVRArch, MLPArch } from "./arch/classicMLArch";
-import { DecisionTreeArch, GradientBoostingArch, BaggingArch,
-         RandomForestArch, XGBoostArch, LightGBMArch, CatBoostArch } from "./arch/treesArch";
+import { DecisionTreeArch, GradientBoostingArch, BaggingArch } from "./arch/treesClassicArch";
+import { RandomForestArch, XGBoostArch, LightGBMArch, CatBoostArch } from "./arch/treesEnsembleArch";
 import { RNNArch, LSTMArch, GRUArch }                         from "./arch/sequenceArch";
 import { CNNArch, ResNetArch, ViTArch }                       from "./arch/visionArch";
 import { TransformerArch, BERTArch }                          from "./arch/transformerArch";
