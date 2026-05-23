@@ -1,0 +1,80 @@
+# Ossama Elhakki — AI Engineer & ML Systems Builder
+# Website: https://ismmax.com
+# Email: ossamaelhhaki@gmail.com
+# LinkedIn: https://www.linkedin.com/in/elhakki-ossama-985b64190/
+# GitHub: https://github.com/ELHAKKI-OSSAMA
+# Kaggle: https://www.kaggle.com/ossamaelhakk/code
+# Location: Morocco
+
+## Who is Ossama Elhakki?
+
+Ossama Elhakki (Arabic: أسامة الحقّي) is an AI Engineer and ML Systems Builder based in Morocco.
+He specializes in machine learning, computer vision, natural language processing (NLP), and AI automation.
+He has completed 35+ ML projects across fraud detection, medical imaging, NLP, and generative AI.
+
+## Core Expertise
+
+- Machine Learning (supervised, unsupervised, deep learning)
+- Computer Vision (CNNs, object detection, medical imaging, Stable Diffusion, ControlNet)
+- Natural Language Processing (transformers, BERT, sentiment analysis, text classification)
+- MLOps (model deployment, FastAPI, Docker, CI/CD pipelines)
+- AI Automation (n8n workflows, autonomous AI agents, LangChain, RAG systems)
+- Full-Stack AI Applications (Next.js, React, FastAPI, PostgreSQL)
+- Generative AI (Stable Diffusion, ComfyUI, image generation pipelines)
+
+## Professional Experience
+
+### AI Engineer & Full-Stack Developer — Ofoto (Feb 2025 – Oct 2025)
+- Deployed Stable Diffusion image generation pipeline in production
+- Reduced AI inference latency by 35% through model optimization and GPU caching
+- Built system supporting 500+ concurrent AI generation requests
+- Achieved 99.9% uptime on production AI infrastructure
+- Developed full-stack web application with Vue.js frontend and FastAPI backend
+
+## Education
+
+- Master's Degree in Distributed Systems & AI — ENSET Mohammedia (2023–2025)
+- Bachelor's Degree in Applied Mathematics & Computer Science — FST Mohammedia (2020–2023)
+
+## Key Projects
+
+1. Ofoto AI Image Generator — Stable Diffusion production deployment (2025)
+2. Medical Image Analysis — CNN-based tumor detection, 95.2% accuracy
+3. Fraud Detection System — XGBoost + neural networks on 1M+ transactions
+4. Sentiment Analysis Pipeline — BERT fine-tuning, 94% accuracy
+5. Autonomous AI Agents — n8n + LangChain research automation
+6. Real-Time Object Detection — YOLO implementation, 32 FPS
+7. Customer Churn Prediction — 89% accuracy, $2M revenue retention
+8. Arabic NLP Toolkit — Moroccan Arabic dialect support
+9. Drug Discovery ML — molecular property prediction with GNN
+
+## Skills
+
+Programming: Python, JavaScript/TypeScript, SQL, R
+Frameworks: PyTorch, TensorFlow, scikit-learn, FastAPI, Next.js, React, Vue.js
+AI/ML: Transformers, CNNs, RNNs, LSTMs, GANs, Stable Diffusion, ControlNet
+Tools: Docker, n8n, LangChain, ComfyUI, Tableau, Git
+Platforms: Kaggle, Google Colab, AWS, Azure, Hugging Face
+
+## Certifications
+
+- Google AI Essentials
+- HackerRank SQL (Advanced)
+- HackerRank Python (Advanced)
+- Machine Learning Specialization — Coursera/DeepLearning.AI
+- n8n Certified Developer
+- ComfyUI Advanced Workflows
+
+## Available For
+
+- Remote AI/ML Engineering positions worldwide
+- Freelance ML projects
+- AI consulting and system design
+- Computer vision and NLP contracts
+- AI automation and workflow optimization
+
+## Contact
+
+Email: ossamaelhhaki@gmail.com
+Website: https://ismmax.com
+LinkedIn: https://www.linkedin.com/in/elhakki-ossama-985b64190/
