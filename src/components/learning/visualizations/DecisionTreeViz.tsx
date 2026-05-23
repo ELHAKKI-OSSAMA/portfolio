@@ -5,283 +5,373 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ChevronRight, RotateCcw, Play } from "lucide-react";
 import { useVizTheme } from "@/hooks/useVizTheme";
 
-const W = 520, H = 300, PAD = 36;
+// ── Dimensions ────────────────────────────────────────────────────────────────
+const W = 520, H = 300, PAD = 44;
+const X_MIN = -3.3, X_MAX = 3.3;
+const Y_MIN = -4.0, Y_MAX = 4.0;
 
-const SEED = (i: number) => (Math.sin(i * 37.3 + 11.7) * 0.5 + 0.5);
-const DATA: Array<{ x: number; y: number; label: 0 | 1 }> = [
-  ...Array.from({ length: 18 }, (_, i) => ({
-    x: Math.max(0.3, Math.min(9.7, 2 + SEED(i) * 3.5)),
-    y: Math.max(0.3, Math.min(9.7, 6.5 + SEED(i + 100) * 3)),
-    label: 0 as const,
-  })),
-  ...Array.from({ length: 18 }, (_, i) => ({
-    x: Math.max(0.3, Math.min(9.7, 5.5 + SEED(i + 200) * 3.5)),
-    y: Math.max(0.3, Math.min(9.7, 1 + SEED(i + 300) * 4)),
-    label: 1 as const,
-  })),
-];
+// ── Deterministic seeded RNG ──────────────────────────────────────────────────
+const seeded = (i: number, s: number) =>
+  Math.abs(Math.sin(i * 37.3 + s * 11.7) * 0.5 + 0.5);
 
-function gini(pts: typeof DATA) {
+// ── Dataset: 80 pts, x ∈ [-3.1, 3.1], sklearn-style noise ───────────────────
+// y1 = π·sin(x) + noise,  y2 = π·cos(x) + noise
+// every 5th sample gets an extra ±0.5 kick (mirrors sklearn's y[::5] trick)
+const N = 80;
+const DATA = Array.from({ length: N }, (_, i) => {
+  const x = -3.1 + (i / (N - 1)) * 6.2 + (seeded(i, 0) - 0.5) * 0.06;
+  const xc = Math.max(-3.1, Math.min(3.1, x));
+  const n1 = (seeded(i, 2) - 0.5) * 0.3 + (i % 5 === 0 ? (seeded(i, 4) - 0.5) * 1.0 : 0);
+  const n2 = (seeded(i, 3) - 0.5) * 0.3 + (i % 5 === 0 ? (seeded(i, 5) - 0.5) * 1.0 : 0);
+  return { x: xc, y1: Math.PI * Math.sin(xc) + n1, y2: Math.PI * Math.cos(xc) + n2 };
+});
+
+// ── SVG coordinate helpers ─────────────────────────────────────────────────────
+const toSVGX = (x: number) =>
+  PAD + ((x - X_MIN) / (X_MAX - X_MIN)) * (W - 2 * PAD);
+const toSVGY = (y: number) =>
+  H - PAD - ((y - Y_MIN) / (Y_MAX - Y_MIN)) * (H - 2 * PAD);
+
+// ── Leaf type ─────────────────────────────────────────────────────────────────
+interface Leaf {
+  xMin: number; xMax: number;
+  meanY1: number; meanY2: number;
+  pts: typeof DATA;
+}
+
+// ── MSE helper ────────────────────────────────────────────────────────────────
+function mse(pts: typeof DATA, key: "y1" | "y2"): number {
   if (!pts.length) return 0;
-  const p = pts.filter(p => p.label === 1).length / pts.length;
-  return 2 * p * (1 - p);
+  const mean = pts.reduce((s, p) => s + p[key], 0) / pts.length;
+  return pts.reduce((s, p) => s + (p[key] - mean) ** 2, 0) / pts.length;
 }
 
-interface SplitRecord {
-  axis: 0 | 1; threshold: number; depth: number;
-  xMin: number; xMax: number; yMin: number; yMax: number;
-  giniAfter: number; label: 0 | 1;
+function leafMean(pts: typeof DATA, key: "y1" | "y2"): number {
+  if (!pts.length) return 0;
+  return pts.reduce((s, p) => s + p[key], 0) / pts.length;
 }
 
-function buildSplits(
-  pts: typeof DATA, xMin = 0, xMax = 10, yMin = 0, yMax = 10,
-  depth = 0, maxDepth = 5
-): SplitRecord[] {
-  const local = pts.filter(p => p.x >= xMin && p.x <= xMax && p.y >= yMin && p.y <= yMax);
-  const g = gini(local);
-  const label: 0 | 1 = local.filter(p => p.label === 1).length >= local.length / 2 ? 1 : 0;
+// ── Build greedy 1-D regression tree (axis = x only) ─────────────────────────
+function buildTree(maxSplits: number) {
+  const splits: { x: number; depth: number }[] = [];
+  const leafsAtStep: Leaf[][] = [];
 
-  if (depth >= maxDepth || g < 0.05 || local.length < 3) return [];
+  let leaves: Leaf[] = [{
+    xMin: X_MIN, xMax: X_MAX,
+    meanY1: leafMean(DATA, "y1"),
+    meanY2: leafMean(DATA, "y2"),
+    pts: [...DATA],
+  }];
+  leafsAtStep.push(leaves);
 
-  let bestGain = -1, bestAxis: 0 | 1 = 0, bestT = 0;
-  for (const axis of [0, 1] as const) {
-    const vals = [...new Set(local.map(p => axis === 0 ? p.x : p.y))].sort((a, b) => a - b);
-    for (let ti = 0; ti < vals.length - 1; ti++) {
-      const t = (vals[ti] + vals[ti + 1]) / 2;
-      const left = local.filter(p => (axis === 0 ? p.x : p.y) <= t);
-      const right = local.filter(p => (axis === 0 ? p.x : p.y) > t);
-      if (!left.length || !right.length) continue;
-      const gain = g - (left.length / local.length) * gini(left) - (right.length / local.length) * gini(right);
-      if (gain > bestGain) { bestGain = gain; bestAxis = axis; bestT = t; }
+  for (let step = 0; step < maxSplits; step++) {
+    let bestGain = -Infinity;
+    let bestLeafIdx = 0;
+    let bestSplitX = 0;
+
+    for (let li = 0; li < leaves.length; li++) {
+      const leaf = leaves[li];
+      if (leaf.pts.length < 4) continue;
+      const sorted = [...leaf.pts].sort((a, b) => a.x - b.x);
+      const parentMse = mse(sorted, "y1") + mse(sorted, "y2");
+
+      for (let si = 1; si < sorted.length; si++) {
+        if (sorted[si].x === sorted[si - 1].x) continue;
+        const sx = (sorted[si - 1].x + sorted[si].x) / 2;
+        const left  = sorted.slice(0, si);
+        const right = sorted.slice(si);
+        const childMse =
+          (left.length  * (mse(left, "y1")  + mse(left, "y2")) +
+           right.length * (mse(right, "y1") + mse(right, "y2"))) / sorted.length;
+        const gain = parentMse - childMse;
+        if (gain > bestGain) { bestGain = gain; bestLeafIdx = li; bestSplitX = sx; }
+      }
     }
+    if (bestGain <= 0) break;
+
+    const leaf = leaves[bestLeafIdx];
+    const leftPts  = leaf.pts.filter(p => p.x <= bestSplitX);
+    const rightPts = leaf.pts.filter(p => p.x >  bestSplitX);
+    const newLeaves: Leaf[] = [
+      ...leaves.slice(0, bestLeafIdx),
+      { xMin: leaf.xMin, xMax: bestSplitX, meanY1: leafMean(leftPts, "y1"),  meanY2: leafMean(leftPts, "y2"),  pts: leftPts  },
+      { xMin: bestSplitX, xMax: leaf.xMax, meanY1: leafMean(rightPts, "y1"), meanY2: leafMean(rightPts, "y2"), pts: rightPts },
+      ...leaves.slice(bestLeafIdx + 1),
+    ];
+    leaves = newLeaves;
+    splits.push({ x: bestSplitX, depth: step });
+    leafsAtStep.push([...leaves]);
   }
-  if (bestGain <= 0) return [];
-
-  const lLeft = local.filter(p => (bestAxis === 0 ? p.x : p.y) <= bestT);
-  const lRight = local.filter(p => (bestAxis === 0 ? p.x : p.y) > bestT);
-  const gAfter = (lLeft.length / local.length) * gini(lLeft) + (lRight.length / local.length) * gini(lRight);
-
-  const thisRecord: SplitRecord = { axis: bestAxis, threshold: bestT, depth, xMin, xMax, yMin, yMax, giniAfter: gAfter, label };
-
-  if (bestAxis === 0) {
-    return [thisRecord,
-      ...buildSplits(pts, xMin, bestT, yMin, yMax, depth + 1, maxDepth),
-      ...buildSplits(pts, bestT, xMax, yMin, yMax, depth + 1, maxDepth)];
-  } else {
-    return [thisRecord,
-      ...buildSplits(pts, xMin, xMax, yMin, bestT, depth + 1, maxDepth),
-      ...buildSplits(pts, xMin, xMax, bestT, yMax, depth + 1, maxDepth)];
-  }
+  return { splits, leafsAtStep };
 }
 
-// Collect final leaf regions for given revealed splits
-function collectRegions(splits: SplitRecord[], revealed: number) {
-  const revSplits = splits.slice(0, revealed);
-  const regions: Array<{ xMin: number; xMax: number; yMin: number; yMax: number; label: 0 | 1 }> = [];
+const { splits: ALL_SPLITS, leafsAtStep: ALL_LEAVES } = buildTree(12);
 
-  function recurse(xMin: number, xMax: number, yMin: number, yMax: number) {
-    const split = revSplits.find(s =>
-      s.xMin === xMin && s.xMax === xMax && s.yMin === yMin && s.yMax === yMax
-    );
-    if (!split) {
-      const pts = DATA.filter(p => p.x >= xMin && p.x <= xMax && p.y >= yMin && p.y <= yMax);
-      const label: 0 | 1 = pts.filter(p => p.label === 1).length >= pts.length / 2 ? 1 : 0;
-      regions.push({ xMin, xMax, yMin, yMax, label });
-      return;
-    }
-    if (split.axis === 0) {
-      recurse(xMin, split.threshold, yMin, yMax);
-      recurse(split.threshold, xMax, yMin, yMax);
-    } else {
-      recurse(xMin, xMax, yMin, split.threshold);
-      recurse(xMin, xMax, split.threshold, yMax);
-    }
-  }
-  recurse(0, 10, 0, 10);
-  return regions;
-}
+// ── True-function smooth curve (200 points) ───────────────────────────────────
+const CURVE_PTS = Array.from({ length: 200 }, (_, i) => {
+  const x = X_MIN + (i / 199) * (X_MAX - X_MIN);
+  return { x, y1: Math.PI * Math.sin(x), y2: Math.PI * Math.cos(x) };
+});
 
-const toSVGX = (x: number) => PAD + (x / 10) * (W - 2 * PAD);
-const toSVGY = (y: number) => H - PAD - (y / 10) * (H - 2 * PAD);
-
-export default function DecisionTreeViz({ accentColor = "#00d4aa" }: { accentColor?: string }) {
-  const [revealed, setRevealed] = useState(0);
+// ── Component ─────────────────────────────────────────────────────────────────
+export default function DecisionTreeViz({
+  accentColor = "#00d4aa",
+}: { accentColor?: string }) {
+  const [revealed, setRevealed]   = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [hoveredSplit, setHoveredSplit] = useState<number | null>(null);
+  const [showY2, setShowY2]       = useState(false);
   const vt = useVizTheme();
 
-  const allSplits = useMemo(() => buildSplits(DATA, 0, 10, 0, 10, 0, 5), []);
-  const regions = useMemo(() => collectRegions(allSplits, revealed), [allSplits, revealed]);
-  const currentSplit = allSplits[revealed - 1] ?? null;
+  const yKey      = showY2 ? "y2" : "y1";
+  const trueColor = showY2 ? "#f97316" : "#6c63ff";
+  const stepColor = accentColor;
 
-  const accuracy = useMemo(() => {
-    let correct = 0;
-    for (const pt of DATA) {
-      const reg = regions.find(r => pt.x >= r.xMin && pt.x <= r.xMax && pt.y >= r.yMin && pt.y <= r.yMax);
-      if (reg?.label === pt.label) correct++;
+  const currentLeaves = ALL_LEAVES[revealed] ?? ALL_LEAVES[ALL_LEAVES.length - 1];
+  const currentSplit  = ALL_SPLITS[revealed - 1] ?? null;
+
+  // Current MSE for active output
+  const curMse = useMemo(() => {
+    let total = 0;
+    for (const leaf of currentLeaves) {
+      const mean = showY2 ? leaf.meanY2 : leaf.meanY1;
+      for (const p of leaf.pts) total += (p[yKey] - mean) ** 2;
     }
-    return DATA.length ? correct / DATA.length : 0;
-  }, [regions]);
+    return total / (N || 1);
+  }, [currentLeaves, showY2, yKey]);
 
   // Auto-play
-  useState(() => {
-    if (!isPlaying) return;
-  });
   useMemo(() => {
     if (!isPlaying) return;
-    if (revealed < allSplits.length) {
-      const t = setTimeout(() => setRevealed(r => r + 1), 700);
+    if (revealed < ALL_SPLITS.length) {
+      const t = setTimeout(() => setRevealed(r => r + 1), 650);
       return () => clearTimeout(t);
-    } else {
-      setIsPlaying(false);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    setIsPlaying(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isPlaying, revealed]);
 
   const handlePlay = () => {
-    if (revealed >= allSplits.length) { setRevealed(0); setTimeout(() => setIsPlaying(true), 50); }
-    else setIsPlaying(p => !p);
+    if (revealed >= ALL_SPLITS.length) {
+      setRevealed(0);
+      setTimeout(() => setIsPlaying(true), 50);
+    } else {
+      setIsPlaying(p => !p);
+    }
   };
 
+  // True-function SVG path
+  const truePath = CURVE_PTS
+    .map((p, i) => `${i === 0 ? "M" : "L"}${toSVGX(p.x).toFixed(1)},${toSVGY(showY2 ? p.y2 : p.y1).toFixed(1)}`)
+    .join(" ");
+
   return (
-    <div className="rounded-2xl overflow-hidden border" style={{ backgroundColor: "var(--bg-card)", borderColor: "var(--border)" }}>
-      <div className="flex items-center justify-between px-5 py-3 border-b" style={{ borderColor: "var(--border)" }}>
+    <div
+      className="rounded-2xl overflow-hidden border"
+      style={{ backgroundColor: "var(--bg-card)", borderColor: "var(--border)" }}
+    >
+      {/* ── Header ── */}
+      <div
+        className="flex items-center justify-between px-5 py-3 border-b flex-wrap gap-2"
+        style={{ borderColor: "var(--border)" }}
+      >
         <div>
           <span className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
-            Decision Tree — Recursive Partitioning
+            Decision Tree — 1D Regression
           </span>
           <span className="text-xs ml-2" style={{ color: "var(--text-muted)" }}>
-            {revealed} splits · Gini {currentSplit ? currentSplit.giniAfter.toFixed(3) : "—"}
+            {revealed} splits · {currentLeaves.length} leaves · MSE {curMse.toFixed(3)}
           </span>
         </div>
         <div className="flex items-center gap-2">
-          <button onClick={handlePlay}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
-            style={{ backgroundColor: `${accentColor}25`, color: accentColor, border: `1px solid ${accentColor}50` }}>
-            {isPlaying ? "⏸ Pause" : revealed >= allSplits.length ? "↺ Replay" : <><Play size={11} /> Grow Tree</>}
+          {/* Toggle y1/y2 */}
+          <button
+            onClick={() => setShowY2(v => !v)}
+            className="px-2.5 py-1 rounded-lg text-xs font-semibold transition-all"
+            style={{
+              backgroundColor: showY2 ? "#f9731625" : "#6c63ff25",
+              color:           showY2 ? "#f97316"  : "#6c63ff",
+              border: `1px solid ${showY2 ? "#f9731650" : "#6c63ff50"}`,
+            }}
+          >
+            {showY2 ? "y₂ = π·cos(x)" : "y₁ = π·sin(x)"}
           </button>
-          <button onClick={() => setRevealed(r => Math.min(allSplits.length, r + 1))}
-            disabled={revealed >= allSplits.length}
+          <button
+            onClick={handlePlay}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
+            style={{ backgroundColor: `${accentColor}25`, color: accentColor, border: `1px solid ${accentColor}50` }}
+          >
+            {isPlaying
+              ? "⏸ Pause"
+              : revealed >= ALL_SPLITS.length
+              ? "↺ Replay"
+              : <><Play size={11} /> Grow</>}
+          </button>
+          <button
+            disabled={revealed >= ALL_SPLITS.length}
+            onClick={() => setRevealed(r => Math.min(ALL_SPLITS.length, r + 1))}
             className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium transition-all"
-            style={{ backgroundColor: "var(--bg-card)", color: "var(--text-muted)", border: "1px solid var(--border)", opacity: revealed >= allSplits.length ? 0.4 : 1 }}>
+            style={{
+              color: "var(--text-muted)",
+              border: "1px solid var(--border)",
+              opacity: revealed >= ALL_SPLITS.length ? 0.4 : 1,
+            }}
+          >
             <ChevronRight size={12} /> Step
           </button>
-          <button onClick={() => { setRevealed(0); setIsPlaying(false); }} className="p-1.5 rounded-lg"
-            style={{ color: "var(--text-muted)", border: "1px solid var(--border)" }}>
+          <button
+            onClick={() => { setRevealed(0); setIsPlaying(false); }}
+            className="p-1.5 rounded-lg"
+            style={{ color: "var(--text-muted)", border: "1px solid var(--border)" }}
+          >
             <RotateCcw size={12} />
           </button>
         </div>
       </div>
 
+      {/* ── SVG ── */}
       <svg viewBox={`0 0 ${W} ${H}`} className="w-full">
-        {/* Leaf regions */}
-        {regions.map((r, i) => {
-          const x = toSVGX(r.xMin), y = toSVGY(r.yMax);
-          const w = toSVGX(r.xMax) - x, h = toSVGY(r.yMin) - y;
-          return (
-            <rect key={i} x={x} y={y} width={w} height={h}
-              fill={r.label === 0 ? "#6c63ff" : "#ff6b6b"}
-              opacity={0.10}
-            />
-          );
-        })}
-
-        {/* All revealed split lines */}
-        {allSplits.slice(0, revealed).map((s, i) => {
-          const isLast = i === revealed - 1;
-          const color = isLast ? accentColor : vt.axis;
-          if (s.axis === 0) {
-            const x = toSVGX(s.threshold);
-            return (
-              <motion.line key={i} x1={x} y1={toSVGY(s.yMax)} x2={x} y2={toSVGY(s.yMin)}
-                stroke={color} strokeWidth={isLast ? 2.5 : 1.5}
-                opacity={isLast ? 1 : 0.6}
-                initial={{ pathLength: 0 }} animate={{ pathLength: 1 }}
-                transition={{ duration: 0.4 }}
-                onMouseEnter={() => setHoveredSplit(i)}
-                onMouseLeave={() => setHoveredSplit(null)}
-              />
-            );
-          } else {
-            const y = toSVGY(s.threshold);
-            return (
-              <motion.line key={i} x1={toSVGX(s.xMin)} y1={y} x2={toSVGX(s.xMax)} y2={y}
-                stroke={color} strokeWidth={isLast ? 2.5 : 1.5}
-                opacity={isLast ? 1 : 0.6}
-                initial={{ pathLength: 0 }} animate={{ pathLength: 1 }}
-                transition={{ duration: 0.4 }}
-                onMouseEnter={() => setHoveredSplit(i)}
-                onMouseLeave={() => setHoveredSplit(null)}
-              />
-            );
-          }
-        })}
-
-        {/* Split annotation for latest split */}
-        {currentSplit && (() => {
-          const s = currentSplit;
-          const label = s.axis === 0 ? `x ≤ ${s.threshold.toFixed(1)}` : `y ≤ ${s.threshold.toFixed(1)}`;
-          const tx = s.axis === 0 ? toSVGX(s.threshold) + 6 : toSVGX((s.xMin + s.xMax) / 2);
-          const ty = s.axis === 0 ? toSVGY((s.yMin + s.yMax) / 2) : toSVGY(s.threshold) - 5;
-          return (
-            <AnimatePresence>
-              <motion.g key={revealed} initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}>
-                <rect x={tx - 2} y={ty - 12} width={label.length * 5.8 + 4} height={15} rx={4}
-                  fill={`${accentColor}20`} stroke={accentColor} strokeWidth={1} />
-                <text x={tx + 1} y={ty} fontSize={9} fill={accentColor} fontFamily="monospace">{label}</text>
-              </motion.g>
-            </AnimatePresence>
-          );
-        })()}
-
-        {/* Gini badge */}
-        {hoveredSplit !== null && (() => {
-          const s = allSplits[hoveredSplit];
-          const cx = toSVGX((s.xMin + s.xMax) / 2);
-          const cy = toSVGY((s.yMin + s.yMax) / 2);
-          return (
-            <g>
-              <rect x={cx - 38} y={cy - 14} width={76} height={22} rx={5}
-                fill={vt.isDark ? "rgba(0,0,0,0.85)" : "rgba(255,255,255,0.95)"} stroke={vt.border} strokeWidth={1} />
-              <text x={cx} y={cy} textAnchor="middle" fontSize={9} fill={accentColor} fontFamily="monospace">
-                Gini↓ {s.giniAfter.toFixed(3)}  depth {s.depth}
-              </text>
-            </g>
-          );
-        })()}
-
-        {/* Axis labels */}
-        {[2, 4, 6, 8].map(v => (
-          <g key={v}>
-            <text x={toSVGX(v)} y={H - PAD + 14} textAnchor="middle" fontSize={9} fill={vt.textMuted}>{v}</text>
-            <text x={PAD - 6} y={toSVGY(v) + 4} textAnchor="end" fontSize={9} fill={vt.textMuted}>{v}</text>
-          </g>
-        ))}
+        {/* Grid */}
         <line x1={PAD} y1={H - PAD} x2={W - PAD} y2={H - PAD} stroke={vt.axis} strokeWidth={1.5} />
-        <line x1={PAD} y1={PAD} x2={PAD} y2={H - PAD} stroke={vt.axis} strokeWidth={1.5} />
+        <line x1={PAD} y1={PAD}     x2={PAD}      y2={H - PAD} stroke={vt.axis} strokeWidth={1.5} />
+        <line x1={toSVGX(0)} y1={PAD} x2={toSVGX(0)} y2={H - PAD}
+          stroke={vt.grid} strokeWidth={1} strokeDasharray="3,3" />
+        <line x1={PAD} y1={toSVGY(0)} x2={W - PAD} y2={toSVGY(0)}
+          stroke={vt.grid} strokeWidth={1} strokeDasharray="3,3" />
+
+        {/* Axis tick labels */}
+        {([-3, -2, -1, 0, 1, 2, 3] as number[]).map(v => (
+          <text key={v} x={toSVGX(v)} y={H - PAD + 14}
+            textAnchor="middle" fontSize={9} fill={vt.textMuted}>{v}</text>
+        ))}
+        {([-3, 0, 3] as number[]).map(v => (
+          <text key={v} x={PAD - 6} y={toSVGY(v) + 4}
+            textAnchor="end" fontSize={9} fill={vt.textMuted}>{v}</text>
+        ))}
+        <text x={W / 2} y={H - 4} textAnchor="middle" fontSize={9} fill={vt.textMuted}>x</text>
+        <text x={10} y={H / 2} textAnchor="middle" fontSize={9} fill={vt.textMuted}
+          transform={`rotate(-90,10,${H / 2})`}>y</text>
+
+        {/* Step function: leaf regions + horizontal lines */}
+        {currentLeaves.map((leaf, i) => {
+          const lx   = toSVGX(Math.max(X_MIN, leaf.xMin));
+          const rx   = toSVGX(Math.min(X_MAX, leaf.xMax));
+          const mean = showY2 ? leaf.meanY2 : leaf.meanY1;
+          const sy   = toSVGY(mean);
+          const y0   = toSVGY(0);
+          return (
+            <motion.g key={i} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.25 }}>
+              <rect
+                x={lx} y={Math.min(sy, y0)}
+                width={Math.max(0, rx - lx)}
+                height={Math.abs(y0 - sy)}
+                fill={stepColor} opacity={0.09}
+              />
+              <line x1={lx} y1={sy} x2={rx} y2={sy}
+                stroke={stepColor} strokeWidth={2.5} />
+            </motion.g>
+          );
+        })}
+
+        {/* Vertical split lines */}
+        {ALL_SPLITS.slice(0, revealed).map((s, i) => (
+          <motion.line key={i}
+            x1={toSVGX(s.x)} y1={PAD}
+            x2={toSVGX(s.x)} y2={H - PAD}
+            stroke={i === revealed - 1 ? accentColor : vt.border}
+            strokeWidth={i === revealed - 1 ? 2 : 1}
+            strokeDasharray="5,3"
+            opacity={0.65}
+            initial={{ scaleY: 0, originY: "50%" }}
+            animate={{ scaleY: 1 }}
+            transition={{ duration: 0.3 }}
+          />
+        ))}
+
+        {/* True function curve */}
+        <path d={truePath} fill="none" stroke={trueColor} strokeWidth={2} strokeDasharray="7,4" opacity={0.85} />
 
         {/* Data points */}
         {DATA.map((pt, i) => (
-          <motion.circle key={i} cx={toSVGX(pt.x)} cy={toSVGY(pt.y)} r={5}
-            fill={pt.label === 0 ? "#6c63ff" : "#ff6b6b"}
-            stroke={vt.isDark ? "rgba(0,0,0,0.5)" : "rgba(255,255,255,0.9)"} strokeWidth={1.5}
-            initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: i * 0.008 }} />
+          <motion.circle
+            key={i}
+            cx={toSVGX(pt.x)}
+            cy={toSVGY(showY2 ? pt.y2 : pt.y1)}
+            r={3}
+            fill={trueColor}
+            opacity={0.5}
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ delay: i * 0.004 }}
+          />
         ))}
+
+        {/* Legend */}
+        <line x1={W - 108} y1={22} x2={W - 88} y2={22} stroke={trueColor} strokeWidth={2} strokeDasharray="6,3" />
+        <text x={W - 84} y={26} fontSize={8.5} fill={trueColor}>
+          {showY2 ? "π·cos(x)" : "π·sin(x)"}
+        </text>
+        <line x1={W - 108} y1={38} x2={W - 88} y2={38} stroke={stepColor} strokeWidth={2.5} />
+        <text x={W - 84} y={42} fontSize={8.5} fill={stepColor}>DT step fn</text>
+
+        {/* Current split annotation */}
+        {currentSplit && (
+          <AnimatePresence>
+            <motion.g
+              key={revealed}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            >
+              <rect
+                x={toSVGX(currentSplit.x) + 4} y={PAD + 4}
+                width={72} height={16} rx={4}
+                fill={`${accentColor}20`} stroke={accentColor} strokeWidth={1}
+              />
+              <text x={toSVGX(currentSplit.x) + 8} y={PAD + 15}
+                fontSize={8.5} fill={accentColor} fontFamily="monospace">
+                x ≤ {currentSplit.x.toFixed(2)}
+              </text>
+            </motion.g>
+          </AnimatePresence>
+        )}
+
+        {/* Info badge: initial (no splits) */}
+        {revealed === 0 && (
+          <motion.g initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+            <rect x={PAD + 8} y={PAD + 6} width={220} height={32} rx={6}
+              fill={vt.isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.04)"}
+              stroke={vt.border} strokeWidth={1} />
+            <text x={PAD + 18} y={PAD + 20} fontSize={8.5} fill={vt.textMuted}>
+              Root: predict mean(y) for all x
+            </text>
+            <text x={PAD + 18} y={PAD + 34} fontSize={8} fill={vt.textMuted}>
+              Click Grow or Step to add splits →
+            </text>
+          </motion.g>
+        )}
       </svg>
 
-      {/* Progress bar + stats */}
-      <div className="px-5 pb-1 pt-2">
-        <div className="w-full h-1.5 rounded-full overflow-hidden" style={{ backgroundColor: vt.surface }}>
-          <motion.div className="h-full rounded-full" style={{ backgroundColor: accentColor }}
-            animate={{ width: `${(revealed / Math.max(1, allSplits.length)) * 100}%` }}
-            transition={{ duration: 0.3 }} />
-        </div>
+      {/* ── Formula bar ── */}
+      <div className="px-5 py-2 border-t flex flex-wrap gap-x-5 gap-y-1 items-center"
+        style={{ borderColor: "var(--border)" }}>
+        <span className="text-xs font-mono" style={{ color: "var(--text-muted)" }}>
+          Split criterion: <span style={{ color: accentColor }}>MSE gain = MSE(parent) − [nₗ/n·MSE(L) + nᵣ/n·MSE(R)]</span>
+        </span>
+        <span className="text-xs font-mono" style={{ color: "var(--text-muted)" }}>
+          Gini = 1−Σpₖ²  ·  IG = H(parent)−Σwᵢ·H(childᵢ)
+        </span>
       </div>
-      <div className="grid grid-cols-3 border-t text-center" style={{ borderColor: "var(--border)" }}>
+
+      {/* ── Stats footer ── */}
+      <div
+        className="grid grid-cols-4 border-t text-center"
+        style={{ borderColor: "var(--border)" }}
+      >
         {[
-          { label: "Splits", value: `${revealed}/${allSplits.length}` },
-          { label: "Depth", value: currentSplit ? (currentSplit.depth + 1).toString() : "0" },
-          { label: "Accuracy", value: `${(accuracy * 100).toFixed(1)}%` },
+          { label: "Splits",    value: `${revealed} / ${ALL_SPLITS.length}` },
+          { label: "Leaves",   value: `${currentLeaves.length}` },
+          { label: "MSE",      value: curMse.toFixed(3) },
+          { label: "Target",   value: showY2 ? "π·cos(x)" : "π·sin(x)" },
         ].map(({ label, value }) => (
           <div key={label} className="py-3">
             <div className="text-xs" style={{ color: "var(--text-muted)" }}>{label}</div>

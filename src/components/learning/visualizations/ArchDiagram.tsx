@@ -171,8 +171,8 @@ function LinearRegressionArch({ accent, vt }: { accent: string; vt: VT }) {
       <text x={sumX} y={CY + sumR + 14} textAnchor="middle" fontSize={8} fill={vt.textMuted}>
         bias b added
       </text>
-      <text x={W / 2} y={H - 4} textAnchor="middle" fontSize={9} fill={vt.textMuted}>
-        Linear: ŷ=Xᵀβ   Logistic: P(y=1|x)=σ(Xᵀβ)
+      <text x={W / 2} y={H - 4} textAnchor="middle" fontSize={8.5} fill={vt.textMuted}>
+        Linear: ŷ=Xᵀβ  MSE=‖y−ŷ‖²/n  ·  Logistic: P=σ(Xᵀβ)  BCE=−Σ[yᵢlogŷᵢ+(1−yᵢ)log(1−ŷᵢ)]
       </text>
     </svg>
   );
@@ -236,8 +236,8 @@ function DecisionTreeArch({ accent, vt }: { accent: string; vt: VT }) {
           label={n.label} sublabel={n.sublabel}
           bg={bg(n.type)} textColor={textOn(bg(n.type))} rx={n.type === "split" ? 8 : 6} />
       ))}
-      <text x={W / 2} y={H - 4} textAnchor="middle" fontSize={9} fill={vt.textMuted}>
-        Decision Tree: recursive binary partitioning minimizing Gini impurity
+      <text x={W / 2} y={H - 4} textAnchor="middle" fontSize={8.5} fill={vt.textMuted}>
+        Gini(t)=1−Σpₖ²  ·  H(t)=−Σpₖlog₂pₖ  ·  IG=H(parent)−Σ(nᵢ/n)H(childᵢ)  ·  prune by α
       </text>
     </svg>
   );
@@ -316,13 +316,13 @@ function GradientBoostingArch({ accent, vt }: { accent: string; vt: VT }) {
 
 // 4. Bagging — parallel bootstrap + vote
 function BaggingArch({ accent, vt }: { accent: string; vt: VT }) {
-  const W = 540, H = 195;
+  const W = 540, H = 220;
   const arrowColor = vt.isDark ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.35)";
-  const BW = 80, BH = 36;
+  const BW = 88, BH = 38;
   const models = [
-    { label: "Model 1",   sub: "Bootstrap₁", y: 28  },
-    { label: "Model 2",   sub: "Bootstrap₂", y: 80  },
-    { label: "Model 3",   sub: "Bootstrap₃", y: 132 },
+    { label: "Model 1", sub: "Bootstrap₁ (sample w/ replace)", y: 24  },
+    { label: "Model 2", sub: "Bootstrap₂ (sample w/ replace)", y: 82  },
+    { label: "Model 3", sub: "Bootstrap₃ (sample w/ replace)", y: 140 },
   ];
 
   return (
@@ -330,52 +330,50 @@ function BaggingArch({ accent, vt }: { accent: string; vt: VT }) {
       {ARROW_DEFS("arr-bag", arrowColor)}
 
       {/* Dataset */}
-      <Box x={8} y={80} w={68} h={36}
+      <Box x={6} y={82} w={72} h={38}
         label="Dataset" sublabel="N samples"
         bg={vt.isDark ? "#334155" : "#e2e8f0"} textColor={vt.text} rx={8} />
 
-      {/* Bootstrap arrows */}
+      {/* Bootstrap arrows + model boxes */}
       {models.map((m, i) => (
         <g key={m.label}>
-          <Arrow x1={76} y1={98} x2={112} y2={m.y + BH/2} color={arrowColor} markerId="arr-bag" />
-          {/* Bootstrap label */}
-          <text x={94} y={m.y + BH/2 - 3} fontSize={7} fill={vt.textMuted}>{m.sub}</text>
-          <Box x={112} y={m.y} w={BW} h={BH}
-            label={m.label} sublabel="(tree/etc)"
+          <Arrow x1={78} y1={101} x2={118} y2={m.y + BH/2} color={arrowColor} markerId="arr-bag" />
+          <Box x={118} y={m.y} w={BW} h={BH}
+            label={m.label} sublabel={m.sub}
             bg={accent} textColor={textOn(accent)} rx={8} />
           {/* Prediction arrows */}
-          <Arrow x1={112 + BW} y1={m.y + BH/2} x2={324} y2={98}
+          <Arrow x1={118 + BW} y1={m.y + BH/2} x2={328} y2={105}
             color={arrowColor} markerId="arr-bag" />
-          <text x={240} y={m.y + BH/2 - 3} fontSize={8} fill={vt.textMuted}>
+          <text x={244} y={m.y + BH/2 - 4} fontSize={8} fill={vt.textMuted}>
             pred{i+1}
           </text>
         </g>
       ))}
 
       {/* "..." for more models */}
-      <text x={152} y={175} textAnchor="middle" fontSize={13} fill={vt.textMuted}>⋮</text>
+      <text x={162} y={190} textAnchor="middle" fontSize={13} fill={vt.textMuted}>⋮</text>
 
       {/* Aggregator */}
-      <Box x={324} y={70} w={96} h={52}
-        label="Aggregate" sublabel="Avg / Vote"
+      <Box x={328} y={74} w={102} h={58}
+        label="Aggregate" sublabel="Avg(reg) / Vote(cls)"
         bg={vt.isDark ? "#7c3aed" : "#8b5cf6"} textColor="white" rx={8} />
-      <Arrow x1={420} y1={96} x2={460} y2={96} color={arrowColor} markerId="arr-bag" />
+      <Arrow x1={430} y1={103} x2={466} y2={103} color={arrowColor} markerId="arr-bag" />
 
       {/* Output */}
-      <Box x={460} y={78} w={62} h={36}
+      <Box x={466} y={82} w={66} h={42}
         label="ŷ final" sublabel="low variance"
         bg={vt.isDark ? "#059669" : "#34d399"} textColor={textOn("#059669")} rx={8} />
 
-      <text x={W/2} y={H - 4} textAnchor="middle" fontSize={9} fill={vt.textMuted}>
-        Bagging: train B models on bootstrap samples → average predictions → low variance
+      <text x={W/2} y={H - 8} textAnchor="middle" fontSize={9} fill={vt.textMuted}>
+        Bagging: ŷ = (1/B)Σhᵢ(x)  ·  Var(ŷ) = σ²/B(1−ρ) → lower variance than single model
       </text>
     </svg>
   );
 }
 
-// 5. SVM — hyperplane geometry
+// 5. SVM — hyperplane geometry with training animation
 function SVMArch({ accent, vt }: { accent: string; vt: VT }) {
-  const W = 540, H = 200;
+  const W = 540, H = 210;
   const arrowColor = vt.isDark ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.35)";
 
   return (
@@ -383,54 +381,68 @@ function SVMArch({ accent, vt }: { accent: string; vt: VT }) {
       {ARROW_DEFS("arr-svm", arrowColor)}
 
       {/* Feature space box */}
-      <rect x={14} y={14} width={310} height={170} rx={10}
+      <rect x={14} y={14} width={310} height={178} rx={10}
         fill={vt.isDark ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.03)"}
         stroke={vt.border} strokeWidth={1} />
-      <text x={169} y={30} textAnchor="middle" fontSize={9} fill={vt.textMuted}>Feature Space</text>
+      <text x={169} y={30} textAnchor="middle" fontSize={9} fill={vt.textMuted}>Training: margin maximization</text>
 
-      {/* Class+ points */}
+      {/* Class+ points (purple) */}
       {[[60,60],[50,90],[80,75],[65,110],[90,55]].map(([px,py],i) => (
         <circle key={`p${i}`} cx={px} cy={py} r={8}
           fill={vt.isDark ? "#4c1d95" : "#7c3aed"} opacity={0.85} />
       ))}
+      <text x={68} y={130} fontSize={8} fill={vt.isDark ? "#7c3aed" : "#7c3aed"}>Class +1</text>
 
-      {/* Class- points */}
+      {/* Class- points (red) */}
       {[[210,100],[230,130],[200,155],[255,115],[240,85]].map(([px,py],i) => (
         <circle key={`n${i}`} cx={px} cy={py} r={8}
           fill={vt.isDark ? "#7f1d1d" : "#dc2626"} opacity={0.85} />
       ))}
+      <text x={220} y={172} fontSize={8} fill="#dc2626">Class −1</text>
 
-      {/* Decision boundary */}
-      <line x1={130} y1={30} x2={170} y2={180} stroke={accent} strokeWidth={2.5} />
-      {/* Margin boundaries */}
-      <line x1={100} y1={30} x2={140} y2={180} stroke={accent} strokeWidth={1.5} strokeDasharray="6,4" opacity={0.5} />
-      <line x1={160} y1={30} x2={200} y2={180} stroke={accent} strokeWidth={1.5} strokeDasharray="6,4" opacity={0.5} />
+      {/* Decision boundary — animates from initial to optimal */}
+      <line x1={130} y1={30} x2={170} y2={185} stroke={accent} strokeWidth={2.5}>
+        <animate attributeName="x1" values="80;100;115;125;130;130" dur="4s" repeatCount="indefinite" />
+        <animate attributeName="x2" values="120;140;155;165;170;170" dur="4s" repeatCount="indefinite" />
+      </line>
+      {/* Margin boundaries (animated) */}
+      <line x1={100} y1={30} x2={140} y2={185} stroke={accent} strokeWidth={1.5} strokeDasharray="6,4" opacity={0.5}>
+        <animate attributeName="x1" values="50;70;85;95;100;100" dur="4s" repeatCount="indefinite" />
+        <animate attributeName="x2" values="90;110;125;135;140;140" dur="4s" repeatCount="indefinite" />
+      </line>
+      <line x1={160} y1={30} x2={200} y2={185} stroke={accent} strokeWidth={1.5} strokeDasharray="6,4" opacity={0.5}>
+        <animate attributeName="x1" values="110;130;145;155;160;160" dur="4s" repeatCount="indefinite" />
+        <animate attributeName="x2" values="150;170;185;195;200;200" dur="4s" repeatCount="indefinite" />
+      </line>
 
       {/* Margin bracket */}
-      <Arrow x1={122} y1={105} x2={158} y2={115} color={accent} markerId="arr-svm" />
-      <Arrow x1={158} y1={115} x2={122} y2={105} color={accent} markerId="arr-svm" />
-      <text x={138} y={103} textAnchor="middle" fontSize={9} fill={accent} fontWeight="bold">2/‖w‖</text>
+      <Arrow x1={122} y1={108} x2={158} y2={118} color={accent} markerId="arr-svm" />
+      <Arrow x1={158} y1={118} x2={122} y2={108} color={accent} markerId="arr-svm" />
+      <text x={138} y={106} textAnchor="middle" fontSize={9} fill={accent} fontWeight="bold">2/‖w‖</text>
 
-      {/* Support vector rings */}
+      {/* Support vector rings — appear with animation */}
       {[[110,90],[150,140],[165,80]].map(([px,py],i) => (
         <circle key={`sv${i}`} cx={px} cy={py} r={13}
-          fill="none" stroke={accent} strokeWidth={2} opacity={0.6} />
+          fill="none" stroke={accent} strokeWidth={2} opacity={0.6}>
+          <animate attributeName="r" values="0;6;10;13;13" dur="4s" repeatCount="indefinite" />
+          <animate attributeName="opacity" values="0;0.3;0.5;0.6;0.6" dur="4s" repeatCount="indefinite" />
+        </circle>
       ))}
-      <text x={169} y={184} textAnchor="middle" fontSize={8} fill={accent}>support vectors</text>
+      <text x={169} y={194} textAnchor="middle" fontSize={8} fill={accent}>support vectors (circled)</text>
 
       {/* Optimization box */}
-      <Box x={340} y={18} w={188} h={60}
+      <Box x={340} y={18} w={188} h={54}
         label="Primal Objective" sublabel="min ½‖w‖² + C Σ ξᵢ"
         bg={vt.isDark ? "#334155" : "#e2e8f0"} textColor={vt.text} rx={8} />
-      <Box x={340} y={90} w={188} h={50}
+      <Box x={340} y={84} w={188} h={54}
         label="Kernel Trick" sublabel="K(xᵢ,xⱼ) = φ(xᵢ)ᵀφ(xⱼ)"
         bg={accent} textColor={textOn(accent)} rx={8} />
-      <Box x={340} y={152} w={188} h={38}
+      <Box x={340} y={150} w={188} h={36}
         label="Decision: sign(wᵀx + b)"
         bg={vt.isDark ? "#059669" : "#34d399"} textColor={textOn("#059669")} rx={8} />
 
-      <text x={W/2} y={H - 2} textAnchor="middle" fontSize={8} fill={vt.textMuted}>
-        SVM: maximize margin 2/‖w‖ — only support vectors define the boundary
+      <text x={W/2} y={H - 3} textAnchor="middle" fontSize={8} fill={vt.textMuted}>
+        SVM: max 2/‖w‖ s.t. yᵢ(wᵀxᵢ+b)≥1 — Dual: Σαᵢyᵢxᵢ=0, αᵢ≥0
       </text>
     </svg>
   );
@@ -478,7 +490,7 @@ function KNNArch({ accent, vt }: { accent: string; vt: VT }) {
 
 // 7. SVR — epsilon-insensitive tube
 function SVRArch({ accent, vt }: { accent: string; vt: VT }) {
-  const W = 540, H = 175;
+  const W = 540, H = 200;
   const arrowColor = vt.isDark ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.35)";
 
   return (
@@ -486,30 +498,33 @@ function SVRArch({ accent, vt }: { accent: string; vt: VT }) {
       {ARROW_DEFS("arr-svr", arrowColor)}
 
       {/* Feature space */}
-      <rect x={14} y={18} width={310} height={140} rx={10}
+      <rect x={14} y={18} width={310} height={152} rx={10}
         fill={vt.isDark ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.03)"}
         stroke={vt.border} strokeWidth={1} />
 
       {/* Regression line */}
-      <line x1={30} y1={130} x2={310} y2={40} stroke={accent} strokeWidth={2.5} />
+      <line x1={30} y1={140} x2={310} y2={46} stroke={accent} strokeWidth={2.5}>
+        <animate attributeName="x1" values="30;50;30" dur="4s" repeatCount="indefinite" />
+        <animate attributeName="y1" values="155;140;155" dur="4s" repeatCount="indefinite" />
+      </line>
       {/* Tube boundaries */}
-      <line x1={30} y1={110} x2={310} y2={20} stroke={accent} strokeWidth={1.5} strokeDasharray="6,4" opacity={0.6} />
-      <line x1={30} y1={150} x2={310} y2={60} stroke={accent} strokeWidth={1.5} strokeDasharray="6,4" opacity={0.6} />
+      <line x1={30} y1={120} x2={310} y2={26} stroke={accent} strokeWidth={1.5} strokeDasharray="6,4" opacity={0.6} />
+      <line x1={30} y1={160} x2={310} y2={66} stroke={accent} strokeWidth={1.5} strokeDasharray="6,4" opacity={0.6} />
       {/* Tube fill */}
-      <path d="M30,110 L310,20 L310,60 L30,150 Z" fill={accent} opacity={0.08} />
+      <path d="M30,120 L310,26 L310,66 L30,160 Z" fill={accent} opacity={0.08} />
 
       {/* ε bracket */}
-      <line x1={185} y1={66} x2={185} y2={80} stroke={accent} strokeWidth={1} />
-      <line x1={185} y1={80} x2={185} y2={94} stroke={accent} strokeWidth={1} />
-      <text x={196} y={83} fontSize={8} fill={accent}>ε-tube</text>
+      <line x1={185} y1={72} x2={185} y2={84} stroke={accent} strokeWidth={1} />
+      <line x1={185} y1={84} x2={185} y2={96} stroke={accent} strokeWidth={1} />
+      <text x={196} y={90} fontSize={8} fill={accent}>ε-tube</text>
 
       {/* Data points */}
-      {[[50,115],[80,100],[120,90],[160,78],[200,68],[240,58],[280,45]].map(([px,py],i) => (
+      {[[50,125],[80,110],[120,100],[160,88],[200,76],[240,64],[280,52]].map(([px,py],i) => (
         <circle key={`in${i}`} cx={px} cy={py} r={5}
           fill={vt.isDark ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.7)"} />
       ))}
       {/* Support vectors outside tube */}
-      {[[100,140],[260,22]].map(([px,py],i) => (
+      {[[100,152],[260,30]].map(([px,py],i) => (
         <g key={`sv${i}`}>
           <circle cx={px} cy={py} r={6} fill="#ff6b6b" />
           <circle cx={px} cy={py} r={12} fill="none" stroke="#ff6b6b" strokeWidth={1.5} opacity={0.5} />
@@ -517,18 +532,18 @@ function SVRArch({ accent, vt }: { accent: string; vt: VT }) {
       ))}
 
       {/* Info boxes */}
-      <Box x={334} y={18} w={192} h={46}
+      <Box x={334} y={18} w={192} h={50}
         label="ε-insensitive loss" sublabel="L(y,ŷ) = max(0, |y−ŷ|−ε)"
         bg={accent} textColor={textOn(accent)} rx={8} />
-      <Box x={334} y={76} w={192} h={46}
-        label="Regularization" sublabel="min ½‖w‖² + C·Σξᵢ"
+      <Box x={334} y={80} w={192} h={50}
+        label="Primal objective" sublabel="min ½‖w‖² + C·Σ(ξᵢ+ξᵢ*)"
         bg={vt.isDark ? "#334155" : "#e2e8f0"} textColor={vt.text} rx={8} />
-      <Box x={334} y={134} w={192} h={36}
-        label="Support vectors drive fit"
+      <Box x={334} y={142} w={192} h={36}
+        label="ŷ = wᵀφ(x) + b"
         bg={vt.isDark ? "#7f1d1d" : "#fee2e2"} textColor={vt.isDark ? "#fff" : "#7f1d1d"} rx={8} />
 
-      <text x={W/2} y={H - 4} textAnchor="middle" fontSize={9} fill={vt.textMuted}>
-        SVR: fit within ε-tube · points outside (support vectors) penalized by C
+      <text x={W/2} y={H - 6} textAnchor="middle" fontSize={9} fill={vt.textMuted}>
+        SVR: fit within ε-tube · Dual: ŷ=Σ(αᵢ−αᵢ*)K(xᵢ,x)+b · support vectors penalized by C
       </text>
     </svg>
   );
@@ -536,7 +551,7 @@ function SVRArch({ accent, vt }: { accent: string; vt: VT }) {
 
 // 8. MLP — multi-layer perceptron
 function MLPArch({ accent, vt }: { accent: string; vt: VT }) {
-  const W = 540, H = 200;
+  const W = 540, H = 225;
   const arrowColor = vt.isDark ? "rgba(255,255,255,0.35)" : "rgba(0,0,0,0.25)";
   const layers = [
     { label: "Input",    n: 3, color: vt.isDark ? "#475569" : "#94a3b8",  x: 50  },
@@ -544,7 +559,7 @@ function MLPArch({ accent, vt }: { accent: string; vt: VT }) {
     { label: "Hidden₂",  n: 5, color: accent,                             x: 310 },
     { label: "Output",   n: 3, color: vt.isDark ? "#059669" : "#34d399",  x: 450 },
   ];
-  const R = 13, CY = 90;
+  const R = 13, CY = 88;
   const acts = ["", "ReLU", "ReLU", "Softmax"];
 
   return (
@@ -580,18 +595,24 @@ function MLPArch({ accent, vt }: { accent: string; vt: VT }) {
       {/* Layer labels */}
       {layers.map((lay, li) => (
         <g key={`lbl-${li}`}>
-          <text x={lay.x} y={H - 28} textAnchor="middle" fontSize={9} fill={vt.text} fontWeight="bold">
+          <text x={lay.x} y={H - 48} textAnchor="middle" fontSize={9} fill={vt.text} fontWeight="bold">
             {lay.label}
           </text>
-          <text x={lay.x} y={H - 15} textAnchor="middle" fontSize={8} fill={vt.textMuted}>
+          <text x={lay.x} y={H - 35} textAnchor="middle" fontSize={8} fill={vt.textMuted}>
             {lay.n} units
           </text>
           {acts[li] && (
-            <text x={lay.x} y={H - 2} textAnchor="middle" fontSize={8}
+            <text x={lay.x} y={H - 22} textAnchor="middle" fontSize={8}
               fill={accent} fontFamily="monospace">{acts[li]}</text>
           )}
         </g>
       ))}
+
+      {/* Formula bar */}
+      <rect x={16} y={H - 12} width={W - 32} height={20} rx={5} fill={vt.surface} />
+      <text x={W/2} y={H + 2} textAnchor="middle" fontSize={8} fill={vt.text} fontFamily="monospace">
+        h₁=ReLU(W₁x+b₁)  ·  h₂=ReLU(W₂h₁+b₂)  ·  ŷ=Softmax(W₃h₂+b₃)
+      </text>
     </svg>
   );
 }
@@ -617,7 +638,7 @@ function CNNArch({ accent, vt }: { accent: string; vt: VT }) {
     <svg viewBox={`0 0 ${W} ${H}`} className="w-full">
       {ARROW_DEFS("arr-cnn", arrowColor)}
       {positioned.map((b, i) => (
-        <g key={b.label}>
+        <g key={i}>
           <Box x={b.x} y={(H - BH - 30) / 2} w={b.w} h={BH}
             label={b.label} sublabel={b.sub}
             bg={b.bg} textColor={textOn(b.bg)} rx={8} />
@@ -636,114 +657,116 @@ function CNNArch({ accent, vt }: { accent: string; vt: VT }) {
           fill={vt.textMuted} fontFamily="monospace">{lbl}</text>
       ))}
       <text x={W/2} y={H - 2} textAnchor="middle" fontSize={8} fill={vt.textMuted}>
-        CNN: local feature extraction → spatial pooling → classification
+        Conv:(X*W)[i,j]=Σₘₙ X[i+m,j+n]·W[m,n]+b  ·  params=k²·Cᵢₙ·Cₒᵤₜ  ·  pool↓ spatial 2×
       </text>
     </svg>
   );
 }
 
-// 10. Transformer Encoder  — redesigned with proper spacing + BERT note
+// 10. Transformer Encoder — redesigned with proper vertical spacing
 function TransformerArch({ accent, vt }: { accent: string; vt: VT }) {
-  const W = 540, H = 340;
+  const W = 540, H = 380;
   const ac = vt.isDark ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.35)";
   const BW = 170, CX = W / 2, BX = CX - BW / 2;
   const neutralBg = vt.isDark ? "#374151" : "#e2e8f0";
   const purple = vt.isDark ? "#7c3aed" : "#8b5cf6";
   const green  = vt.isDark ? "#059669" : "#34d399";
 
-  // Layout (bottom-to-top in SVG, so lower y = visually higher):
-  // y=290 → Token Embed (h=40)
-  // y=248 → MHA (h=40)  ← arrow 290→252
-  // y=210 → Add&Norm1 (h=30) ← arrow 248→214
-  // y=166 → FFN (h=38) ← arrow 210→170
-  // y=128 → Add&Norm2 (h=30) ← arrow 166→132
-  // y= 82 → Linear+Softmax (h=40) ← arrow 128→90
-  // y= 38 → Output label
+  // Bottom-to-top layout (higher y = visually lower):
+  // y=330 → Token Embedding  (h=40, bottom=370)
+  // y=270 → MHA              (h=40, bottom=310) — gap 20px above
+  // y=222 → Add & Norm ①     (h=30, bottom=252) — gap 18px above
+  // y=166 → FFN              (h=38, bottom=204) — gap 18px above
+  // y=118 → Add & Norm ②     (h=30, bottom=148) — gap 18px above
+  // y= 62 → Linear+Softmax   (h=38, bottom=100) — gap 18px above
+  // y= 18 → Output box       (h=26, bottom= 44) — gap 18px above
 
   return (
     <svg viewBox={`0 0 ${W} ${H}`} className="w-full">
       {ARROW_DEFS("arr-tr", ac)}
 
-      {/* ── Input ── */}
-      <Box x={BX} y={290} w={BW} h={40}
-        label="Token Embedding" sublabel="+ Positional Encoding"
+      {/* ── Token Embedding (bottom) ── */}
+      <Box x={BX} y={330} w={BW} h={40}
+        label="Token Embedding" sublabel="xₜ + PE(pos)  →  d-dim vector"
         bg={neutralBg} textColor={vt.text} rx={8} />
-      <Arrow x1={CX} y1={290} x2={CX} y2={292} color={ac} markerId="arr-tr" />
+      {/* Arrow from Token Embed top (330) to MHA bottom (310) */}
+      <line x1={CX} y1={330} x2={CX} y2={312} stroke={ac} strokeWidth={1.5} markerEnd={`url(#arr-tr)`} />
 
       {/* ── Encoder block border ── */}
-      <rect x={BX - 28} y={124} width={BW + 56} height={158} rx={10}
+      <rect x={BX - 28} y={114} width={BW + 56} height={220} rx={10}
         fill={`${accent}07`} stroke={`${accent}30`} strokeWidth={1.5} strokeDasharray="6,3" />
-      <text x={BX + BW + 36} y={206} textAnchor="start" fontSize={12}
+      <text x={BX + BW + 34} y={228} textAnchor="start" fontSize={13}
         fill={accent} fontWeight="bold">×N</text>
 
       {/* ── Multi-Head Attention ── */}
-      <Arrow x1={CX} y1={289} x2={CX} y2={291} color={ac} markerId="arr-tr" />
-      <Arrow x1={CX} y1={289} x2={CX} y2={290} color={ac} markerId="arr-tr" />
-      {/* real gap arrow */}
-      <line x1={CX} y1={330} x2={CX} y2={292} stroke={ac} strokeWidth={1.5} markerEnd={`url(#arr-tr)`} />
-      <Box x={BX} y={248} w={BW} h={40}
-        label="Multi-Head Self-Attention" sublabel="Q·Kᵀ/√d → softmax → ×V"
+      <Box x={BX} y={270} w={BW} h={40}
+        label="Multi-Head Self-Attention" sublabel="Attn(Q,K,V)=softmax(QKᵀ/√dₖ)V"
         bg={accent} textColor={textOn(accent)} rx={8} />
-      <Arrow x1={CX} y1={248} x2={CX} y2={251} color={ac} markerId="arr-tr" />
+      {/* Arrow from MHA top (270) to Add&Norm1 bottom (252) */}
+      <line x1={CX} y1={270} x2={CX} y2={254} stroke={ac} strokeWidth={1.5} markerEnd={`url(#arr-tr)`} />
 
       {/* ── Add & Norm 1 ── */}
-      <line x1={CX} y1={247} x2={CX} y2={242} stroke={ac} strokeWidth={1.5} markerEnd={`url(#arr-tr)`} />
-      <Box x={BX} y={210} w={BW} h={30}
-        label="Add & LayerNorm ①" bg={neutralBg} textColor={vt.text} rx={6} />
+      <Box x={BX} y={222} w={BW} h={30}
+        label="Add & LayerNorm ①  (x + sublayer)" bg={neutralBg} textColor={vt.text} rx={6} />
+      {/* Arrow from Add&Norm1 top (222) to FFN bottom (204) */}
+      <line x1={CX} y1={222} x2={CX} y2={206} stroke={ac} strokeWidth={1.5} markerEnd={`url(#arr-tr)`} />
 
       {/* ── FFN ── */}
-      <line x1={CX} y1={209} x2={CX} y2={206} stroke={ac} strokeWidth={1.5} markerEnd={`url(#arr-tr)`} />
       <Box x={BX} y={166} w={BW} h={38}
-        label="Feed-Forward Network" sublabel="Linear(ReLU(Linear(x)))  d→4d→d"
+        label="Feed-Forward Network" sublabel="FFN(x)=max(0,xW₁+b₁)W₂+b₂  d→4d→d"
         bg={purple} textColor="white" rx={8} />
+      {/* Arrow from FFN top (166) to Add&Norm2 bottom (148) */}
+      <line x1={CX} y1={166} x2={CX} y2={150} stroke={ac} strokeWidth={1.5} markerEnd={`url(#arr-tr)`} />
 
       {/* ── Add & Norm 2 ── */}
-      <line x1={CX} y1={165} x2={CX} y2={161} stroke={ac} strokeWidth={1.5} markerEnd={`url(#arr-tr)`} />
-      <Box x={BX} y={128} w={BW} h={30}
-        label="Add & LayerNorm ②" bg={neutralBg} textColor={vt.text} rx={6} />
+      <Box x={BX} y={118} w={BW} h={30}
+        label="Add & LayerNorm ②  (x + sublayer)" bg={neutralBg} textColor={vt.text} rx={6} />
+      {/* Arrow from Add&Norm2 top (118) to Linear+Softmax bottom (100) */}
+      <line x1={CX} y1={118} x2={CX} y2={102} stroke={ac} strokeWidth={1.5} markerEnd={`url(#arr-tr)`} />
 
       {/* ── Output head ── */}
-      <line x1={CX} y1={127} x2={CX} y2={123} stroke={ac} strokeWidth={1.5} markerEnd={`url(#arr-tr)`} />
-      <Box x={BX} y={82} w={BW} h={38}
-        label="Linear + Softmax" sublabel="→ vocabulary / class logits"
+      <Box x={BX} y={62} w={BW} h={38}
+        label="Linear + Softmax" sublabel="logits → P(vocab) or class probs"
         bg={green} textColor={textOn(green)} rx={8} />
-      <line x1={CX} y1={81} x2={CX} y2={52} stroke={ac} strokeWidth={1.5} markerEnd={`url(#arr-tr)`} />
-      <Box x={BX} y={30} w={BW} h={26} label="Output: token probs / class"
+      {/* Arrow from Linear+Softmax top (62) to Output box bottom (44) */}
+      <line x1={CX} y1={62} x2={CX} y2={46} stroke={ac} strokeWidth={1.5} markerEnd={`url(#arr-tr)`} />
+      <Box x={BX} y={18} w={BW} h={26} label="Output: token probs / class"
         bg={neutralBg} textColor={vt.text} rx={6} />
 
-      {/* ── Residual skip connections ── */}
-      {/* Skip around MHA: from before MHA (y=289) to after Add&Norm1 (y=240) */}
-      <path d={`M ${BX - 8} 289 L ${BX - 22} 289 L ${BX - 22} 240 L ${BX - 8} 240`}
+      {/* ── Residual skip connections (left rail) ── */}
+      {/* Skip around MHA: from Token Embed top (330) to Add&Norm1 bottom (252) */}
+      <path d={`M ${BX - 8} 330 L ${BX - 22} 330 L ${BX - 22} 252 L ${BX - 8} 252`}
         fill="none" stroke="#f59e0b" strokeWidth={1.5} strokeDasharray="4,2" />
-      {/* Skip around FFN: from Add&Norm1 output (y=209) to Add&Norm2 (y=158) */}
-      <path d={`M ${BX - 8} 209 L ${BX - 22} 209 L ${BX - 22} 158 L ${BX - 8} 158`}
+      {/* Skip around FFN: from Add&Norm1 top (222) to Add&Norm2 bottom (148) */}
+      <path d={`M ${BX - 8} 222 L ${BX - 22} 222 L ${BX - 22} 148 L ${BX - 8} 148`}
         fill="none" stroke="#f59e0b" strokeWidth={1.5} strokeDasharray="4,2" />
-      <text x={BX - 30} y={220} fontSize={8} fill="#f59e0b" fontWeight="bold"
-        transform={`rotate(-90,${BX-30},220)`}>residual</text>
+      <text x={BX - 30} y={240} fontSize={8} fill="#f59e0b" fontWeight="bold"
+        transform={`rotate(-90,${BX-30},240)`}>residual</text>
 
       {/* ── BERT annotation ── */}
-      <rect x={W - 140} y={248} width={128} height={72} rx={8}
+      <rect x={W - 140} y={268} width={128} height={74} rx={8}
         fill={vt.isDark ? "#1e3a5f30" : "#dbeafe50"} stroke="#3b82f6" strokeWidth={1} strokeDasharray="4,2" />
-      <text x={W - 76} y={264} textAnchor="middle" fontSize={9} fill="#3b82f6" fontWeight="bold">BERT uses encoder</text>
-      <text x={W - 76} y={278} textAnchor="middle" fontSize={8} fill="#3b82f6">bidirectional attention</text>
-      <text x={W - 76} y={292} textAnchor="middle" fontSize={8} fill="#3b82f6">[CLS] cls token</text>
-      <text x={W - 76} y={306} textAnchor="middle" fontSize={8} fill="#3b82f6">MLM + NSP pretrain</text>
-      <text x={W - 76} y={320} textAnchor="middle" fontSize={8} fill="#3b82f6">fine-tune: add head</text>
+      <text x={W - 76} y={284} textAnchor="middle" fontSize={9} fill="#3b82f6" fontWeight="bold">BERT uses encoder</text>
+      <text x={W - 76} y={298} textAnchor="middle" fontSize={8} fill="#3b82f6">bidirectional attention</text>
+      <text x={W - 76} y={312} textAnchor="middle" fontSize={8} fill="#3b82f6">[CLS] cls token</text>
+      <text x={W - 76} y={326} textAnchor="middle" fontSize={8} fill="#3b82f6">MLM + NSP pretrain</text>
+      <text x={W - 76} y={340} textAnchor="middle" fontSize={8} fill="#3b82f6">fine-tune: add head</text>
 
       <text x={W/2} y={H - 6} textAnchor="middle" fontSize={8} fill={vt.textMuted}>
-        Transformer Encoder: O(n²) attention — fully parallelizable — no recurrence
+        Transformer: O(n²d) attention — Q=XWQ, K=XWK, V=XWV — fully parallelizable, no recurrence
       </text>
     </svg>
   );
 }
 
-// 11. LSTM cell
+// 11. LSTM cell — input at top, gates below, output at bottom (no overlap)
 function LSTMArch({ accent, vt }: { accent: string; vt: VT }) {
-  const W = 540, H = 210;
+  const W = 540, H = 222;
   const arrowColor = vt.isDark ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.35)";
-  const GATE_W = 82, GATE_H = 42;
-  const TRACK_Y = 50;
-  const GATE_Y = 100;
+  const GATE_W = 82, GATE_H = 44;
+  const INPUT_Y = 6,  INPUT_H = 26;   // shared input row at top
+  const TRACK_Y = 50;                  // cell track center (rect: y=38..62)
+  const GATE_Y  = 80;                  // gate boxes top
 
   const gates = [
     { label: "Forget fₜ",  eq: "σ(Wf·[h,x]+bf)", color: "#ef4444", x: 70  },
@@ -756,52 +779,54 @@ function LSTMArch({ accent, vt }: { accent: string; vt: VT }) {
     <svg viewBox={`0 0 ${W} ${H}`} className="w-full">
       {ARROW_DEFS("arr-lstm", arrowColor)}
 
-      {/* Cell state track */}
-      <rect x={20} y={TRACK_Y - 12} width={W - 40} height={24} rx={12}
-        fill={vt.isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)"}
-        stroke={vt.border} strokeWidth={1.5} />
-      <text x={22} y={TRACK_Y + 4} fontSize={9} fill={vt.textMuted} fontWeight="bold">Cₜ₋₁</text>
-      <text x={85} y={TRACK_Y + 4} fontSize={14} fill="#ef4444" opacity={0.9}>×</text>
-      <text x={208} y={TRACK_Y + 4} fontSize={14} fill="#f59e0b" opacity={0.9}>+</text>
-      <text x={W - 44} y={TRACK_Y + 4} fontSize={9} fill={vt.textMuted} fontWeight="bold">Cₜ</text>
+      {/* ── Shared input row at TOP ── */}
+      <rect x={16} y={INPUT_Y} width={W - 32} height={INPUT_H} rx={8}
+        fill={vt.isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.04)"}
+        stroke={vt.border} strokeWidth={1} />
+      <text x={W/2} y={INPUT_Y + 17} textAnchor="middle" fontSize={9} fill={vt.textMuted}>
+        Shared input: [hₜ₋₁, xₜ]  →  fed to all 4 gates simultaneously
+      </text>
 
-      {/* Gate boxes */}
+      {/* ── Cell state highway (middle track) ── */}
+      <rect x={20} y={TRACK_Y - 12} width={W - 40} height={24} rx={12}
+        fill={vt.isDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.06)"}
+        stroke={vt.border} strokeWidth={1.5} />
+      <text x={24} y={TRACK_Y + 5} fontSize={9} fill={vt.textMuted} fontWeight="bold">Cₜ₋₁</text>
+      <text x={87} y={TRACK_Y + 6} fontSize={15} fill="#ef4444" opacity={0.9}>×</text>
+      <text x={208} y={TRACK_Y + 6} fontSize={15} fill="#f59e0b" opacity={0.9}>+</text>
+      <text x={W - 46} y={TRACK_Y + 5} fontSize={9} fill={vt.textMuted} fontWeight="bold">Cₜ</text>
+
+      {/* ── Gate boxes ── */}
       {gates.map(g => (
         <g key={g.label}>
           <rect x={g.x - GATE_W/2} y={GATE_Y} width={GATE_W} height={GATE_H} rx={8}
             fill={`${g.color}1c`} stroke={g.color} strokeWidth={1.5} />
-          <text x={g.x} y={GATE_Y + 15} textAnchor="middle" fontSize={9}
+          <text x={g.x} y={GATE_Y + 16} textAnchor="middle" fontSize={9}
             fontWeight="bold" fill={g.color}>{g.label}</text>
-          <text x={g.x} y={GATE_Y + 30} textAnchor="middle" fontSize={7}
+          <text x={g.x} y={GATE_Y + 32} textAnchor="middle" fontSize={7.5}
             fill={g.color} fontFamily="monospace">
             {g.eq.length > 18 ? g.eq.slice(0, 17) + "…" : g.eq}
           </text>
-          {/* Arrow from gate to cell track */}
+          {/* Arrow: input row (bottom=32) → gate top (GATE_Y=80) — 48px DOWN */}
+          <Arrow x1={g.x} y1={INPUT_Y + INPUT_H} x2={g.x} y2={GATE_Y}
+            color={arrowColor} markerId="arr-lstm" />
+          {/* Arrow: gate top (GATE_Y=80) → track bottom (62) — 18px UP */}
           <Arrow x1={g.x} y1={GATE_Y} x2={g.x} y2={TRACK_Y + 12}
             color={g.color} markerId="arr-lstm" />
         </g>
       ))}
 
-      {/* Hidden state + input row */}
-      <rect x={16} y={156} width={W - 32} height={26} rx={8}
-        fill={vt.isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.04)"}
-        stroke={vt.border} strokeWidth={1} />
-      <text x={W/2} y={173} textAnchor="middle" fontSize={9} fill={vt.textMuted}>
-        Shared input: [hₜ₋₁, xₜ]   →   fed to all 4 gates
-      </text>
-      {gates.map(g => (
-        <Arrow key={`inp-${g.label}`} x1={g.x} y1={156}
-          x2={g.x} y2={GATE_Y + GATE_H}
-          color={arrowColor} markerId="arr-lstm" />
-      ))}
-
-      {/* Output */}
-      <Box x={380} y={155} w={130} h={30}
+      {/* ── Output box (below gates, no overlap) ── */}
+      <Box x={366} y={138} w={158} h={32}
         label="hₜ = oₜ · tanh(Cₜ)"
         bg={vt.isDark ? "#7c3aed" : "#8b5cf6"} textColor="white" rx={8} />
+      {/* Arrow: output gate (bottom=124) → output box (top=138) */}
+      <Arrow x1={430} y1={GATE_Y + GATE_H} x2={430} y2={138}
+        color="#a855f7" markerId="arr-lstm" />
 
-      <text x={W/2} y={H - 4} textAnchor="middle" fontSize={8} fill={vt.textMuted}>
-        LSTM: cell state Cₜ = fₜ·Cₜ₋₁ + iₜ·g̃ₜ   hₜ = oₜ·tanh(Cₜ)
+      {/* ── Footer formula ── */}
+      <text x={W/2} y={H - 4} textAnchor="middle" fontSize={8.5} fill={vt.textMuted}>
+        LSTM: Cₜ = fₜ⊙Cₜ₋₁ + iₜ⊙g̃ₜ  ·  hₜ = oₜ⊙tanh(Cₜ)  ·  fₜ,iₜ,oₜ∈(0,1)  g̃ₜ∈(−1,1)
       </text>
     </svg>
   );
@@ -1117,120 +1142,215 @@ function RandomForestArch({ accent, vt }: { accent: string; vt: VT }) {
   );
 }
 
-// 17. XGBoost — gradient + hessian + regularized objective
+// 17. XGBoost — Newton boosting, regularized objective, histogram splits
 function XGBoostArch({ accent, vt }: { accent: string; vt: VT }) {
-  const W = 540, H = 185;
+  const W = 540, H = 258;
   const ac = vt.isDark ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.35)";
   const nb = vt.isDark ? "#334155" : "#e2e8f0";
+  const green = vt.isDark ? "#059669" : "#34d399";
+  const LCX = 6, LW = 214;
+
   return (
     <svg viewBox={`0 0 ${W} ${H}`} className="w-full">
       {ARROW_DEFS("arr-xgb", ac)}
-      <Box x={6} y={68} w={66} h={44} label="Data" sublabel="(x, y)"
-        bg={nb} textColor={vt.text} rx={8} />
-      <Arrow x1={72} y1={90} x2={96} y2={90} color={ac} markerId="arr-xgb" />
-      <Box x={96} y={56} w={110} h={68}
-        label="Gradient & Hessian" sublabel="gᵢ=∂L/∂F · hᵢ=∂²L/∂F²"
-        bg={nb} textColor={vt.text} rx={8} />
-      <Arrow x1={206} y1={90} x2={226} y2={90} color={ac} markerId="arr-xgb" />
-      <Box x={226} y={44} w={118} h={92}
-        label="Reg. Objective" sublabel={"Σ[gᵢfₜ+½hᵢfₜ²]+γT+½λ‖w‖²"}
+
+      {/* ── Left: 4-step boosting loop ── */}
+      <text x={LCX + LW / 2} y={10} textAnchor="middle" fontSize={8.5} fill={vt.textMuted} fontWeight="bold">
+        BOOSTING LOOP (T rounds)
+      </text>
+
+      <Box x={LCX} y={16} w={LW} h={36} label="① Initialize"
+        sublabel="F₀(x) = mean(y)" bg={nb} textColor={vt.text} rx={8} />
+      <Arrow x1={LCX + LW / 2} y1={52} x2={LCX + LW / 2} y2={64} color={ac} markerId="arr-xgb" />
+
+      <Box x={LCX} y={64} w={LW} h={40} label="② Compute gᵢ and hᵢ"
+        sublabel="1st + 2nd order derivatives of loss"
         bg={accent} textColor={textOn(accent)} rx={8} />
-      <Arrow x1={344} y1={90} x2={366} y2={90} color={ac} markerId="arr-xgb" />
-      <Box x={366} y={56} w={80} h={68}
-        label="Histogram Split" sublabel="bin features for speed"
-        bg={nb} textColor={vt.text} rx={8} />
-      <Arrow x1={446} y1={90} x2={470} y2={90} color={ac} markerId="arr-xgb" />
-      <Box x={470} y={72} w={60} h={36}
-        label="Tree hₜ" sublabel="→ F+=η·h"
-        bg={vt.isDark ? "#059669" : "#34d399"} textColor={textOn("#059669")} rx={8} />
-      <text x={W/2} y={H - 4} textAnchor="middle" fontSize={9} fill={vt.textMuted}>
-        XGBoost: Newton boosting with exact gradient + hessian · L1/L2 regularization · column subsampling
+      <Arrow x1={LCX + LW / 2} y1={104} x2={LCX + LW / 2} y2={116} color={ac} markerId="arr-xgb" />
+
+      <Box x={LCX} y={116} w={LW} h={40} label="③ Build Regularized Tree hₜ"
+        sublabel="split by max Gain · prune weak branches"
+        bg={accent} textColor={textOn(accent)} rx={8} />
+      <Arrow x1={LCX + LW / 2} y1={156} x2={LCX + LW / 2} y2={168} color={ac} markerId="arr-xgb" />
+
+      <Box x={LCX} y={168} w={LW} h={36} label="④ Update Predictions"
+        sublabel="Fₜ(x) = Fₜ₋₁(x) + η · hₜ(x)"
+        bg={green} textColor={textOn(green)} rx={8} />
+
+      <text x={LCX + LW / 2} y={218} textAnchor="middle" fontSize={8} fill="#f59e0b">
+        ↺  repeat t = 1…T  →  final prediction: sum of all trees
+      </text>
+
+      {/* ── Right: 3 innovation cards ── */}
+
+      {/* Card 1 — Newton Step */}
+      <rect x={228} y={8} width={306} height={66} rx={8}
+        fill={`${accent}12`} stroke={`${accent}40`} strokeWidth={1.5} />
+      <text x={240} y={24} fontSize={9} fontWeight="bold" fill={accent}>⚡ Newton Step (2nd-order)</text>
+      <text x={240} y={39} fontSize={8} fill={vt.text} fontFamily="monospace">wⱼ* = −Gⱼ / (Hⱼ + λ)   ← exact optimal leaf weight</text>
+      <text x={240} y={53} fontSize={7.5} fill={vt.textMuted}>Uses hessian (curvature) → better step size than gradient alone</text>
+      <text x={240} y={66} fontSize={7.5} fill={vt.textMuted}>Gⱼ = Σᵢ∈ⱼ gᵢ  ·  Hⱼ = Σᵢ∈ⱼ hᵢ  (sums over samples in leaf j)</text>
+
+      {/* Card 2 — Regularized Objective */}
+      <rect x={228} y={82} width={306} height={66} rx={8}
+        fill={vt.isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.03)"}
+        stroke={vt.border} strokeWidth={1} />
+      <text x={240} y={98} fontSize={9} fontWeight="bold" fill={vt.text}>📐 Regularized Objective</text>
+      <text x={240} y={113} fontSize={7.5} fill={vt.text} fontFamily="monospace">Obj = Σ[gᵢwⱼ + ½hᵢwⱼ²] + γT + ½λΣwⱼ²</text>
+      <text x={240} y={127} fontSize={7.5} fill={vt.textMuted}>γ = leaf count penalty  ·  λ = L2 regularization on weights</text>
+      <text x={240} y={140} fontSize={7.5} fill={vt.textMuted}>Gain = ½[GL²/(HL+λ) + GR²/(HR+λ) − G²/(H+λ)] − γ</text>
+
+      {/* Card 3 — Speed & Generalization */}
+      <rect x={228} y={156} width={306} height={80} rx={8}
+        fill={vt.isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.03)"}
+        stroke={vt.border} strokeWidth={1} />
+      <text x={240} y={172} fontSize={9} fontWeight="bold" fill={vt.text}>🚀 Speed & Generalization</text>
+      <text x={240} y={187} fontSize={7.5} fill={vt.textMuted}>• Histogram binning → O(kd) split finding (10× faster)</text>
+      <text x={240} y={200} fontSize={7.5} fill={vt.textMuted}>• colsample_bytree / subsample → randomness like RF</text>
+      <text x={240} y={213} fontSize={7.5} fill={vt.textMuted}>• alpha (L1) + lambda (L2) → built-in regularization</text>
+      <text x={240} y={226} fontSize={7.5} fill={vt.textMuted}>• Learns best direction for missing values natively</text>
+
+      <text x={W / 2} y={H - 8} textAnchor="middle" fontSize={8.5} fill={vt.textMuted}>
+        XGBoost: parallel Newton boosting · regularized trees · histogram splits · handles missing values
       </text>
     </svg>
   );
 }
 
-// 18. LightGBM — leaf-wise growth vs level-wise
+// 18. LightGBM — leaf-wise growth vs level-wise + key innovations
 function LightGBMArch({ accent, vt }: { accent: string; vt: VT }) {
-  const W = 540, H = 200;
+  const W = 540, H = 252;
   const ac = vt.isDark ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.35)";
   const nb = vt.isDark ? "#334155" : "#e2e8f0";
+  const NW = 40, NH = 20;
+
+  // Level-wise nodes (centered at cx=130)
+  const lv = [
+    { cx: 130, y: 28 },
+    { cx:  88, y: 60 }, { cx: 172, y: 60 },
+    { cx:  62, y: 94 }, { cx: 110, y: 94 }, { cx: 152, y: 94 }, { cx: 198, y: 94 },
+  ];
+  const lvEdges = [[0,1],[0,2],[1,3],[1,4],[2,5],[2,6]];
+
+  // Leaf-wise nodes (centered at cx=400)
+  // Root → left (best, gets split) + right (stays leaf)
+  // Left → left-left + left-right (both new leaves)
+  const lf = [
+    { cx: 400, y: 28, best: false },
+    { cx: 360, y: 60, best: true  },
+    { cx: 442, y: 60, best: false },
+    { cx: 334, y: 94, best: false },
+    { cx: 382, y: 94, best: false },
+  ];
+  const lfEdges = [[0,1],[0,2],[1,3],[1,4]];
 
   return (
     <svg viewBox={`0 0 ${W} ${H}`} className="w-full">
       {ARROW_DEFS("arr-lgb", ac)}
-      {/* Level-wise */}
-      <text x={130} y={18} textAnchor="middle" fontSize={9} fill={vt.textMuted} fontWeight="bold">
-        Level-wise (XGBoost)
+
+      {/* ── Section labels ── */}
+      <text x={130} y={13} textAnchor="middle" fontSize={9} fill={vt.textMuted} fontWeight="bold">
+        Level-wise (XGBoost style)
       </text>
-      {/* root → 2 children → 4 grandchildren */}
-      <rect x={110} y={24} width={40} height={22} rx={4} fill={nb} stroke={vt.border} strokeWidth={1} />
-      <text x={130} y={39} textAnchor="middle" fontSize={9} fill={vt.text}>Root</text>
-      {[60, 160].map((cx2, i) => (
-        <g key={i}>
-          <line x1={130} y1={46} x2={cx2} y2={62} stroke={ac} strokeWidth={1} />
-          <rect x={cx2 - 24} y={62} width={48} height={20} rx={4}
+      <text x={400} y={13} textAnchor="middle" fontSize={9} fill={accent} fontWeight="bold">
+        Leaf-wise (LightGBM) ← faster
+      </text>
+
+      {/* Level-wise tree */}
+      {lvEdges.map(([p, c], i) => (
+        <line key={`lve-${i}`}
+          x1={lv[p].cx} y1={lv[p].y + NH} x2={lv[c].cx} y2={lv[c].y}
+          stroke={ac} strokeWidth={1} />
+      ))}
+      {lv.map((n, i) => (
+        <g key={`lvn-${i}`}>
+          <rect x={n.cx - NW / 2} y={n.y} width={NW} height={NH} rx={4}
             fill={nb} stroke={vt.border} strokeWidth={1} />
-          <text x={cx2} y={76} textAnchor="middle" fontSize={8} fill={vt.text}>Level 1</text>
-          {[cx2 - 16, cx2 + 16].map((cx3, j) => (
-            <g key={j}>
-              <line x1={cx2} y1={82} x2={cx3} y2={98} stroke={ac} strokeWidth={1} />
-              <rect x={cx3 - 14} y={98} width={28} height={18} rx={3}
-                fill={nb} stroke={vt.border} strokeWidth={1} />
-              <text x={cx3} y={111} textAnchor="middle" fontSize={7} fill={vt.text}>L2</text>
-            </g>
-          ))}
+          <text x={n.cx} y={n.y + 13} textAnchor="middle" fontSize={7.5} fill={vt.text}>
+            {i === 0 ? "Root" : i <= 2 ? "L1" : "L2"}
+          </text>
         </g>
       ))}
-
-      {/* LightGBM leaf-wise */}
-      <text x={400} y={18} textAnchor="middle" fontSize={9} fill={accent} fontWeight="bold">
-        Leaf-wise (LightGBM)
+      <text x={130} y={118} textAnchor="middle" fontSize={7.5} fill={vt.textMuted}>
+        All nodes at same depth split
       </text>
-      <rect x={380} y={24} width={40} height={22} rx={4}
-        fill={accent + "30"} stroke={accent} strokeWidth={1.5} />
-      <text x={400} y={39} textAnchor="middle" fontSize={9} fill={accent} fontWeight="bold">Root</text>
-      {/* Best-gain leaf split */}
-      <line x1={400} y1={46} x2={365} y2={62} stroke={accent} strokeWidth={1.5} />
-      <rect x={341} y={62} width={48} height={20} rx={4}
-        fill={accent + "30"} stroke={accent} strokeWidth={1.5} />
-      <text x={365} y={76} textAnchor="middle" fontSize={8} fill={accent} fontWeight="bold">Best</text>
-      <line x1={400} y1={46} x2={435} y2={62} stroke={ac} strokeWidth={1} />
-      <rect x={411} y={62} width={48} height={20} rx={4}
-        fill={nb} stroke={vt.border} strokeWidth={1} />
-      <text x={435} y={76} textAnchor="middle" fontSize={8} fill={vt.text}>other</text>
-      {/* Best leaf splits again */}
-      <line x1={365} y1={82} x2={350} y2={98} stroke={accent} strokeWidth={1.5} />
-      <rect x={326} y={98} width={48} height={20} rx={4}
-        fill={accent + "30"} stroke={accent} strokeWidth={1.5} />
-      <text x={350} y={112} textAnchor="middle" fontSize={8} fill={accent} fontWeight="bold">Best²</text>
-      <line x1={365} y1={82} x2={380} y2={98} stroke={ac} strokeWidth={1} />
-      <rect x={356} y={98} width={48} height={20} rx={4}
-        fill={nb} stroke={vt.border} strokeWidth={1} />
-      <text x={380} y={112} textAnchor="middle" fontSize={8} fill={vt.text}>other</text>
+      <text x={130} y={129} textAnchor="middle" fontSize={7} fill={vt.textMuted}>
+        → balanced but slower
+      </text>
 
-      {/* Features */}
-      <Box x={60} y={140} w={150} h={36} label="GOSS: keep large-gradient samples"
-        bg={nb} textColor={vt.text} rx={6} />
-      <Box x={220} y={140} w={140} h={36} label="EFB: bundle sparse features"
-        bg={accent} textColor={textOn(accent)} rx={6} />
-      <Box x={370} y={140} w={112} h={36} label="Histogram binning"
-        bg={nb} textColor={vt.text} rx={6} />
+      {/* Divider */}
+      <line x1={272} y1={6} x2={272} y2={135} stroke={vt.border} strokeWidth={1} strokeDasharray="3,3" />
 
-      <text x={W/2} y={H - 4} textAnchor="middle" fontSize={9} fill={vt.textMuted}>
-        LightGBM: leaf-wise growth + GOSS + EFB → faster training, comparable accuracy to XGBoost
+      {/* Leaf-wise tree */}
+      {lfEdges.map(([p, c], i) => (
+        <line key={`lfe-${i}`}
+          x1={lf[p].cx} y1={lf[p].y + NH} x2={lf[c].cx} y2={lf[c].y}
+          stroke={lf[c].best ? accent : ac}
+          strokeWidth={lf[c].best ? 2 : 1} />
+      ))}
+      {lf.map((n, i) => (
+        <g key={`lfn-${i}`}>
+          <rect x={n.cx - NW / 2} y={n.y} width={NW} height={NH} rx={4}
+            fill={n.best ? accent : nb}
+            stroke={n.best ? accent : vt.border}
+            strokeWidth={n.best ? 2 : 1} />
+          <text x={n.cx} y={n.y + 13} textAnchor="middle" fontSize={7.5}
+            fill={n.best ? textOn(accent) : vt.text} fontWeight={n.best ? "bold" : "normal"}>
+            {i === 0 ? "Root" : i === 1 ? "Best!" : i === 2 ? "Leaf" : "Leaf"}
+          </text>
+        </g>
+      ))}
+      <text x={lf[1].cx + NW / 2 + 6} y={lf[1].y + 13} fontSize={7.5} fill={accent}>← max gain</text>
+      <text x={400} y={118} textAnchor="middle" fontSize={7.5} fill={accent}>
+        Always split leaf with highest gain
+      </text>
+      <text x={400} y={129} textAnchor="middle" fontSize={7} fill={accent}>
+        → deeper, asymmetric, better accuracy
+      </text>
+
+      {/* ── Bottom: 3 innovation cards ── */}
+      {/* GOSS */}
+      <rect x={6} y={140} width={164} height={72} rx={8} fill={nb} stroke={vt.border} strokeWidth={1} />
+      <text x={88} y={157} textAnchor="middle" fontSize={9} fontWeight="bold" fill={vt.text}>GOSS</text>
+      <text x={88} y={170} textAnchor="middle" fontSize={7.5} fill={vt.textMuted}>Gradient One-Side Sampling</text>
+      <text x={88} y={183} textAnchor="middle" fontSize={7.5} fill={vt.textMuted}>keep large-grad + random</text>
+      <text x={88} y={196} textAnchor="middle" fontSize={7.5} fill={vt.textMuted}>small-grad samples</text>
+      <text x={88} y={207} textAnchor="middle" fontSize={7} fill={vt.textMuted}>→ fewer samples, more signal</text>
+
+      {/* EFB */}
+      <rect x={178} y={140} width={164} height={72} rx={8} fill={nb} stroke={vt.border} strokeWidth={1} />
+      <text x={260} y={157} textAnchor="middle" fontSize={9} fontWeight="bold" fill={vt.text}>EFB</text>
+      <text x={260} y={170} textAnchor="middle" fontSize={7.5} fill={vt.textMuted}>Exclusive Feature Bundling</text>
+      <text x={260} y={183} textAnchor="middle" fontSize={7.5} fill={vt.textMuted}>bundle mutually exclusive</text>
+      <text x={260} y={196} textAnchor="middle" fontSize={7.5} fill={vt.textMuted}>sparse features together</text>
+      <text x={260} y={207} textAnchor="middle" fontSize={7} fill={vt.textMuted}>→ fewer features to split on</text>
+
+      {/* Histogram */}
+      <rect x={350} y={140} width={184} height={72} rx={8}
+        fill={`${accent}12`} stroke={`${accent}35`} strokeWidth={1.5} />
+      <text x={442} y={157} textAnchor="middle" fontSize={9} fontWeight="bold" fill={accent}>Histogram Binning</text>
+      <text x={442} y={170} textAnchor="middle" fontSize={7.5} fill={vt.textMuted}>continuous → k discrete bins</text>
+      <text x={442} y={183} textAnchor="middle" fontSize={7.5} fill={vt.textMuted}>O(n) → O(kd) split finding</text>
+      <text x={442} y={196} textAnchor="middle" fontSize={7.5} fill={vt.textMuted}>subtraction trick from parent</text>
+      <text x={442} y={207} textAnchor="middle" fontSize={7} fill={accent}>→ 10–100× faster than exact</text>
+
+      <text x={W / 2} y={H - 8} textAnchor="middle" fontSize={8.5} fill={vt.textMuted}>
+        LightGBM: leaf-wise growth + GOSS + EFB + histogram → faster, lower memory than XGBoost
       </text>
     </svg>
   );
 }
 
-// 19. RNN — unrolled recurrent cell
+// 19. RNN — unrolled recurrent cell (fixed overflow: NW=54, startX=52)
 function RNNArch({ accent, vt }: { accent: string; vt: VT }) {
-  const W = 540, H = 185;
+  const W = 540, H = 200;
   const ac = vt.isDark ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.35)";
   const tokens = ["x₁", "x₂", "x₃", "x₄"];
-  const NW = 64, NH = 38, CY = 90;
-  const spacing = (W - 48 - tokens.length * NW) / (tokens.length - 1);
+  const NW = 54, NH = 38, CY = 90;
+  const startX = 52;
+  // spacing = (W − startX − endPad − n*NW) / (n−1), endPad≈28 for "→…" text
+  const spacing = (W - startX - 28 - tokens.length * NW) / (tokens.length - 1);
+  // Cell 4 right edge: 52 + 3*(54+spacing) + 54 ≈ 510 ≤ 540 ✓
 
   return (
     <svg viewBox={`0 0 ${W} ${H}`} className="w-full">
@@ -1238,25 +1358,25 @@ function RNNArch({ accent, vt }: { accent: string; vt: VT }) {
       {/* Initial hidden state */}
       <Box x={6} y={CY - NH / 2} w={38} h={NH} label="h₀" sublabel="zeros"
         bg={vt.isDark ? "#334155" : "#e2e8f0"} textColor={vt.text} rx={6} />
-      <Arrow x1={44} y1={CY} x2={60} y2={CY} color={ac} markerId="arr-rnn" />
+      <Arrow x1={44} y1={CY} x2={startX} y2={CY} color={ac} markerId="arr-rnn" />
 
       {tokens.map((tok, i) => {
-        const cx = 60 + i * (NW + spacing) + NW / 2;
+        const cx = startX + i * (NW + spacing) + NW / 2;
         return (
           <g key={tok}>
             {/* Hidden cell */}
             <Box x={cx - NW / 2} y={CY - NH / 2} w={NW} h={NH}
-              label={`h${i + 1}`} sublabel={tok}
+              label={`hₜ`} sublabel={tok}
               bg={accent} textColor={textOn(accent)} rx={8} />
             {/* Input arrow (from below) */}
-            <Arrow x1={cx} y1={CY + NH / 2 + 28} x2={cx} y2={CY + NH / 2}
+            <Arrow x1={cx} y1={CY + NH / 2 + 24} x2={cx} y2={CY + NH / 2}
               color={ac} markerId="arr-rnn" />
-            <text x={cx} y={CY + NH / 2 + 42} textAnchor="middle" fontSize={9}
+            <text x={cx} y={CY + NH / 2 + 36} textAnchor="middle" fontSize={9}
               fill={vt.textMuted} fontStyle="italic">{tok}</text>
             {/* Output arrow (above) */}
-            <Arrow x1={cx} y1={CY - NH / 2} x2={cx} y2={CY - NH / 2 - 22}
+            <Arrow x1={cx} y1={CY - NH / 2} x2={cx} y2={CY - NH / 2 - 18}
               color={ac} markerId="arr-rnn" />
-            <text x={cx} y={CY - NH / 2 - 28} textAnchor="middle" fontSize={9}
+            <text x={cx} y={CY - NH / 2 - 22} textAnchor="middle" fontSize={9}
               fill={vt.textMuted}>y{i + 1}</text>
             {/* Recurrence arrow */}
             {i < tokens.length - 1 && (
@@ -1268,17 +1388,17 @@ function RNNArch({ accent, vt }: { accent: string; vt: VT }) {
         );
       })}
       {/* Final hidden */}
-      <text x={W - 24} y={CY + 4} textAnchor="middle" fontSize={9} fill={vt.textMuted}>→ …</text>
+      <text x={W - 20} y={CY + 4} textAnchor="middle" fontSize={9} fill={vt.textMuted}>→…</text>
 
-      {/* Formula */}
-      <rect x={20} y={H - 28} width={W - 40} height={20} rx={6}
-        fill={vt.surface} />
-      <text x={W / 2} y={H - 14} textAnchor="middle" fontSize={9} fill={vt.text}
+      {/* Formula bar */}
+      <rect x={14} y={H - 38} width={W - 28} height={30} rx={6} fill={vt.surface} />
+      <text x={W / 2} y={H - 24} textAnchor="middle" fontSize={8.5} fill={vt.text}
         fontFamily="monospace">
-        hₜ = tanh(Wₓ·xₜ + Wₕ·hₜ₋₁ + b)    yₜ = Wᵧ·hₜ
+        hₜ = tanh(Wₓ·xₜ + Wₕ·hₜ₋₁ + b)    yₜ = Wᵧ·hₜ + bᵧ
       </text>
-      <text x={W / 2} y={H - 2} textAnchor="middle" fontSize={8} fill={vt.textMuted}>
-        RNN: shared weights across all timesteps — vanishing gradient problem at long sequences
+      <text x={W / 2} y={H - 10} textAnchor="middle" fontSize={7.5} fill={vt.textMuted}
+        fontFamily="monospace">
+        Wₓ:[d×h]  Wₕ:[h×h]  Wᵧ:[h×o]  h₀=0  ·  shared weights all timesteps
       </text>
     </svg>
   );
@@ -1344,12 +1464,12 @@ function GRUArch({ accent, vt }: { accent: string; vt: VT }) {
   );
 }
 
-// 21. ResNet — skip connections
+// 21. ResNet — skip connections (fixed arc arrow)
 function ResNetArch({ accent, vt }: { accent: string; vt: VT }) {
-  const W = 540, H = 200;
+  const W = 540, H = 210;
   const ac = vt.isDark ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.35)";
   const nb = vt.isDark ? "#334155" : "#e2e8f0";
-  const BH = 36, BY = 60;
+  const BH = 36, BY = 66;
 
   const blocks = [
     { label: "Conv 3×3", sub: "BN + ReLU", x: 82,  bg: accent },
@@ -1357,6 +1477,9 @@ function ResNetArch({ accent, vt }: { accent: string; vt: VT }) {
     { label: "+",         sub: "merge",     x: 320, bg: vt.isDark ? "#059669" : "#34d399", w: 36 },
     { label: "ReLU",      sub: "output",   x: 390, bg: vt.isDark ? "#7c3aed" : "#8b5cf6" },
   ];
+
+  // + box center: x=320, w=36 → cx=338, top=BY=66
+  const plusCX = 338;
 
   return (
     <svg viewBox={`0 0 ${W} ${H}`} className="w-full">
@@ -1387,36 +1510,36 @@ function ResNetArch({ accent, vt }: { accent: string; vt: VT }) {
       <Box x={468} y={BY} w={62} h={BH} label="F(x)+x" sublabel="output"
         bg={nb} textColor={vt.text} rx={8} />
 
-      {/* Skip connection arc */}
-      <path d={`M 72 ${BY + BH/2 - 4} C 72 ${BY - 30}, 316 ${BY - 30}, 316 ${BY + BH/2 - 4}`}
-        fill="none" stroke="#f59e0b" strokeWidth={2} strokeDasharray="6,3" />
-      <text x={194} y={BY - 14} textAnchor="middle" fontSize={9} fill="#f59e0b" fontWeight="bold">
+      {/* Skip connection arc — endpoint at + box top center (cx=338, y=BY) */}
+      <path d={`M 72 ${BY + BH/2 - 4} C 72 ${BY - 38}, ${plusCX} ${BY - 38}, ${plusCX} ${BY}`}
+        fill="none" stroke="#f59e0b" strokeWidth={2} strokeDasharray="6,3"
+        markerEnd="url(#arr-res)" />
+      <text x={205} y={BY - 22} textAnchor="middle" fontSize={9} fill="#f59e0b" fontWeight="bold">
         Identity shortcut: x
       </text>
-      <Arrow x1={316} y1={BY - 4} x2={320} y2={BY} color="#f59e0b" markerId="arr-res" />
 
       {/* ResNet depth variants */}
       {[
-        { label: "ResNet-18",  sub: "18 layers", x: 50,  bg: nb },
-        { label: "ResNet-50",  sub: "bottleneck", x: 186, bg: accent },
-        { label: "ResNet-152", sub: "deep",       x: 322, bg: accent },
-        { label: "ResNeXt",    sub: "+ grouped",  x: 446, bg: nb },
+        { label: "ResNet-18",  sub: "18 layers", x: 8,   bg: nb },
+        { label: "ResNet-50",  sub: "bottleneck", x: 146, bg: accent },
+        { label: "ResNet-152", sub: "deep",       x: 284, bg: accent },
+        { label: "ResNeXt",    sub: "+ grouped",  x: 422, bg: nb },
       ].map(v => (
-        <Box key={v.label} x={v.x} y={140} w={110} h={32}
+        <Box key={v.label} x={v.x} y={148} w={110} h={32}
           label={v.label} sublabel={v.sub}
           bg={v.bg} textColor={textOn(v.bg)} rx={6} />
       ))}
 
       <text x={W/2} y={H - 4} textAnchor="middle" fontSize={9} fill={vt.textMuted}>
-        ResNet: F(x)+x — skip connections solve vanishing gradients, enable training 100s of layers
+        ResNet: F(x)+x — ∂L/∂x = ∂L/∂y·(1 + ∂F/∂x) — gradient always ≥1 → no vanishing
       </text>
     </svg>
   );
 }
 
-// 22. ViT — Vision Transformer
+// 22. ViT — Vision Transformer (fixed text overflow in sublabels)
 function ViTArch({ accent, vt }: { accent: string; vt: VT }) {
-  const W = 540, H = 190;
+  const W = 540, H = 200;
   const ac = vt.isDark ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.35)";
   const nb = vt.isDark ? "#334155" : "#e2e8f0";
 
@@ -1425,46 +1548,46 @@ function ViTArch({ accent, vt }: { accent: string; vt: VT }) {
       {ARROW_DEFS("arr-vit", ac)}
 
       {/* Image → patches */}
-      <rect x={8} y={60} width={48} height={48} rx={4}
+      <rect x={8} y={62} width={48} height={48} rx={4}
         fill={accent + "25"} stroke={accent} strokeWidth={1.5} />
       <text x={32} y={82} textAnchor="middle" fontSize={8} fill={accent} fontWeight="bold">Image</text>
       <text x={32} y={95} textAnchor="middle" fontSize={7} fill={accent}>H×W×C</text>
       {/* Patch grid lines */}
       {[16,32].map(o => (
         <g key={o}>
-          <line x1={8} y1={60 + o} x2={56} y2={60 + o} stroke={accent} strokeWidth={0.5} opacity={0.5} />
-          <line x1={8 + o} y1={60} x2={8 + o} y2={108} stroke={accent} strokeWidth={0.5} opacity={0.5} />
+          <line x1={8} y1={62 + o} x2={56} y2={62 + o} stroke={accent} strokeWidth={0.5} opacity={0.5} />
+          <line x1={8 + o} y1={62} x2={8 + o} y2={110} stroke={accent} strokeWidth={0.5} opacity={0.5} />
         </g>
       ))}
 
-      <Arrow x1={56} y1={84} x2={76} y2={84} color={ac} markerId="arr-vit" />
-      <Box x={76} y={64} w={84} h={40} label="Flatten Patches" sublabel="N×(P²·C)"
+      <Arrow x1={56} y1={86} x2={76} y2={86} color={ac} markerId="arr-vit" />
+      <Box x={76} y={66} w={84} h={40} label="Flatten Patches" sublabel="N×(P²·C)"
         bg={nb} textColor={vt.text} rx={8} />
-      <Arrow x1={160} y1={84} x2={178} y2={84} color={ac} markerId="arr-vit" />
-      <Box x={178} y={64} w={76} h={40} label="Linear Embed" sublabel="Proj to D"
+      <Arrow x1={160} y1={86} x2={178} y2={86} color={ac} markerId="arr-vit" />
+      <Box x={178} y={66} w={78} h={40} label="Linear Embed" sublabel="xₚ·E → D-dim"
         bg={accent} textColor={textOn(accent)} rx={8} />
-      <Arrow x1={254} y1={84} x2={272} y2={84} color={ac} markerId="arr-vit" />
+      <Arrow x1={256} y1={86} x2={274} y2={86} color={ac} markerId="arr-vit" />
 
-      {/* [CLS] + Pos embed */}
-      <Box x={272} y={50} w={78} h={68}
-        label="[CLS] + Pos" sublabel="E_pos added to each token"
+      {/* [CLS] + Pos embed — shorter sublabel to avoid overflow */}
+      <Box x={274} y={52} w={82} h={68}
+        label="[CLS] + Pos" sublabel="E_pos per token"
         bg={vt.isDark ? "#7c3aed" : "#8b5cf6"} textColor="white" rx={8} />
-      <Arrow x1={350} y1={84} x2={368} y2={84} color={ac} markerId="arr-vit" />
+      <Arrow x1={356} y1={86} x2={374} y2={86} color={ac} markerId="arr-vit" />
 
-      {/* Transformer encoder */}
-      <Box x={368} y={44} w={80} h={80}
-        label="Transformer" sublabel={"Encoder × L\nMHSA + FFN"}
+      {/* Transformer encoder — fixed sublabel (no \n, shorter text) */}
+      <Box x={374} y={46} w={82} h={80}
+        label="Transformer" sublabel="MHSA+FFN × L"
         bg={accent} textColor={textOn(accent)} rx={8} />
-      <Arrow x1={448} y1={84} x2={464} y2={84} color={ac} markerId="arr-vit" />
+      <Arrow x1={456} y1={86} x2={470} y2={86} color={ac} markerId="arr-vit" />
 
       {/* Classification head */}
-      <Box x={464} y={60} w={66} h={48}
-        label="[CLS]" sublabel="MLP → class"
+      <Box x={470} y={62} w={62} h={48}
+        label="[CLS]" sublabel="MLP→cls"
         bg={vt.isDark ? "#059669" : "#34d399"} textColor={textOn("#059669")} rx={8} />
 
       {/* Patch size notes */}
-      <text x={W/2} y={148} textAnchor="middle" fontSize={9} fill={vt.textMuted}>
-        Patch size 16×16: 224×224 image → 196 patches + 1 [CLS] = 197 tokens
+      <text x={W/2} y={152} textAnchor="middle" fontSize={9} fill={vt.textMuted}>
+        Patch P=16: 224×224 → 196 patches + 1 [CLS] = 197 tokens  ·  zₙ = [x_cls; xₚ₁E; …] + E_pos
       </text>
       <text x={W/2} y={H - 4} textAnchor="middle" fontSize={9} fill={vt.textMuted}>
         ViT: no convolutions — pure self-attention over image patches (ViT-B/16, ViT-L/32…)
@@ -1533,81 +1656,120 @@ function VAEArch({ accent, vt }: { accent: string; vt: VT }) {
   );
 }
 
-// 24. CatBoost — ordered boosting + symmetric (oblivious) trees
+// 24. CatBoost — ordered TS + symmetric trees + ordered boosting
 function CatBoostArch({ accent, vt }: { accent: string; vt: VT }) {
-  const W = 540, H = 210;
+  const W = 540, H = 280;
   const ac = vt.isDark ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.35)";
   const nb = vt.isDark ? "#334155" : "#e2e8f0";
+  const green = vt.isDark ? "#059669" : "#34d399";
+  const NW = 38, NH = 18;
+
+  // Symmetric tree layout (right side, centered at cx=400)
+  const root = { cx: 400, y: 72 };
+  const l1 = [{ cx: 368, y: 100 }, { cx: 432, y: 100 }];
+  const l2 = [
+    { cx: 348, y: 130 }, { cx: 384, y: 130 },
+    { cx: 416, y: 130 }, { cx: 452, y: 130 },
+  ];
 
   return (
     <svg viewBox={`0 0 ${W} ${H}`} className="w-full">
       {ARROW_DEFS("arr-cat", ac)}
 
-      {/* ── Pipeline row ── */}
-      {/* Dataset */}
-      <Box x={6} y={60} w={62} h={50} label="Data" sublabel="cat+num"
-        bg={nb} textColor={vt.text} rx={8} />
-      <Arrow x1={68} y1={85} x2={88} y2={85} color={ac} markerId="arr-cat" />
-
-      {/* Ordered Target Statistics (key differentiator) */}
-      <Box x={88} y={44} w={118} h={82}
-        label="Ordered TS" sublabel={"cat feature encoding\nno target leakage"}
-        bg={nb} textColor={vt.text} rx={8} />
-      <text x={147} y={100} textAnchor="middle" fontSize={7.5} fill={accent} fontFamily="monospace">
-        TS(xᵢ) = Σy[xⱼ=xᵢ,j&lt;i] / count
+      {/* ── Left: Ordered Target Statistics ── */}
+      <rect x={6} y={8} width={252} height={116} rx={8}
+        fill={`${accent}10`} stroke={`${accent}35`} strokeWidth={1.5} />
+      <text x={132} y={24} textAnchor="middle" fontSize={9} fontWeight="bold" fill={accent}>
+        ① Ordered Target Statistics
       </text>
-      <Arrow x1={206} y1={85} x2={226} y2={85} color={ac} markerId="arr-cat" />
+      <text x={132} y={37} textAnchor="middle" fontSize={7.5} fill={vt.text}>
+        Encode categoricals without target leakage
+      </text>
 
-      {/* Ordered Boosting */}
-      <Box x={226} y={52} w={110} h={66}
-        label="Ordered Boosting" sublabel="permuted dataset: train hₜ on Dₜ ≠ Dₜ₋₁"
-        bg={accent} textColor={textOn(accent)} rx={8} />
-      <Arrow x1={336} y1={85} x2={356} y2={85} color={ac} markerId="arr-cat" />
+      {/* Formula box */}
+      <rect x={16} y={42} width={232} height={28} rx={5}
+        fill={vt.isDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.05)"} />
+      <text x={132} y={54} textAnchor="middle" fontSize={7.5} fill={vt.text} fontFamily="monospace">
+        TS(xᵢ) = Σ&#123;yⱼ: xⱼ=xᵢ, j&lt;i&#125; + a·prior
+      </text>
+      <text x={132} y={65} textAnchor="middle" fontSize={7} fill={vt.textMuted} fontFamily="monospace">
+        count(xⱼ=xᵢ, j&lt;i) + a
+      </text>
 
-      {/* Symmetric (Oblivious) Tree */}
-      <rect x={356} y={34} width={118} height={102} rx={8}
-        fill={`${accent}12`} stroke={`${accent}35`} strokeWidth={1.5} />
-      <text x={415} y={50} textAnchor="middle" fontSize={9} fill={accent} fontWeight="bold">Symmetric Tree</text>
-      {/* Tree structure — same split at each level */}
-      {/* Level 0 root */}
-      <rect x={398} y={56} width={34} height={18} rx={3} fill={accent + "50"} />
-      <text x={415} y={68} textAnchor="middle" fontSize={7} fill={vt.text}>x≤t</text>
-      {/* Level 1 — same split condition */}
-      {[380, 430].map((cx, i) => (
-        <g key={i}>
-          <line x1={415} y1={74} x2={cx} y2={84} stroke={ac} strokeWidth={1} />
-          <rect x={cx - 16} y={84} width={32} height={14} rx={3} fill={accent + "35"} />
-          <text x={cx} y={94} textAnchor="middle" fontSize={7} fill={vt.text}>x≤t</text>
-          {/* Level 2 leaves */}
-          {[cx - 12, cx + 12].map((lx, j) => (
-            <g key={j}>
-              <line x1={cx} y1={98} x2={lx} y2={108} stroke={ac} strokeWidth={0.8} />
-              <rect x={lx - 9} y={108} width={18} height={14} rx={3}
-                fill={vt.isDark ? "#059669" : "#34d399"} opacity={0.7} />
-              <text x={lx} y={118} textAnchor="middle" fontSize={6.5} fill="#fff">leaf</text>
-            </g>
-          ))}
+      <text x={16} y={84} fontSize={7.5} fill={vt.textMuted}>
+        • Sample i uses ONLY targets from samples 1..i−1
+      </text>
+      <text x={16} y={96} fontSize={7.5} fill={vt.textMuted}>
+        • Different ordering per boosting round
+      </text>
+      <text x={16} y={108} fontSize={7.5} fill={vt.textMuted}>
+        • No manual one-hot / label encoding needed
+      </text>
+      <text x={16} y={120} fontSize={7.5} fill={accent} fontWeight="bold">
+        → prevents overfitting on high-cardinality cats
+      </text>
+
+      {/* ── Right: Symmetric (Oblivious) Tree ── */}
+      <text x={400} y={16} textAnchor="middle" fontSize={9} fontWeight="bold" fill={vt.text}>
+        ② Symmetric (Oblivious) Tree
+      </text>
+      <text x={400} y={28} textAnchor="middle" fontSize={7.5} fill={vt.textMuted}>
+        same split condition at every node of the same level
+      </text>
+
+      {/* Root */}
+      <rect x={root.cx - NW / 2} y={root.y} width={NW} height={NH} rx={4} fill={accent} />
+      <text x={root.cx} y={root.y + 12} textAnchor="middle" fontSize={7} fill={textOn(accent)} fontWeight="bold">x₁≤t₁</text>
+
+      {/* Level 1 — same condition */}
+      {l1.map((n, i) => (
+        <g key={`cl1-${i}`}>
+          <line x1={root.cx} y1={root.y + NH} x2={n.cx} y2={n.y} stroke={ac} strokeWidth={1} />
+          <rect x={n.cx - NW / 2} y={n.y} width={NW} height={NH} rx={4} fill={accent} />
+          <text x={n.cx} y={n.y + 12} textAnchor="middle" fontSize={7} fill={textOn(accent)} fontWeight="bold">x₂≤t₂</text>
         </g>
       ))}
-      <text x={415} y={143} textAnchor="middle" fontSize={7} fill={vt.textMuted}>same split at each level</text>
+      {/* "same!" annotation between L1 nodes */}
+      <line x1={368 + NW / 2} y1={109} x2={432 - NW / 2} y2={109}
+        stroke="#f59e0b" strokeWidth={1} strokeDasharray="3,2" />
+      <text x={400} y={107} textAnchor="middle" fontSize={6.5} fill="#f59e0b">same!</text>
 
-      <Arrow x1={474} y1={85} x2={502} y2={85} color={ac} markerId="arr-cat" />
-      <Box x={502} y={68} w={30} h={34} label="ŷ" sublabel=""
-        bg={vt.isDark ? "#059669" : "#34d399"} textColor={textOn("#059669")} rx={6} />
-
-      {/* Key features row */}
-      {[
-        { x: 6,   label: "GPU training", sub: "fast" },
-        { x: 148, label: "No tuning needed", sub: "auto cat encoding" },
-        { x: 300, label: "Ordered boosting", sub: "prevents overfitting" },
-      ].map(f => (
-        <Box key={f.label} x={f.x} y={158} w={136} h={34}
-          label={f.label} sublabel={f.sub}
-          bg={nb} textColor={vt.text} rx={6} />
+      {/* Level 2 — leaves */}
+      {l2.map((n, i) => (
+        <g key={`cl2-${i}`}>
+          <line x1={l1[Math.floor(i / 2)].cx} y1={l1[Math.floor(i / 2)].y + NH}
+            x2={n.cx} y2={n.y} stroke={ac} strokeWidth={1} />
+          <rect x={n.cx - NW / 2} y={n.y} width={NW} height={NH} rx={4} fill={green} />
+          <text x={n.cx} y={n.y + 12} textAnchor="middle" fontSize={7} fill={textOn(green)}>w{i + 1}</text>
+        </g>
       ))}
+      {/* l2 bottom = y=130+NH=148 → cards start at y=162 (14px clearance) */}
+      <text x={400} y={154} textAnchor="middle" fontSize={7.5} fill={vt.textMuted}>
+        → O(depth) prediction · regularization effect
+      </text>
 
-      <text x={W/2} y={H - 4} textAnchor="middle" fontSize={9} fill={vt.textMuted}>
-        CatBoost: ordered boosting + symmetric trees — best out-of-box for categorical-heavy datasets
+      {/* ── Bottom: 3 feature cards (shifted to y=162 to clear l2 nodes at y=148) ── */}
+      <rect x={6} y={162} width={162} height={70} rx={6} fill={nb} stroke={vt.border} strokeWidth={1} />
+      <text x={87} y={179} textAnchor="middle" fontSize={8.5} fontWeight="bold" fill={vt.text}>③ Ordered Boosting</text>
+      <text x={87} y={193} textAnchor="middle" fontSize={7.5} fill={vt.textMuted}>Train hₜ on random permutation</text>
+      <text x={87} y={206} textAnchor="middle" fontSize={7.5} fill={vt.textMuted}>→ prevents target leakage</text>
+      <text x={87} y={219} textAnchor="middle" fontSize={7} fill={vt.textMuted}>in boosting residuals</text>
+
+      <rect x={178} y={162} width={162} height={70} rx={6} fill={nb} stroke={vt.border} strokeWidth={1} />
+      <text x={259} y={179} textAnchor="middle" fontSize={8.5} fontWeight="bold" fill={vt.text}>GPU Training</text>
+      <text x={259} y={193} textAnchor="middle" fontSize={7.5} fill={vt.textMuted}>Native GPU support</text>
+      <text x={259} y={206} textAnchor="middle" fontSize={7.5} fill={vt.textMuted}>Symmetric trees enable</text>
+      <text x={259} y={219} textAnchor="middle" fontSize={7} fill={vt.textMuted}>efficient GPU computation</text>
+
+      <rect x={350} y={162} width={184} height={70} rx={6}
+        fill={`${accent}12`} stroke={`${accent}35`} strokeWidth={1.5} />
+      <text x={442} y={179} textAnchor="middle" fontSize={8.5} fontWeight="bold" fill={accent}>Out-of-the-box</text>
+      <text x={442} y={193} textAnchor="middle" fontSize={7.5} fill={vt.textMuted}>No manual cat encoding</text>
+      <text x={442} y={206} textAnchor="middle" fontSize={7.5} fill={vt.textMuted}>Great defaults, minimal tuning</text>
+      <text x={442} y={219} textAnchor="middle" fontSize={7} fill={accent}>Best for categorical-heavy data</text>
+
+      <text x={W / 2} y={H - 8} textAnchor="middle" fontSize={8.5} fill={vt.textMuted}>
+        CatBoost: ordered TS + symmetric trees + ordered boosting → top tabular performance out-of-box
       </text>
     </svg>
   );
@@ -1615,7 +1777,7 @@ function CatBoostArch({ accent, vt }: { accent: string; vt: VT }) {
 
 // 25. BERT — bidirectional encoder
 function BERTArch({ accent, vt }: { accent: string; vt: VT }) {
-  const W = 540, H = 230;
+  const W = 540, H = 280;
   const ac = vt.isDark ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.35)";
   const nb = vt.isDark ? "#334155" : "#e2e8f0";
   const green = vt.isDark ? "#059669" : "#34d399";
@@ -1623,7 +1785,7 @@ function BERTArch({ accent, vt }: { accent: string; vt: VT }) {
   const blue = "#3b82f6";
 
   const tokens = ["[CLS]", "The", "cat", "[MASK]", "[SEP]"];
-  const CELL_W = 72, CELL_H = 28, TOK_Y = 162;
+  const CELL_W = 72, CELL_H = 28, TOK_Y = 196;
   const totalW = tokens.length * CELL_W;
   const startX = (W - totalW) / 2;
 
@@ -1631,12 +1793,50 @@ function BERTArch({ accent, vt }: { accent: string; vt: VT }) {
     <svg viewBox={`0 0 ${W} ${H}`} className="w-full">
       {ARROW_DEFS("arr-bert", ac)}
 
-      {/* Title */}
-      <text x={W/2} y={14} textAnchor="middle" fontSize={10} fill={accent} fontWeight="bold">
+      {/* ── Title ── */}
+      <text x={W/2} y={16} textAnchor="middle" fontSize={10} fill={accent} fontWeight="bold">
         BERT: Bidirectional Encoder Representations from Transformers
       </text>
 
-      {/* Input tokens */}
+      {/* ── Pre-training task cards (top row) ── */}
+      <rect x={6} y={24} width={160} height={36} rx={6}
+        fill={vt.isDark ? "#7f1d1d30" : "#fee2e220"} stroke="#ef4444" strokeWidth={1} />
+      <text x={86} y={39} textAnchor="middle" fontSize={8.5} fill="#ef4444" fontWeight="bold">MLM: Masked LM</text>
+      <text x={86} y={52} textAnchor="middle" fontSize={7.5} fill="#ef4444">predict [MASK] → rich token ctx</text>
+
+      <rect x={W - 166} y={24} width={160} height={36} rx={6}
+        fill={`${purple}20`} stroke={purple} strokeWidth={1} />
+      <text x={W - 86} y={39} textAnchor="middle" fontSize={8.5} fill={purple} fontWeight="bold">NSP: Next Sentence</text>
+      <text x={W - 86} y={52} textAnchor="middle" fontSize={7.5} fill={purple}>Is B the next sentence?</text>
+
+      {/* ── Fine-tune note (centered between cards, no overlap) ── */}
+      <text x={W/2} y={40} textAnchor="middle" fontSize={8.5} fill={accent} fontWeight="bold">
+        Fine-tune: add task head on [CLS] output
+      </text>
+
+      {/* ── Transformer encoder block ── */}
+      <rect x={startX - 10} y={72} width={totalW + 20} height={54} rx={8}
+        fill={`${accent}10`} stroke={`${accent}35`} strokeWidth={1.5} strokeDasharray="5,3" />
+      <text x={W/2} y={92} textAnchor="middle" fontSize={9} fill={accent} fontWeight="bold">
+        Transformer Encoder × 12 layers (BERT-base)   |   × 24 (BERT-large)
+      </text>
+      <text x={W/2} y={107} textAnchor="middle" fontSize={8} fill={vt.textMuted}>
+        MH-Self-Attention (12 heads, d=768) → Add&amp;Norm → FFN(768→3072→768) → Add&amp;Norm
+      </text>
+      <text x={W/2} y={119} textAnchor="middle" fontSize={7.5} fill={vt.textMuted}>
+        All tokens attend to ALL tokens simultaneously — no left-to-right mask (unlike GPT)
+      </text>
+
+      {/* ── Token embedding → encoder arrows ── */}
+      {tokens.map((tok, i) => {
+        const x = startX + i * CELL_W;
+        return (
+          <line key={`arr-${tok}`} x1={x + CELL_W/2} y1={TOK_Y} x2={x + CELL_W/2} y2={126}
+            stroke={ac} strokeWidth={1} markerEnd="url(#arr-bert)" />
+        );
+      })}
+
+      {/* ── Input tokens ── */}
       {tokens.map((tok, i) => {
         const x = startX + i * CELL_W;
         const isCLS  = tok === "[CLS]";
@@ -1650,63 +1850,32 @@ function BERTArch({ accent, vt }: { accent: string; vt: VT }) {
               fill={bg} stroke={isMASK ? "#ef4444" : "transparent"} strokeWidth={1.5} />
             <text x={x + CELL_W/2} y={TOK_Y + CELL_H/2 + 4}
               textAnchor="middle" fontSize={9} fontWeight="bold" fill={tc}>{tok}</text>
-            {/* Token embedding → encoder arrow */}
-            <line x1={x + CELL_W/2} y1={TOK_Y} x2={x + CELL_W/2} y2={94}
-              stroke={ac} strokeWidth={1} />
           </g>
         );
       })}
 
-      {/* Bidirectional arrows between tokens at embedding level */}
+      {/* ── Bidirectional arrows between tokens ── */}
       {tokens.slice(0, -1).map((_, i) => {
         const x1 = startX + i * CELL_W + CELL_W - 4;
         const x2 = startX + (i+1) * CELL_W + 4;
-        const my = TOK_Y + CELL_H + 8;
+        const my = TOK_Y + CELL_H + 10;
         return (
-          <g key={i}>
-            <line x1={x1} y1={my} x2={x2} y2={my} stroke={blue} strokeWidth={1}
-              markerEnd={`url(#arr-bert)`} markerStart={`url(#arr-bert)`} opacity={0.5} />
-          </g>
+          <line key={i} x1={x1} y1={my} x2={x2} y2={my} stroke={blue} strokeWidth={1}
+            markerEnd={`url(#arr-bert)`} markerStart={`url(#arr-bert)`} opacity={0.6} />
         );
       })}
-      <text x={W/2} y={TOK_Y + CELL_H + 22} textAnchor="middle" fontSize={8} fill={blue}>
-        ← bidirectional attention: all tokens attend to all tokens simultaneously →
+      <text x={W/2} y={TOK_Y + CELL_H + 24} textAnchor="middle" fontSize={8} fill={blue}>
+        ← bidirectional: every token sees every other token simultaneously →
       </text>
 
-      {/* Transformer encoder block (N=12 for BERT-base) */}
-      <rect x={startX - 8} y={50} width={totalW + 16} height={42} rx={8}
-        fill={`${accent}10`} stroke={`${accent}35`} strokeWidth={1.5} strokeDasharray="5,3" />
-      <text x={W/2} y={67} textAnchor="middle" fontSize={9} fill={accent} fontWeight="bold">
-        Transformer Encoder × 12 layers (BERT-base)   |   × 24 (BERT-large)
-      </text>
-      <text x={W/2} y={82} textAnchor="middle" fontSize={8} fill={vt.textMuted}>
-        MH-Attention (12 heads) → Add&Norm → FFN(3072) → Add&Norm
-      </text>
+      {/* ── Token type labels ── */}
+      <text x={startX + CELL_W/2} y={TOK_Y - 4} textAnchor="middle" fontSize={7} fill={accent}>[CLS] cls</text>
+      <text x={startX + 3*CELL_W + CELL_W/2} y={TOK_Y - 4} textAnchor="middle" fontSize={7} fill="#ef4444">[MASK] ?</text>
 
-      {/* Output representations */}
-      <text x={W/2} y={46} textAnchor="middle" fontSize={9} fill={accent} fontWeight="bold">
-        Contextual token representations
-      </text>
-
-      {/* Pre-training tasks */}
-      <rect x={6} y={10} width={160} height={34} rx={6}
-        fill={vt.isDark ? "#7f1d1d30" : "#fee2e220"} stroke="#ef4444" strokeWidth={1} />
-      <text x={86} y={24} textAnchor="middle" fontSize={8} fill="#ef4444" fontWeight="bold">MLM: Masked LM</text>
-      <text x={86} y={37} textAnchor="middle" fontSize={7} fill="#ef4444">predict [MASK] tokens</text>
-
-      <rect x={W - 166} y={10} width={160} height={34} rx={6}
-        fill={`${purple}20`} stroke={purple} strokeWidth={1} />
-      <text x={W - 86} y={24} textAnchor="middle" fontSize={8} fill={purple} fontWeight="bold">NSP: Next Sentence</text>
-      <text x={W - 86} y={37} textAnchor="middle" fontSize={7} fill={purple}>Is B the next sentence?</text>
-
-      {/* Fine-tune head */}
-      <rect x={startX} y={6} width={CELL_W - 4} height={22} rx={4}
-        fill={green} />
-      <text x={startX + CELL_W/2 - 2} y={20} textAnchor="middle" fontSize={7.5}
-        fill={textOn(green)} fontWeight="bold">[CLS]→task</text>
-
-      <text x={W/2} y={H - 5} textAnchor="middle" fontSize={9} fill={vt.textMuted}>
-        BERT pre-trains with MLM + NSP → fine-tune with [CLS] head for classification, NER, QA, etc.
+      {/* ── Embedding types legend ── */}
+      <text x={8} y={H - 18} fontSize={8} fill={vt.textMuted}>Token Emb + Segment Emb + Position Emb → input to encoder</text>
+      <text x={W/2} y={H - 6} textAnchor="middle" fontSize={8.5} fill={vt.textMuted}>
+        Pre-train (MLM+NSP) → fine-tune: add [CLS] head for classification, NER, QA…
       </text>
     </svg>
   );

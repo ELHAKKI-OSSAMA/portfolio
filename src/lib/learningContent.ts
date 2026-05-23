@@ -1066,7 +1066,7 @@ def gradient_penalty(D, real, fake, device):
     id: "bagging-stacking",
     tagline: "The wisdom of diverse crowds — combining imperfect models into something stronger than any individual",
     accentColor: "#06b6d4",
-    visualization: "bagging",
+    visualization: "bagging-stacking",
     keyFormulas: [
       { name: "Bias-Variance of Ensemble", latex: "\\text{Var}(\\bar{f}) = \\rho \\sigma^2 + \\frac{1-\\rho}{n}\\sigma^2", meaning: "Ensemble variance: reducing correlation ρ is the key gain" },
       { name: "AdaBoost Weight", latex: "\\alpha_t = \\frac{1}{2}\\ln\\frac{1-\\epsilon_t}{\\epsilon_t}", meaning: "Higher weight for more accurate weak learners" },

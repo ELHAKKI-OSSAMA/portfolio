@@ -80,6 +80,10 @@ const BaggingViz = dynamic(
   () => import("@/components/learning/visualizations/BaggingViz"),
   { ssr: false, loading: () => <VizPlaceholder /> }
 );
+const StackingViz = dynamic(
+  () => import("@/components/learning/visualizations/StackingViz"),
+  { ssr: false, loading: () => <VizPlaceholder /> }
+);
 const RandomForestViz = dynamic(
   () => import("@/components/learning/visualizations/RandomForestViz"),
   { ssr: false, loading: () => <VizPlaceholder /> }
@@ -154,6 +158,13 @@ function VisualizationSelector({ type, accentColor }: { type: string; accentColo
     case "lstm":               return <LSTMViz accentColor={accentColor} />;
     case "gan":                return <GANViz accentColor={accentColor} />;
     case "bagging":            return <BaggingViz accentColor={accentColor} />;
+    case "bagging-stacking":
+      return (
+        <div className="space-y-6">
+          <BaggingViz accentColor={accentColor} />
+          <StackingViz accentColor={accentColor} />
+        </div>
+      );
     case "ensemble":           return <EnsembleViz accentColor={accentColor} />;
     case "multiclass":         return <MulticlassViz accentColor={accentColor} />;
     case "decision-tree-rf":

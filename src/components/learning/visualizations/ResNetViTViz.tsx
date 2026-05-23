@@ -134,8 +134,8 @@ function ResNetTab({ step, accentColor, vt }: {
   vt: ReturnType<typeof import("@/hooks/useVizTheme").useVizTheme>;
 }) {
   const W = 520, H = 240;
-  const fmCellSize = 11;
-  const fmSize = 6 * fmCellSize; // 66px
+  const fmCellSize = 9;
+  const fmSize = 6 * fmCellSize; // 54px — fits within W=520
 
   // Tighter layout so output FM fits within W=520
   const fmX = 8, fmY = (H - fmSize) / 2 - 8; // fmY≈79
@@ -208,13 +208,15 @@ function ResNetTab({ step, accentColor, vt }: {
       <motion.path
         d={`M ${fmX + fmSize + 4},${fmY + fmSize / 2 - 8} C ${blockStartX + bSpacing},${blockY - 38} ${plusX - 16},${blockY - 38} ${plusX - 8},${plusY - 10}`}
         fill="none" stroke="#f59e0b" strokeWidth={2} strokeDasharray="6,4"
-        animate={{ opacity: skipActive ? 1 : 0.25 }}
+        animate={{ opacity: skipActive ? 1 : 0.55 }}
         transition={{ duration: 0.4 }}
       />
-      <text x={blockStartX + bSpacing * 1.8} y={blockY - 40}
-        textAnchor="middle" fontSize={8} fill="#f59e0b" opacity={skipActive ? 0.9 : 0.3}>
-        skip: x
-      </text>
+      <motion.text x={blockStartX + bSpacing * 1.8} y={blockY - 42}
+        textAnchor="middle" fontSize={9} fill="#f59e0b" fontWeight="bold"
+        animate={{ opacity: skipActive ? 1 : 0.6 }}
+        transition={{ duration: 0.4 }}>
+        {skipActive ? "Residual F(x)+x" : "Skip path: x"}
+      </motion.text>
 
       {/* + node */}
       <motion.circle cx={plusX} cy={plusY} r={11}
@@ -254,29 +256,42 @@ function ViTTab({ step, accentColor, vt }: {
   vt: ReturnType<typeof import("@/hooks/useVizTheme").useVizTheme>;
 }) {
   const W = 520, H = 240;
-  const imgCellSize = 16;
-  const imgSize = 8 * imgCellSize;
-  const imgX = 12, imgY = (H - imgSize) / 2 - 10;
+  // Compact image: 8×8 cells × 10px = 80×80px → leaves room for token columns
+  const imgCellSize = 10;
+  const imgSize = 8 * imgCellSize; // 80
+  const imgX = 8;
+  const imgY = Math.round((H - imgSize) / 2) - 10; // 70
 
-  // Patches are 2×2, so 16 patches total
+  // 16 patches (2×2 pixels each in 8×8 image)
   const numPatches = 16;
-  const activePatch = step === 1 ? Math.min(numPatches - 1, 0) : -1;
 
-  // Patch colors (for step 2 tokens)
-  const patchTokenY = 30;
-  const patchTokenX = 150;
-  const tokenW = 16, tokenGap = 18;
+  // 2-row layout: 8 patches per row
+  // tokenW=13, tokenGap=14 → row width = 8×13 + 7×14 = 104+98 = 202
+  // Fits: patchTokenX=120 → right edge = 120+202-13 = 309... wait
+  // patchTokenX + 7*tokenGap + tokenW = 120 + 98 + 13 = 231
+  const tokenW = 13, tokenGap = 14, tokenH = 40;
+  const patchTokenX = 120;
+  // token area center y = H/2=120 → patchTokenY = H/2 - tokenH - 3 = 77
+  const patchTokenY = Math.round(H / 2 - tokenH - 3); // 77
+  // Right edge of 8-wide row: patchTokenX + 7*tokenGap + tokenW = 231
+  const tokenAreaRight = patchTokenX + 7 * tokenGap + tokenW; // 231
+  // [CLS] token placed after patch tokens (step 3+)
+  const clsX = tokenAreaRight + tokenGap; // 245
+
+  // Transformer and MLP block positions
+  const transX = 286; // = clsX+tokenW+6 (arrow) + 12 (gap)
+  const transY = Math.round(H / 2 - BLOCK_H / 2); // 104
+  const mlpX = 380;   // = transX+BLOCK_W+22 (arrow+gap)
 
   return (
     <svg viewBox={`0 0 ${W} ${H}`} className="w-full">
-      {/* Image */}
+      {/* ── Image ── */}
       <text x={imgX + imgSize / 2} y={imgY - 8} textAnchor="middle" fontSize={9} fill={vt.textMuted}>
         8×8 image
       </text>
       {VIT_IMAGE.map((row, r) => row.map((v, c) => {
         const patchR = Math.floor(r / 2), patchC = Math.floor(c / 2);
         const patchIdx = patchR * 4 + patchC;
-        const highlight = step === 1 && patchIdx === 0;
         return (
           <motion.rect
             key={`img-${r}-${c}`}
@@ -292,17 +307,19 @@ function ViTTab({ step, accentColor, vt }: {
         );
       }))}
 
-      {/* Patch grid lines */}
+      {/* Patch grid lines — step 1+ */}
       {step >= 1 && [0, 2, 4, 6, 8].map(i => (
         <g key={i}>
-          <line x1={imgX + i * imgCellSize} y1={imgY} x2={imgX + i * imgCellSize} y2={imgY + imgSize}
+          <line x1={imgX + i * imgCellSize} y1={imgY}
+                x2={imgX + i * imgCellSize} y2={imgY + imgSize}
             stroke={accentColor} strokeWidth={1} opacity={0.7} />
-          <line x1={imgX} y1={imgY + i * imgCellSize} x2={imgX + imgSize} y2={imgY + i * imgCellSize}
+          <line x1={imgX} y1={imgY + i * imgCellSize}
+                x2={imgX + imgSize} y2={imgY + i * imgCellSize}
             stroke={accentColor} strokeWidth={1} opacity={0.7} />
         </g>
       ))}
 
-      {/* Step 1: highlight patch */}
+      {/* Highlight first 2×2 patch — step 1 */}
       {step === 1 && (
         <motion.rect
           x={imgX} y={imgY}
@@ -312,83 +329,129 @@ function ViTTab({ step, accentColor, vt }: {
         />
       )}
 
-      {/* Arrow: image → tokens */}
+      {/* ── Arrow: image → tokens ── */}
       {step >= 2 && (
-        <Arrow x1={imgX + imgSize + 6} y1={imgY + imgSize / 2}
+        <Arrow
+          x1={imgX + imgSize + 6} y1={imgY + imgSize / 2}
           x2={patchTokenX - 6} y2={H / 2}
-          color={vt.axis} />
+          color={vt.axis}
+        />
       )}
 
-      {/* Patch tokens (embedding bars) — step 2+ */}
+      {/* ── Patch embedding tokens — step 2+ ── */}
       {step >= 2 && (
         <g>
-          <text x={patchTokenX + (numPatches * tokenGap) / 2} y={patchTokenY - 10}
-            textAnchor="middle" fontSize={9} fill={vt.textMuted}>
-            patch embeddings (D=8)
+          {/* Label above patch area */}
+          <text
+            x={patchTokenX + (7 * tokenGap + tokenW) / 2}
+            y={patchTokenY - 8}
+            textAnchor="middle" fontSize={8.5} fill={vt.textMuted}>
+            patch embeddings
           </text>
-          {/* [CLS] token */}
-          {step >= 3 && (
-            <g>
-              <rect x={patchTokenX - tokenGap - tokenW} y={patchTokenY} width={tokenW} height={80}
-                rx={3} fill={accentColor + "30"} stroke={accentColor} strokeWidth={1.5} />
-              <text x={patchTokenX - tokenGap - tokenW / 2} y={patchTokenY - 4}
-                textAnchor="middle" fontSize={7} fill={accentColor} fontWeight="bold">[CLS]</text>
-              {Array.from({ length: 8 }, (_, d) => (
-                <rect key={d}
-                  x={patchTokenX - tokenGap - tokenW + 2}
-                  y={patchTokenY + d * 10}
-                  width={tokenW - 4} height={8}
-                  rx={1} fill={accentColor} opacity={0.3 + seed(0, d) * 0.6}
+
+          {/* 16 tokens in 2 rows of 8 */}
+          {Array.from({ length: numPatches }, (_, pi) => {
+            const row = Math.floor(pi / 8);
+            const col = pi % 8;
+            const px = patchTokenX + col * tokenGap;
+            const py = patchTokenY + row * (tokenH + 6);
+            return (
+              <g key={pi}>
+                <rect
+                  x={px} y={py} width={tokenW} height={tokenH}
+                  rx={2}
+                  fill={PATCH_COLORS[pi] + "20"}
+                  stroke={PATCH_COLORS[pi]}
+                  strokeWidth={1}
                 />
-              ))}
-            </g>
-          )}
-          {/* 16 patch tokens */}
-          {Array.from({ length: Math.min(numPatches, 8) }, (_, pi) => (
-            <g key={pi}>
-              <rect
-                x={patchTokenX + pi * tokenGap} y={patchTokenY}
-                width={tokenW} height={80}
-                rx={3}
-                fill={PATCH_COLORS[pi] + "20"}
-                stroke={PATCH_COLORS[pi]}
-                strokeWidth={1}
-              />
-              {Array.from({ length: 8 }, (_, d) => (
-                <rect key={d}
-                  x={patchTokenX + pi * tokenGap + 2}
-                  y={patchTokenY + d * 10}
-                  width={tokenW - 4} height={8}
-                  rx={1} fill={PATCH_COLORS[pi]} opacity={0.2 + seed(pi, d) * 0.6}
-                />
-              ))}
-            </g>
-          ))}
-          <text x={patchTokenX + 8 * tokenGap + tokenW / 2} y={patchTokenY + 40}
-            fontSize={10} fill={vt.textMuted} dominantBaseline="middle">…</text>
+                {/* 4 embedding-dimension slices */}
+                {Array.from({ length: 4 }, (_, d) => (
+                  <rect key={d}
+                    x={px + 1}
+                    y={py + 2 + d * 9}
+                    width={tokenW - 2} height={7}
+                    rx={1}
+                    fill={PATCH_COLORS[pi]}
+                    opacity={0.2 + seed(pi, d) * 0.6}
+                  />
+                ))}
+              </g>
+            );
+          })}
+
+          {/* Label below patch area */}
+          <text
+            x={patchTokenX + (7 * tokenGap + tokenW) / 2}
+            y={patchTokenY + 2 * tokenH + 6 + 13}
+            textAnchor="middle" fontSize={7.5} fill={vt.textMuted}>
+            16 patch tokens
+          </text>
         </g>
       )}
 
-      {/* Arrow → Transformer block */}
+      {/* ── [CLS] token — step 3+ ── */}
+      {step >= 3 && (
+        <g>
+          <text x={clsX + tokenW / 2} y={patchTokenY - 8}
+            textAnchor="middle" fontSize={7} fill={accentColor} fontWeight="bold">
+            [CLS]
+          </text>
+          {/* Tall bar spanning both rows */}
+          <rect
+            x={clsX} y={patchTokenY}
+            width={tokenW} height={2 * tokenH + 6}
+            rx={3}
+            fill={accentColor + "30"}
+            stroke={accentColor}
+            strokeWidth={1.5}
+          />
+          {Array.from({ length: 6 }, (_, d) => (
+            <rect key={d}
+              x={clsX + 1}
+              y={patchTokenY + 4 + d * 13}
+              width={tokenW - 2} height={9}
+              rx={1}
+              fill={accentColor}
+              opacity={0.3 + seed(0, d) * 0.5}
+            />
+          ))}
+          {/* Positional embedding note */}
+          <text
+            x={patchTokenX + (clsX + tokenW - patchTokenX) / 2}
+            y={patchTokenY + 2 * tokenH + 6 + 26}
+            textAnchor="middle" fontSize={7} fill={accentColor} opacity={0.85}>
+            + E_pos added to each token
+          </text>
+        </g>
+      )}
+
+      {/* ── Arrow: tokens → Transformer ── */}
       {step >= 4 && (
         <>
           <Arrow
-            x1={patchTokenX + 8 * tokenGap + tokenW + 16}
-            y1={patchTokenY + 40}
-            x2={370}
-            y2={H / 2 - 18}
+            x1={clsX + tokenW + 6}
+            y1={H / 2}
+            x2={transX - 4}
+            y2={transY + BLOCK_H / 2}
             color={vt.axis}
           />
-          <Block x={370} y={H / 2 - 34} label="Transformer ×L" color={accentColor} active vt={vt} />
+          <Block x={transX} y={transY} label="Transformer ×L" color={accentColor} active vt={vt} />
         </>
       )}
 
-      {/* Arrow → MLP head */}
+      {/* ── Arrow: Transformer → MLP ── */}
       {step >= 5 && (
         <>
-          <Arrow x1={370 + BLOCK_W} y1={H / 2 - 18} x2={456} y2={H / 2 - 18} color={vt.axis} />
-          <Block x={456} y={H / 2 - 34} label="Class" color="#22c55e" active vt={vt} />
-          <text x={456 + BLOCK_W / 2} y={H / 2 + 16} textAnchor="middle" fontSize={9} fill="#22c55e">
+          <Arrow
+            x1={transX + BLOCK_W + 4}
+            y1={transY + BLOCK_H / 2}
+            x2={mlpX - 4}
+            y2={transY + BLOCK_H / 2}
+            color={vt.axis}
+          />
+          <Block x={mlpX} y={transY} label="MLP→cls" color="#22c55e" active vt={vt} />
+          <text x={mlpX + BLOCK_W / 2} y={transY + BLOCK_H + 16}
+            textAnchor="middle" fontSize={9} fill="#22c55e">
             🐱 cat
           </text>
         </>
@@ -396,7 +459,7 @@ function ViTTab({ step, accentColor, vt }: {
 
       {/* Formula */}
       <text x={W / 2} y={H - 12} textAnchor="middle" fontSize={8} fill={vt.textMuted}>
-        z = [x_cls; x_p1 E; x_p2 E; … + E_pos] → Transformer
+        z = [x_cls; x_p1·E; … + E_pos] → Transformer L layers → MLP head → class
       </text>
     </svg>
   );

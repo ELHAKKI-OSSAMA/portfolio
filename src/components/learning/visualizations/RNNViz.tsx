@@ -7,8 +7,13 @@ import { useVizTheme } from "@/hooks/useVizTheme";
 const W = 520, H = 300;
 const TOKENS = ["The", "cat", "sat", "mat"];
 
-// Fixed weights
-const Wx = [[0.5, -0.3, 0.4, 0.6], [-0.2, 0.7, 0.3, -0.4]]; // 2×4 (2 input dims → 4 hidden)
+// Fixed weights  — Wx is 4×2: 4 hidden dims, 2 input dims
+const Wx = [
+  [ 0.5, -0.3],
+  [-0.2,  0.7],
+  [ 0.4,  0.3],
+  [ 0.6, -0.4],
+];
 const Wh = [
   [0.4, 0.1, -0.2, 0.3],
   [-0.1, 0.6, 0.2, -0.3],
@@ -62,7 +67,7 @@ function computeRNN() {
 
   for (let t = 0; t < TOKENS.length; t++) {
     const x = tokenEmbed(t);
-    const wxPart = matVec2x4(Wx.map(row => [row[0], row[1]]) as number[][], x);
+    const wxPart = matVec2x4(Wx, x);
     const whPart = matVec4x4(Wh, h);
     const raw: [number, number, number, number] = [
       wxPart[0] + whPart[0] + B[0],
@@ -353,31 +358,58 @@ export default function RNNViz({ accentColor = "#06b6d4" }: { accentColor?: stri
           </marker>
         </defs>
 
-        {/* Vanishing gradient warning */}
+        {/* Vanishing gradient warning — spans all 4 cells */}
         <AnimatePresence>
           {gradientWarning && (
             <motion.g
-              initial={{ opacity: 0, y: 10 }}
+              initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
+              transition={{ duration: 0.35 }}
             >
-              <rect x={PAD_INFO()} y={H - 32} width={320} height={22} rx={6} fill="#ff6b6b22" stroke="#ff6b6b60" strokeWidth={1} />
-              <text x={PAD_INFO() + 10} y={H - 17} fontSize={9} fill="#ff6b6b">
-                ⚠ Vanishing gradient: signal at t=1 is {(0.15 ** (activeStep - 1)).toFixed(4)}× original
+              {/* Wide banner below output row, x=40 to x=468 covers all 4 cells */}
+              <rect
+                x={40} y={ROW_Y[2] + CELL_H + 4}
+                width={W - 52} height={24}
+                rx={6} fill="#ff6b6b22" stroke="#ff6b6b60" strokeWidth={1}
+              />
+              <text x={52} y={ROW_Y[2] + CELL_H + 20} fontSize={9} fill="#ff6b6b">
+                ⚠ Vanishing gradient: signal at t=1 is {(0.15 ** (activeStep - 1)).toFixed(4)}× original — long-range memory lost
               </text>
             </motion.g>
           )}
         </AnimatePresence>
       </svg>
 
-      {/* Formula bar */}
-      <div className="px-5 py-2 border-t" style={{ borderColor: "var(--border)" }}>
-        <span className="text-xs font-mono" style={{ color: "var(--text-muted)" }}>
-          h_t = tanh(Wₓ·x_t + W_h·h_{"{t-1}"} + b)
-        </span>
-        <span className="text-xs ml-4" style={{ color: accentColor }}>
-          h_{activeStep + 1} = [{steps[activeStep].h.map(v => v.toFixed(2)).join(", ")}]
-        </span>
+      {/* Formula bar — all RNN equations */}
+      <div className="px-5 py-2.5 border-t space-y-1" style={{ borderColor: "var(--border)" }}>
+        <div className="flex flex-wrap gap-x-6 gap-y-1 items-center">
+          <span className="text-xs font-mono" style={{ color: "var(--text-muted)" }}>
+            h₀ = <span style={{ color: accentColor }}>0</span>
+          </span>
+          <span className="text-xs font-mono" style={{ color: "var(--text-muted)" }}>
+            hₜ = tanh(<span style={{ color: accentColor }}>Wₓ</span>·xₜ + <span style={{ color: accentColor }}>Wₕ</span>·hₜ₋₁ + b)
+          </span>
+          <span className="text-xs font-mono" style={{ color: "var(--text-muted)" }}>
+            yₜ = <span style={{ color: accentColor }}>Wᵧ</span>·hₜ + bᵧ
+          </span>
+        </div>
+        <div className="flex flex-wrap gap-x-6 gap-y-1 items-center">
+          <span className="text-xs font-mono" style={{ color: "var(--text-muted)" }}>
+            Wₓ: <span style={{ color: accentColor }}>4×2</span>
+          </span>
+          <span className="text-xs font-mono" style={{ color: "var(--text-muted)" }}>
+            Wₕ: <span style={{ color: accentColor }}>4×4</span>
+          </span>
+          <span className="text-xs font-mono" style={{ color: "var(--text-muted)" }}>
+            Wᵧ: <span style={{ color: accentColor }}>1×4</span>
+          </span>
+          <span className="text-xs font-mono" style={{ color: accentColor }}>
+            h_{"{"}
+            {activeStep + 1}
+            {"}"} = [{steps[activeStep].h.map(v => v.toFixed(2)).join(", ")}]
+          </span>
+        </div>
       </div>
 
       {/* Stats */}
@@ -397,5 +429,3 @@ export default function RNNViz({ accentColor = "#06b6d4" }: { accentColor?: stri
     </div>
   );
 }
-
-function PAD_INFO() { return 40; }
