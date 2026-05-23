@@ -1,0 +1,36 @@
+// ─── Services ──────────────────────────────────────────────────────────────────
+export const services = [
+  {
+    id: "whatsapp-agent",
+    tier: "basic",
+    price: "299",
+    priceType: "per_project",
+    titleKey: "s1_title",
+    descKey: "s1_desc",
+    features: ["s1_f1", "s1_f2", "s1_f3", "s1_f4"],
+    popular: false,
+    color: "#6c63ff",
+  },
+  {
+    id: "ml-model",
+    tier: "pro",
+    price: "499",
+    priceType: "per_project",
+    titleKey: "s2_title",
+    descKey: "s2_desc",
+    features: ["s2_f1", "s2_f2", "s2_f3", "s2_f4", "s2_f5"],
+    popular: true,
+    color: "#00d4aa",
+  },
+  {
+    id: "automation",
+    tier: "enterprise",
+    price: "999",
+    priceType: "per_project",
+    titleKey: "s3_title",
+    descKey: "s3_desc",
+    features: ["s3_f1", "s3_f2", "s3_f3", "s3_f4", "s3_f5", "s3_f6"],
+    popular: false,
+    color: "#ff6b6b",
+  },
+];
