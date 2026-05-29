@@ -37,9 +37,11 @@ export default function MathBlock({ formula, label, display = true, accentColor 
       className="my-6 rounded-2xl overflow-hidden"
       style={{ border: `1px solid ${accentColor}25` }}
     >
+      {/* dir="ltr" forces KaTeX to always render left-to-right in Arabic locale */}
       <div
         className="px-6 py-5 overflow-x-auto"
         style={{ backgroundColor: `${accentColor}08` }}
+        dir="ltr"
       >
         <div ref={ref} className="flex justify-center" />
       </div>

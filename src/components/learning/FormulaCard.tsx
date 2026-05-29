@@ -26,7 +26,8 @@ function InlineFormula({ latex }: { latex: string }) {
       }
     }
   }, [latex]);
-  return <div ref={ref} className="overflow-x-auto" />;
+  // dir="ltr" forces KaTeX to always render left-to-right in Arabic locale
+  return <div ref={ref} className="overflow-x-auto" dir="ltr" />;
 }
 
 export default function FormulaCard({ formulas, accentColor = "#6c63ff" }: Props) {

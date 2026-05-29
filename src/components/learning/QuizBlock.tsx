@@ -63,6 +63,11 @@ export default function QuizBlock({ topicId, accentColor = "#6c63ff", onPassed }
     setFinalResult(getQuizResult(topicId));
   }
 
+  // Arabic option labels: أ ب ج د  (alef, ba, jim, dal)
+  const ARABIC_LABELS = ["أ", "ب", "ج", "د", "هـ"];
+  const optionLabel = (i: number) =>
+    locale === "ar" ? (ARABIC_LABELS[i] ?? (i + 1).toString()) : String.fromCharCode(65 + i);
+
   const q  = questions[qIndex];
   const tr = getQuizI18n(topicId, qIndex);
   const qText    = locale === "fr" ? (tr?.questionFr    ?? q.question)    : locale === "ar" ? (tr?.questionAr    ?? q.question)    : q.question;
@@ -158,9 +163,15 @@ export default function QuizBlock({ topicId, accentColor = "#6c63ff", onPassed }
                 return (
                   <motion.button key={i} onClick={() => handleSelect(i)}
                     whileHover={!answered ? { scale: 1.01 } : undefined}
-                    className="w-full text-left px-4 py-2.5 rounded-xl text-sm border transition-all"
-                    style={{ backgroundColor: bg, borderColor: border, color: textCol }}>
-                    <span className="font-semibold mr-2">{String.fromCharCode(65 + i)}.</span>{opt}
+                    className="w-full px-4 py-2.5 rounded-xl text-sm border transition-all"
+                    style={{
+                      backgroundColor: bg, borderColor: border, color: textCol,
+                      textAlign: locale === "ar" ? "right" : "left",
+                    }}>
+                    <span className={`font-semibold ${locale === "ar" ? "ml-2" : "mr-2"}`}>
+                      {optionLabel(i)}.
+                    </span>
+                    {opt}
                   </motion.button>
                 );
               })}
@@ -174,7 +185,10 @@ export default function QuizBlock({ topicId, accentColor = "#6c63ff", onPassed }
                   style={{
                     backgroundColor: selected === q.correct ? "#22c55e11" : "#f9731611",
                     color: "var(--text-secondary)",
-                    borderLeft: `3px solid ${selected === q.correct ? "#22c55e" : "#f97316"}`,
+                    // Border on the inline-start side (right in RTL, left in LTR)
+                    ...(locale === "ar"
+                      ? { borderRight: `3px solid ${selected === q.correct ? "#22c55e" : "#f97316"}` }
+                      : { borderLeft:  `3px solid ${selected === q.correct ? "#22c55e" : "#f97316"}` }),
                   }}>
                   {qExpl}
                 </motion.div>
