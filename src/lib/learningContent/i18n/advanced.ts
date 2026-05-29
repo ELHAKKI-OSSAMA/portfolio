@@ -259,6 +259,28 @@ def empilement_oof(modeles, X_entr, y_entr, X_test, n_plis=5):
     headingAr: "التصنيف متعدد الفئات بـSoftmax",
     codeFr: `import torch
 import torch.nn as nn
+from sklearn.datasets import make_classification
+from sklearn.model_selection import train_test_split
+from sklearn.multiclass import OneVsRestClassifier, OneVsOneClassifier
+from sklearn.svm import SVC
+
+# ── Données d'exemple ──────────────────────────────────────────────────
+X_np, y_np = make_classification(n_samples=300, n_features=8,
+                                   n_classes=3, n_informative=6, random_state=42)
+X_train_np, X_test_np, y_train_np, _ = train_test_split(
+    X_np, y_np, test_size=0.2, random_state=42)
+
+# ── Multiclasse PyTorch ────────────────────────────────────────────────
+K = 3; lot = 16
+
+class ReseauSimple(nn.Module):
+    def __init__(self): super().__init__(); self.fc = nn.Linear(8, K)
+    def forward(self, x): return self.fc(x)
+
+modele = ReseauSimple()
+x = torch.randn(lot, 8)
+y = torch.randint(0, K, (lot,))
+poids_classes = torch.tensor([1.0, 2.0, 1.5])   # pondérer les classes rares
 
 # Softmax + Entropie Croisée (combinées pour la stabilité numérique)
 critere = nn.CrossEntropyLoss(
@@ -269,17 +291,17 @@ critere = nn.CrossEntropyLoss(
 # Le modèle produit des logits bruts (pas de softmax dans forward)
 logits = modele(x)            # Forme : (lot, K)
 perte = critere(logits, y)   # y contient les indices de classe
+print(f"Perte CE multi-classes : {perte.item():.4f}")
 
 # Prédictions
 probs = torch.softmax(logits, dim=-1)
 preds = probs.argmax(dim=-1)
 
 # Sklearn : stratégie OvR (OvA)
-from sklearn.multiclass import OneVsRestClassifier, OneVsOneClassifier
-from sklearn.svm import SVC
-
 ovr = OneVsRestClassifier(SVC(kernel='rbf', probability=True))
-ovo = OneVsOneClassifier(SVC(kernel='rbf'))`,
+ovo = OneVsOneClassifier(SVC(kernel='rbf'))
+ovr.fit(X_train_np, y_train_np)
+print(f"Précision OvR : {ovr.score(X_test_np, _):.3f}")`,
   },
 
   // ── dl-optimization ──────────────────────────────────────────────────────────
@@ -328,6 +350,19 @@ ovo = OneVsOneClassifier(SVC(kernel='rbf'))`,
 import torch.nn as nn
 import torch.optim as optim
 from torch.cuda.amp import GradScaler, autocast
+from torch.utils.data import TensorDataset, DataLoader
+
+# ── Modèle minimal + chargeur pour la démo ────────────────────────────
+class MonModele(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.net = nn.Sequential(nn.Linear(16, 64), nn.ReLU(), nn.Linear(64, 10))
+    def forward(self, x): return self.net(x)
+
+X_donnees = torch.randn(512, 16)
+y_donnees = torch.randint(0, 10, (512,))
+chargeur_donnees = DataLoader(TensorDataset(X_donnees, y_donnees),
+                               batch_size=32, shuffle=True)
 
 def entrainer_une_epoque(modele, chargeur, optimiseur, reechelonneur, planificateur, peripherique, norme_max=1.0):
     modele.train()

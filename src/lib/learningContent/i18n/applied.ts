@@ -63,7 +63,25 @@ from sklearn.preprocessing import (StandardScaler, OneHotEncoder,
 from sklearn.impute import SimpleImputer
 from sklearn.feature_selection import SelectFromModel
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
-from sklearn.model_selection import cross_val_score
+from sklearn.model_selection import cross_val_score, train_test_split
+import pandas as pd
+import numpy as np
+
+# ── DataFrame d'exemple ────────────────────────────────────────────────
+np.random.seed(42)
+n = 300
+df = pd.DataFrame({
+    'age':        np.random.randint(18, 70, n).astype(float),
+    'revenu':     np.random.exponential(40000, n),
+    'score':      np.random.uniform(300, 850, n),
+    'ville':      np.random.choice(['Paris', 'Lyon', 'Toulouse'], n),
+    'profession': np.random.choice(['ingénieur', 'enseignant', 'médecin'], n),
+    'cible':      np.random.randint(0, 2, n),
+})
+df.loc[np.random.choice(n, 20, replace=False), 'age'] = np.nan
+df.loc[np.random.choice(n, 15, replace=False), 'ville'] = np.nan
+X_train = df.drop('cible', axis=1)
+y_train = df['cible']
 
 # ── Définir les groupes de colonnes ───────────────────────────────
 col_num = ['age', 'revenu', 'score']
@@ -158,12 +176,18 @@ print(f"CV AUC : {scores.mean():.3f} ± {scores.std():.3f}")`,
     headingFr: "Les Trois Méthodes dans scikit-learn",
     headingAr: "الأساليب الثلاثة في scikit-learn",
     codeFr: `from sklearn.model_selection import (GridSearchCV, RandomizedSearchCV,
-                                       cross_val_score)
+                                       cross_val_score, train_test_split)
 from sklearn.experimental import enable_halving_search_cv  # noqa
 from sklearn.model_selection import HalvingRandomSearchCV
 from sklearn.ensemble import GradientBoostingClassifier
+from sklearn.datasets import make_classification
 from scipy.stats import uniform, randint
 import optuna  # pour l'optimisation bayésienne
+
+# ── Données d'exemple ──────────────────────────────────────────────────
+X, y = make_classification(n_samples=600, n_features=10, random_state=42)
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42)
 
 # ── Espace de paramètres ───────────────────────────────────────────
 grille_params = {
@@ -274,8 +298,22 @@ print(f"Optuna meilleur : {etude.best_value:.4f}  {etude.best_params}")`,
     codeFr: `from sklearn.naive_bayes import MultinomialNB, ComplementNB, GaussianNB
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.pipeline import Pipeline
-from sklearn.model_selection import cross_val_score
+from sklearn.model_selection import cross_val_score, train_test_split
 from sklearn.calibration import CalibratedClassifierCV
+import numpy as np
+
+# ── Données texte d'exemple ────────────────────────────────────────────
+X_texte = [
+    "acheter des pilules pas chères maintenant",  "devenir riche rapidement",
+    "argent gratuit cliquer ici",                 "réunion à 15h demain",
+    "rapport trimestriel en pièce jointe",        "déjeuner d'équipe vendredi",
+    "gagner un prix inscrivez-vous maintenant",   "offre limitée agissez vite",
+    "opportunité d'investissement",               "délai projet semaine prochaine",
+    "révision budgétaire planifiée",              "veuillez examiner le document",
+] * 20   # 240 exemples
+y = np.array(([1, 1, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0] * 20))  # 1=spam, 0=ham
+X_train, X_test, y_train, y_test = train_test_split(
+    X_texte, y, test_size=0.2, random_state=42)
 
 # ── Classification de texte (détection de spam) ───────────────────
 pipeline = Pipeline([
@@ -387,6 +425,14 @@ import lightgbm as lgb
 from sklearn.model_selection import TimeSeriesSplit
 from sklearn.metrics import mean_absolute_error
 
+# ── Série temporelle journalière d'exemple ────────────────────────────
+dates = pd.date_range('2022-01-01', periods=365, freq='D')
+np.random.seed(42)
+tendance    = np.linspace(100, 200, 365)
+saisonnalite = 20 * np.sin(2 * np.pi * np.arange(365) / 7)
+bruit = np.random.randn(365) * 5
+df = pd.DataFrame({'ventes': tendance + saisonnalite + bruit}, index=dates)
+
 def creer_caracteristiques(df, col_cible, decalages, fenetres):
     """Créer des caractéristiques de décalage et glissantes pour la prévision supervisée."""
     df = df.copy()
@@ -494,8 +540,25 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn.naive_bayes import ComplementNB
 from sklearn.svm import LinearSVC
-from sklearn.model_selection import cross_val_score
+from sklearn.model_selection import cross_val_score, train_test_split
 from sklearn.metrics import classification_report
+import numpy as np
+
+# ── Données texte d'exemple ────────────────────────────────────────────
+corpus = [
+    "algorithmes apprentissage automatique python science données",
+    "réseau neuronal deep learning pytorch tensorflow",
+    "traitement langage naturel classification texte bert",
+    "vision par ordinateur reconnaissance image convolutif",
+    "apprentissage par renforcement récompense politique agent",
+    "prétraitement données ingénierie caractéristiques pipeline",
+] * 40   # 240 exemples, 6 classes
+X_texte = corpus
+y = np.array(list(range(6)) * 40)
+X_train, X_test, y_train, y_test = train_test_split(
+    X_texte, y, test_size=0.2, stratify=y, random_state=42)
+idx_train = np.arange(len(X_train))
+idx_test  = np.arange(len(X_test))
 
 # ── Référence : TF-IDF + Régression Logistique ────────────────────
 pipeline_lr = Pipeline([

@@ -67,6 +67,12 @@ export const sectionI18n_supervised: Record<string, SectionI18n> = {
     headingFr: "De Zéro avec NumPy",
     headingAr: "من الصفر مع NumPy",
     codeFr: `import numpy as np
+from sklearn.datasets import make_regression
+
+# ── Données d'exemple ──────────────────────────────────────────────────
+X_brut, y = make_regression(n_samples=200, n_features=5, noise=10, random_state=42)
+X = np.c_[np.ones(len(X_brut)), X_brut]   # ajouter colonne de biais
+lam = 0.1                                   # intensité de la régularisation Ridge
 
 class RegLineaire:
     def __init__(self, lr=0.01, n_iter=1000):
@@ -85,10 +91,17 @@ class RegLineaire:
     def predire(self, X):
         return X @ self.beta
 
+# Démo
+modele = RegLineaire(lr=0.01, n_iter=1000).ajuster(X, y)
+print("Bêta GD :", modele.beta[:3].round(2))
+
 # Forme fermée (Équation Normale) :
 beta_mco = np.linalg.solve(X.T @ X, X.T @ y)
 # Ridge (régularisation L2) :
-beta_ridge = np.linalg.solve(X.T @ X + lam*np.eye(p), X.T @ y)`,
+p = X.shape[1]
+beta_ridge = np.linalg.solve(X.T @ X + lam * np.eye(p), X.T @ y)
+print("Bêta MCO :  ", beta_mco[:3].round(2))
+print("Bêta Ridge :", beta_ridge[:3].round(2))`,
   },
   "linear-regression|7": {
     headingFr: "Pièges Critiques",
@@ -168,8 +181,17 @@ beta_ridge = np.linalg.solve(X.T @ X + lam*np.eye(p), X.T @ y)`,
     headingFr: "Modèle de Production",
     headingAr: "نمط الإنتاج",
     codeFr: `from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import cross_val_score
+from sklearn.model_selection import cross_val_score, train_test_split
+from sklearn.datasets import make_classification
+import pandas as pd
 import shap
+
+# ── Données d'exemple ──────────────────────────────────────────────────
+X_brut, y = make_classification(n_samples=500, n_features=10,
+                                  n_informative=5, random_state=42)
+feature_names = [f"var_{i}" for i in range(X_brut.shape[1])]
+X_train, X_test, y_train, y_test = train_test_split(
+    X_brut, y, test_size=0.2, random_state=42)
 
 # Entraînement
 rf = RandomForestClassifier(
@@ -186,7 +208,7 @@ print(f"Score OOB : {rf.oob_score_:.4f}")
 
 # Importance des caractéristiques (Diminution Moyenne de l'Impureté)
 importances = pd.Series(rf.feature_importances_, index=feature_names)
-importances.nlargest(20).plot(kind='barh')
+importances.nlargest(20).sort_values().plot(kind='barh')
 
 # SHAP pour l'importance correcte des caractéristiques
 explainer = shap.TreeExplainer(rf)
@@ -283,6 +305,16 @@ shap_values = explainer.shap_values(X_test)`,
     headingAr: "LightGBM في الإنتاج مع Optuna",
     codeFr: `import lightgbm as lgb
 import optuna
+import numpy as np
+from sklearn.datasets import make_classification
+from sklearn.model_selection import train_test_split
+
+# ── Données d'exemple ──────────────────────────────────────────────────
+X, y = make_classification(n_samples=1000, n_features=20,
+                            n_informative=10, random_state=42)
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42)
+dtrain = lgb.Dataset(X_train, label=y_train)
 
 def objectif(trial):
     params = {
@@ -339,7 +371,13 @@ etude.optimize(objectif, n_trials=100)`,
     codeFr: `from sklearn.svm import SVC, SVR
 from sklearn.preprocessing import StandardScaler
 from sklearn.pipeline import Pipeline
-from sklearn.model_selection import GridSearchCV
+from sklearn.model_selection import GridSearchCV, train_test_split
+from sklearn.datasets import make_classification
+
+# ── Données d'exemple ──────────────────────────────────────────────────
+X, y = make_classification(n_samples=300, n_features=10, random_state=42)
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42)
 
 # CRITIQUE : SVM nécessite une mise à l'échelle des caractéristiques
 pipeline_svm = Pipeline([
@@ -428,12 +466,20 @@ svr = Pipeline([
     headingFr: "Pipeline d'Évaluation Complet",
     headingAr: "خط أنابيب التقييم الكامل",
     codeFr: `from sklearn.metrics import (
-    classification_report, roc_auc_score,
+    classification_report, roc_auc_score, f1_score,
     average_precision_score, matthews_corrcoef,
     confusion_matrix
 )
-from sklearn.model_selection import StratifiedKFold
+from sklearn.model_selection import StratifiedKFold, train_test_split
+from sklearn.datasets import make_classification
+from sklearn.ensemble import GradientBoostingClassifier
 import numpy as np
+
+# ── Données d'exemple + modèle ─────────────────────────────────────────
+X, y = make_classification(n_samples=1000, n_features=10, random_state=42)
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42)
+modele = GradientBoostingClassifier(n_estimators=100, random_state=42)
 
 skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
 probs_hors_plis = np.zeros(len(y_train))

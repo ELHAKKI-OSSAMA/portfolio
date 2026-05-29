@@ -63,6 +63,13 @@ export const sectionI18n_neural: Record<string, SectionI18n> = {
     codeFr: `import torch
 import torch.nn as nn
 import torch.optim as optim
+from torch.utils.data import TensorDataset, DataLoader
+
+# ── Données d'exemple ──────────────────────────────────────────────────
+X_donnees = torch.randn(1000, 128)
+y_donnees = torch.randint(0, 2, (1000,)).float()
+chargeur_donnees = DataLoader(TensorDataset(X_donnees, y_donnees),
+                               batch_size=64, shuffle=True)
 
 class MLP(nn.Module):
     def __init__(self, dim_entree, dims_cachees, dim_sortie, dropout=0.3):
@@ -169,6 +176,10 @@ for x_lot, y_lot in chargeur_donnees:
     headingAr: "ضبط EfficientNet للتصنيف المخصص",
     codeFr: `import timm
 import torch.nn as nn
+import torch.optim as optim
+
+# ── Configuration ──────────────────────────────────────────────────────
+nb_classes = 10   # ex. jeu de données 10 classes
 
 # Charger EfficientNet-B4 pré-entraîné
 modele = timm.create_model(
@@ -231,6 +242,14 @@ optimiseur = optim.AdamW([
     headingAr: "LSTM لتوقع السلاسل الزمنية",
     codeFr: `import torch
 import torch.nn as nn
+from torch.utils.data import TensorDataset, DataLoader
+
+# ── Données séquentielles d'exemple ────────────────────────────────────
+# Forme : (n_échantillons, longueur_seq, caractéristiques)
+X_seq = torch.randn(500, 20, 10)
+y_seq = torch.randn(500)
+chargeur_donnees = DataLoader(TensorDataset(X_seq, y_seq),
+                               batch_size=32, shuffle=True)
 
 class PrevisionLSTM(nn.Module):
     def __init__(self, dim_entree, dim_cachee, nb_couches, dim_sortie, dropout=0.2):

@@ -79,7 +79,11 @@ export const sectionI18n_unsupervised: Record<string, SectionI18n> = {
     codeFr: `from sklearn.cluster import KMeans, DBSCAN, AgglomerativeClustering
 from sklearn.metrics import silhouette_score
 from sklearn.preprocessing import StandardScaler
+from sklearn.datasets import make_blobs
 import numpy as np
+
+# ── Données d'exemple ──────────────────────────────────────────────────
+X, _ = make_blobs(n_samples=300, centers=4, cluster_std=0.8, random_state=42)
 
 # ── K-Means avec sélection de K via silhouette ────────────────────
 X_normalise = StandardScaler().fit_transform(X)
@@ -187,8 +191,15 @@ etiq_agg = agg.fit_predict(X_normalise)`,
     headingAr: "ACP مع scikit-learn",
     codeFr: `from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
+from sklearn.datasets import make_classification
+from sklearn.model_selection import train_test_split
 import numpy as np
 import matplotlib.pyplot as plt
+
+# ── Données d'exemple ──────────────────────────────────────────────────
+X_brut, y = make_classification(n_samples=400, n_features=20,
+                                  n_informative=8, random_state=42)
+X_train, X_test, _, _ = train_test_split(X_brut, y, test_size=0.2, random_state=42)
 
 # ── Ajuster l'ACP ──────────────────────────────────────────────────
 normaliseur = StandardScaler()
@@ -276,6 +287,14 @@ plt.ylabel(f"CP2 ({acp2.explained_variance_ratio_[1]:.1%})")`,
 from sklearn.neighbors import LocalOutlierFactor
 from sklearn.svm import OneClassSVM
 from sklearn.preprocessing import StandardScaler
+from sklearn.datasets import make_classification
+import numpy as np
+
+# ── Données d'exemple (5 % d'anomalies) ───────────────────────────────
+X_normal, _ = make_classification(n_samples=475, n_features=10, random_state=42)
+X_anom  = np.random.randn(25, 10) * 4    # 25 anomalies évidentes
+X = np.vstack([X_normal, X_anom])
+y_vrai = np.array([0]*475 + [1]*25)       # 0=normal, 1=anomalie
 
 X_normalise = StandardScaler().fit_transform(X)
 

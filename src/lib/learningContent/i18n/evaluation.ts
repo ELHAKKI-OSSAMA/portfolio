@@ -54,9 +54,17 @@ export const sectionI18n_evaluation: Record<string, SectionI18n> = {
   "error-analysis|5": {
     headingFr: "Diagnostic par Courbe d'Apprentissage",
     headingAr: "تشخيص منحنى التعلم",
-    codeFr: `from sklearn.model_selection import learning_curve
+    codeFr: `from sklearn.model_selection import learning_curve, train_test_split
+from sklearn.datasets import make_classification
+from sklearn.ensemble import GradientBoostingClassifier
 import matplotlib.pyplot as plt
 import numpy as np
+
+# ── Données d'exemple + modèle ─────────────────────────────────────────
+X, y = make_classification(n_samples=800, n_features=10, random_state=42)
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42)
+modele = GradientBoostingClassifier(n_estimators=100, random_state=42)
 
 tailles_entr, scores_entr, scores_val = learning_curve(
     estimator=modele,
