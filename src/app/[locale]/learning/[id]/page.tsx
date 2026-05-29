@@ -57,9 +57,26 @@ export default async function TopicPage({
   const content = topicContents[id];
   const color = content?.accentColor || categoryColors[topic.category] || "#6c63ff";
   const topics = learningTopics;
-  const currentIdx = topics.findIndex(t => t.id === id);
+  const currentIdx = topics.findIndex(tp => tp.id === id);
   const prevTopic = currentIdx > 0 ? topics[currentIdx - 1] : null;
   const nextTopic = currentIdx < topics.length - 1 ? topics[currentIdx + 1] : null;
+
+  // Locale-aware helpers
+  const topicTitle = (tp: typeof topic) =>
+    locale === "fr" && tp.titleFr ? tp.titleFr
+    : locale === "ar" && tp.titleAr ? tp.titleAr
+    : tp.title;
+
+  const topicDesc = (tp: typeof topic) =>
+    locale === "fr" && tp.descriptionFr ? tp.descriptionFr
+    : tp.description;
+
+  // RTL: flip directional arrows in Arabic
+  const isRtl = locale === "ar";
+  const BackIcon    = isRtl ? ChevronRight : ArrowLeft;
+  const PrevIcon    = isRtl ? ChevronRight : ChevronLeft;
+  const NextIcon    = isRtl ? ChevronLeft  : ChevronRight;
+  const prereqArrow = isRtl ? "←" : "→";
 
   const difficultyColors = {
     beginner: "#10b981",
@@ -83,7 +100,7 @@ export default async function TopicPage({
             className="inline-flex items-center gap-1.5 text-sm mb-6 transition-opacity hover:opacity-70"
             style={{ color: "var(--text-secondary)" }}
           >
-            <ArrowLeft size={14} />
+            <BackIcon size={14} />
             ML Learning Hub
           </Link>
 
@@ -92,7 +109,8 @@ export default async function TopicPage({
               className="px-3 py-1 rounded-full text-xs font-semibold"
               style={{ backgroundColor: `${color}20`, color }}
             >
-              {topic.category}
+              {/* Category translated via learning namespace key */}
+              {t(topic.category as Parameters<typeof t>[0])}
             </span>
             <span
               className="px-3 py-1 rounded-full text-xs font-semibold"
@@ -101,7 +119,7 @@ export default async function TopicPage({
                 color: difficultyColors[topic.difficulty],
               }}
             >
-              {topic.difficulty}
+              {t(`difficulty_${topic.difficulty}` as Parameters<typeof t>[0])}
             </span>
           </div>
 
@@ -109,7 +127,7 @@ export default async function TopicPage({
             className="text-3xl sm:text-5xl font-bold mb-4 leading-tight"
             style={{ color: "var(--text-primary)" }}
           >
-            {topic.title}
+            {topicTitle(topic)}
           </h1>
 
           {content && (
@@ -117,12 +135,12 @@ export default async function TopicPage({
               className="text-lg sm:text-xl italic mb-6 max-w-3xl"
               style={{ color, opacity: 0.9 }}
             >
-              "{content.tagline}"
+              &ldquo;{content.tagline}&rdquo;
             </p>
           )}
 
           <p className="max-w-3xl mb-6" style={{ color: "var(--text-secondary)" }}>
-            {topic.description}
+            {topicDesc(topic)}
           </p>
 
           {/* Meta pills */}
@@ -133,11 +151,11 @@ export default async function TopicPage({
             </div>
             <div className="flex items-center gap-1.5 text-sm" style={{ color: "var(--text-muted)" }}>
               <BookOpen size={14} />
-              {topic.diagrams} diagrams
+              {topic.diagrams} {t("diagrams_count" as Parameters<typeof t>[0])}
             </div>
             <div className="flex items-center gap-1.5 text-sm" style={{ color: "var(--text-muted)" }}>
               <BarChart2 size={14} />
-              {topic.concepts.length} concepts
+              {topic.concepts.length} {t("concepts_covered" as Parameters<typeof t>[0])}
             </div>
           </div>
         </div>
@@ -160,7 +178,7 @@ export default async function TopicPage({
                   <div className="space-y-1">
                     {topic.prerequisites.map(p => (
                       <div key={p} className="flex items-center gap-2 text-xs" style={{ color: "var(--text-secondary)" }}>
-                        <span style={{ color }}>→</span>
+                        <span style={{ color }}>{prereqArrow}</span>
                         {p}
                       </div>
                     ))}
@@ -194,8 +212,8 @@ export default async function TopicPage({
                     className="flex items-center gap-2 text-xs transition-opacity hover:opacity-70 w-full"
                     style={{ color: "var(--text-secondary)" }}
                   >
-                    <ChevronLeft size={12} />
-                    <span className="truncate">{t("previous")}: {prevTopic.title}</span>
+                    <PrevIcon size={12} />
+                    <span className="truncate">{t("previous")}: {topicTitle(prevTopic)}</span>
                   </Link>
                 )}
                 {nextTopic && (
@@ -204,8 +222,8 @@ export default async function TopicPage({
                     className="flex items-center gap-2 text-xs transition-opacity hover:opacity-70 w-full"
                     style={{ color: "var(--text-secondary)" }}
                   >
-                    <ChevronRight size={12} />
-                    <span className="truncate">{t("next")}: {nextTopic.title}</span>
+                    <NextIcon size={12} />
+                    <span className="truncate">{t("next")}: {topicTitle(nextTopic)}</span>
                   </Link>
                 )}
               </div>
@@ -233,10 +251,10 @@ export default async function TopicPage({
               className="flex items-center gap-2 px-4 py-3 rounded-xl border text-sm transition-all group"
               style={{ borderColor: "var(--border-strong)", color: "var(--text-secondary)" }}
             >
-              <ChevronLeft size={16} className="group-hover:-translate-x-0.5 transition-transform" />
+              <PrevIcon size={16} className="group-hover:-translate-x-0.5 transition-transform" />
               <div>
-                <div className="text-xs" style={{ color: "var(--text-muted)" }}>Previous</div>
-                <div style={{ color: "var(--text-primary)" }}>{prevTopic.title}</div>
+                <div className="text-xs" style={{ color: "var(--text-muted)" }}>{t("previous")}</div>
+                <div style={{ color: "var(--text-primary)" }}>{topicTitle(prevTopic)}</div>
               </div>
             </Link>
           ) : <div />}
@@ -246,11 +264,11 @@ export default async function TopicPage({
               className="flex items-center gap-2 px-4 py-3 rounded-xl border text-sm transition-all group"
               style={{ borderColor: "var(--border-strong)", color: "var(--text-secondary)" }}
             >
-              <div className="text-right">
-                <div className="text-xs" style={{ color: "var(--text-muted)" }}>Next</div>
-                <div style={{ color: "var(--text-primary)" }}>{nextTopic.title}</div>
+              <div className={isRtl ? "text-left" : "text-right"}>
+                <div className="text-xs" style={{ color: "var(--text-muted)" }}>{t("next")}</div>
+                <div style={{ color: "var(--text-primary)" }}>{topicTitle(nextTopic)}</div>
               </div>
-              <ChevronRight size={16} className="group-hover:translate-x-0.5 transition-transform" />
+              <NextIcon size={16} className="group-hover:translate-x-0.5 transition-transform" />
             </Link>
           )}
         </div>
