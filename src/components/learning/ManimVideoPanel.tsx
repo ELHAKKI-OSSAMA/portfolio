@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useTranslations, useLocale } from "next-intl";
 import { getTopicVideos, AUDIENCE_CONFIG } from "@/lib/learningContent/manim-videos";
 import type { ManimVideoMeta, Audience } from "@/lib/learningContent/manim-videos";
 
@@ -21,11 +22,17 @@ function VideoCard({
   isActive,
   onClick,
   accentColor,
+  tPlaying,
+  tWatch,
+  audienceLabel,
 }: {
   video: ManimVideoMeta;
   isActive: boolean;
   onClick: () => void;
   accentColor: string;
+  tPlaying: string;
+  tWatch: string;
+  audienceLabel: (a: Audience) => string;
 }) {
   const aud = AUDIENCE_CONFIG[video.audience];
 
@@ -46,7 +53,7 @@ function VideoCard({
         className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold mb-3"
         style={{ backgroundColor: `${aud.color}18`, color: aud.color }}
       >
-        {aud.emoji} {aud.label}
+        {aud.emoji} {audienceLabel(video.audience)}
       </div>
 
       {/* Title */}
@@ -70,7 +77,7 @@ function VideoCard({
           className="text-xs font-medium"
           style={{ color: isActive ? accentColor : "var(--text-muted)" }}
         >
-          {isActive ? "▶ playing" : "▷ watch"}
+          {isActive ? `▶ ${tPlaying}` : `▷ ${tWatch}`}
         </span>
       </div>
 
@@ -90,9 +97,11 @@ function VideoCard({
 function VideoPlayer({
   video,
   accentColor,
+  audienceLabel,
 }: {
   video: ManimVideoMeta;
   accentColor: string;
+  audienceLabel: (a: Audience) => string;
 }) {
   const [videoLoaded, setVideoLoaded] = useState(false);
 
@@ -147,7 +156,7 @@ function VideoPlayer({
             <p className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
               {video.title}
             </p>
-            <AudienceBadge audience={video.audience} />
+            <AudienceBadge audience={video.audience} label={audienceLabel(video.audience)} />
             <span className="text-xs font-mono ml-auto" style={{ color: "var(--text-muted)" }}>
               {video.duration}
             </span>
@@ -159,14 +168,14 @@ function VideoPlayer({
 }
 
 // ── Audience badge ────────────────────────────────────────────────────────────
-function AudienceBadge({ audience }: { audience: Audience }) {
+function AudienceBadge({ audience, label }: { audience: Audience; label: string }) {
   const cfg = AUDIENCE_CONFIG[audience];
   return (
     <span
       className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold"
       style={{ backgroundColor: `${cfg.color}18`, color: cfg.color }}
     >
-      {cfg.emoji} {cfg.label}
+      {cfg.emoji} {label}
     </span>
   );
 }
@@ -179,11 +188,15 @@ function FilterBar({
   onChange,
   accentColor,
   counts,
+  tAll,
+  audienceLabel,
 }: {
   selected: Audience | "all";
   onChange: (a: Audience | "all") => void;
   accentColor: string;
   counts: Record<Audience | "all", number>;
+  tAll: string;
+  audienceLabel: (a: Audience) => string;
 }) {
   return (
     <div className="flex items-center gap-2 flex-wrap">
@@ -202,7 +215,7 @@ function FilterBar({
               border:          `1px solid ${active ? col + "50" : "var(--border)"}`,
             }}
           >
-            {aud === "all" ? "All" : (cfg?.emoji + " " + cfg?.label)} ({counts[aud]})
+            {aud === "all" ? tAll : (cfg?.emoji + " " + audienceLabel(aud))} ({counts[aud]})
           </button>
         );
       })}
@@ -212,11 +225,22 @@ function FilterBar({
 
 // ── Main panel ────────────────────────────────────────────────────────────────
 export default function ManimVideoPanel({ topicId, accentColor }: Props) {
+  const t      = useTranslations("learning");
+  const locale = useLocale();
+
   const videos = getTopicVideos(topicId);
   const [activeId, setActiveId]           = useState<string>(videos[0]?.id ?? "");
   const [audienceFilter, setAudienceFilter] = useState<Audience | "all">("all");
 
   if (videos.length === 0) return null;
+
+  // Locale-aware audience label using existing difficulty_* i18n keys
+  const audienceLabel = (a: Audience): string =>
+    t(`difficulty_${a}` as Parameters<typeof t>[0]);
+
+  // Build subtitle: "{n} animated video(s) · ..."
+  const plural = videos.length !== 1 ? t("manim_subtitle_plural" as Parameters<typeof t>[0]) : "";
+  const subtitle = `${videos.length} ${t("manim_subtitle_prefix" as Parameters<typeof t>[0])}${plural} ${t("manim_subtitle_suffix" as Parameters<typeof t>[0])}`;
 
   // Counts for filter badges
   const counts = ALL_AUDIENCES.reduce((acc, aud) => {
@@ -231,9 +255,11 @@ export default function ManimVideoPanel({ topicId, accentColor }: Props) {
     : videos.filter((v) => v.audience === audienceFilter);
 
   const activeVideo = videos.find((v) => v.id === activeId) ?? videos[0];
-
-  // If filtered list doesn't include activeId, reset
   const displayList = filtered;
+
+  const tPlaying = t("manim_playing" as Parameters<typeof t>[0]);
+  const tWatch   = t("manim_watch"   as Parameters<typeof t>[0]);
+  const tAll     = t("manim_filter_all" as Parameters<typeof t>[0]);
 
   return (
     <motion.div
@@ -253,10 +279,10 @@ export default function ManimVideoPanel({ topicId, accentColor }: Props) {
           </div>
           <div>
             <h2 className="text-xl font-bold" style={{ color: "var(--text-primary)" }}>
-              Manim Animations
+              {t("manim_title" as Parameters<typeof t>[0])}
             </h2>
-            <p className="text-xs" style={{ color: "var(--text-muted)" }}>
-              {videos.length} animated video{videos.length !== 1 ? "s" : ""} · render locally with Manim Community
+            <p className="text-xs" dir="ltr" style={{ color: "var(--text-muted)" }}>
+              {subtitle}
             </p>
           </div>
         </div>
@@ -266,6 +292,8 @@ export default function ManimVideoPanel({ topicId, accentColor }: Props) {
           onChange={setAudienceFilter}
           accentColor={accentColor}
           counts={counts}
+          tAll={tAll}
+          audienceLabel={audienceLabel}
         />
       </div>
 
@@ -278,13 +306,20 @@ export default function ManimVideoPanel({ topicId, accentColor }: Props) {
             isActive={video.id === activeId}
             onClick={() => setActiveId(video.id)}
             accentColor={accentColor}
+            tPlaying={tPlaying}
+            tWatch={tWatch}
+            audienceLabel={audienceLabel}
           />
         ))}
       </div>
 
       {/* ── Player ──────────────────────────────────────────────────────────── */}
       {activeVideo && (
-        <VideoPlayer video={activeVideo} accentColor={accentColor} />
+        <VideoPlayer
+          video={activeVideo}
+          accentColor={accentColor}
+          audienceLabel={audienceLabel}
+        />
       )}
 
     </motion.div>

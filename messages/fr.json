@@ -128,7 +128,14 @@
     "completed_badge": "Réussi",
     "difficulty_beginner": "débutant",
     "difficulty_intermediate": "intermédiaire",
-    "difficulty_advanced": "avancé"
+    "difficulty_advanced": "avancé",
+    "manim_title": "Animations Manim",
+    "manim_subtitle_prefix": "vidéo animée",
+    "manim_subtitle_plural": "s",
+    "manim_subtitle_suffix": "· rendu local avec Manim Community",
+    "manim_playing": "en cours",
+    "manim_watch": "regarder",
+    "manim_filter_all": "Tous"
   },
   "about": {
     "title": "À Propos",

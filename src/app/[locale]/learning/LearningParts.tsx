@@ -128,7 +128,9 @@ export function TopicCard({
             : topic.title}
         </h3>
         <p className="text-xs leading-relaxed mb-3 line-clamp-3" style={{ color:"var(--text-muted)" }}>
-          {locale === "fr" && topic.descriptionFr ? topic.descriptionFr : topic.description}
+          {locale === "fr" && topic.descriptionFr ? topic.descriptionFr
+            : locale === "ar" && topic.descriptionAr ? topic.descriptionAr
+            : topic.description}
         </p>
 
         {/* Concepts */}

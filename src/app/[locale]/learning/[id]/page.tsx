@@ -69,6 +69,7 @@ export default async function TopicPage({
 
   const topicDesc = (tp: typeof topic) =>
     locale === "fr" && tp.descriptionFr ? tp.descriptionFr
+    : locale === "ar" && tp.descriptionAr ? tp.descriptionAr
     : tp.description;
 
   // RTL: flip directional arrows in Arabic

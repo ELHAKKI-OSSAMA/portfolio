@@ -128,7 +128,14 @@
     "completed_badge": "ناجح",
     "difficulty_beginner": "مبتدئ",
     "difficulty_intermediate": "متوسط",
-    "difficulty_advanced": "متقدم"
+    "difficulty_advanced": "متقدم",
+    "manim_title": "رسوم Manim المتحركة",
+    "manim_subtitle_prefix": "فيديو متحرك",
+    "manim_subtitle_plural": "",
+    "manim_subtitle_suffix": "· يُعرض محلياً مع Manim Community",
+    "manim_playing": "يُشغَّل",
+    "manim_watch": "شاهد",
+    "manim_filter_all": "الكل"
   },
   "about": {
     "title": "نبذة عني",
