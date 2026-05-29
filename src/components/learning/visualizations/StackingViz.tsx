@@ -3,6 +3,80 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useVizTheme } from "@/hooks/useVizTheme";
+import { useVizLocale } from "@/hooks/useVizLocale";
+import { VizCard, VizHeader, StatGrid, TabToggle } from "./shared";
+
+const STACK_LABELS = {
+  en: {
+    title: "Stacked Generalization (Stacking)",
+    prev: "← Prev",
+    next: "Next →",
+    phases: [
+      {
+        title: "Phase 1 — Train Base Models (K-Fold CV)",
+        desc: "Each base model is trained K times on different folds. Predictions on held-out folds produce Out-Of-Fold (OOF) predictions — free of target leakage.",
+      },
+      {
+        title: "Phase 2 — Collect OOF Predictions",
+        desc: "OOF predictions from all base models form a new feature matrix. Each row: one sample. Each column: one model's OOF prediction.",
+      },
+      {
+        title: "Phase 3 — Train Meta-Learner",
+        desc: "A meta-learner (often Logistic Regression or Ridge) is trained on the OOF predictions. It learns how to combine base model outputs optimally.",
+      },
+      {
+        title: "Phase 4 — Final Prediction",
+        desc: "At inference: run all base models, collect predictions, feed into meta-learner → final output. Stacking beats any individual base model.",
+      },
+    ],
+  },
+  fr: {
+    title: "Généralisation Empilée (Stacking)",
+    prev: "← Préc",
+    next: "Suiv →",
+    phases: [
+      {
+        title: "Phase 1 — Entraîner les Modèles de Base (K-Fold CV)",
+        desc: "Chaque modèle de base est entraîné K fois sur des plis différents. Les prédictions sur les plis tenus hors forment des prédictions hors-plis (OOF) — sans fuite de cibles.",
+      },
+      {
+        title: "Phase 2 — Collecter les Prédictions OOF",
+        desc: "Les prédictions OOF de tous les modèles forment une nouvelle matrice de caractéristiques. Chaque ligne : un échantillon. Chaque colonne : la prédiction OOF d'un modèle.",
+      },
+      {
+        title: "Phase 3 — Entraîner le Méta-Apprenant",
+        desc: "Un méta-apprenant (souvent Régression Logistique ou Ridge) est entraîné sur les prédictions OOF. Il apprend à combiner les sorties des modèles de base de manière optimale.",
+      },
+      {
+        title: "Phase 4 — Prédiction Finale",
+        desc: "À l'inférence : exécuter tous les modèles de base, collecter les prédictions, alimenter le méta-apprenant → sortie finale. Le stacking surpasse tout modèle de base individuel.",
+      },
+    ],
+  },
+  ar: {
+    title: "التعميم المتراكم (Stacking)",
+    prev: "→ السابق",
+    next: "التالي ←",
+    phases: [
+      {
+        title: "المرحلة 1 — تدريب النماذج الأساسية (K-Fold CV)",
+        desc: "يُدرَّب كل نموذج أساسي K مرات على طيات مختلفة. تنتج التنبؤات على الطيات المحجوزة تنبؤات خارج الطية (OOF) — خالية من تسرب الهدف.",
+      },
+      {
+        title: "المرحلة 2 — جمع تنبؤات OOF",
+        desc: "تنبؤات OOF من جميع النماذج الأساسية تشكّل مصفوفة ميزات جديدة. كل صف: عينة واحدة. كل عمود: تنبؤ OOF لنموذج واحد.",
+      },
+      {
+        title: "المرحلة 3 — تدريب الميتا-متعلم",
+        desc: "يُدرَّب ميتا-متعلم (غالباً الانحدار اللوجستي أو Ridge) على تنبؤات OOF. يتعلم كيفية دمج مخرجات النماذج الأساسية بشكل مثالي.",
+      },
+      {
+        title: "المرحلة 4 — التنبؤ النهائي",
+        desc: "عند الاستدلال: تشغيل جميع النماذج الأساسية، جمع التنبؤات، تغذية الميتا-متعلم → المخرج النهائي. يتفوق Stacking على أي نموذج أساسي منفرد.",
+      },
+    ],
+  },
+} as const;
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 interface BaseModel {
@@ -42,33 +116,14 @@ function metaPred(idx: number) {
 }
 const META_PRED = SAMPLES.map((_, i) => metaPred(i));
 
-// ── Phases ────────────────────────────────────────────────────────────────────
-const PHASES = [
-  {
-    id: "train",
-    title: "Phase 1 — Train Base Models (K-Fold CV)",
-    desc: "Each base model is trained K times on different folds. Predictions on held-out folds produce Out-Of-Fold (OOF) predictions — free of target leakage.",
-  },
-  {
-    id: "oof",
-    title: "Phase 2 — Collect OOF Predictions",
-    desc: "OOF predictions from all base models form a new feature matrix. Each row: one sample. Each column: one model's OOF prediction.",
-  },
-  {
-    id: "meta",
-    title: "Phase 3 — Train Meta-Learner",
-    desc: "A meta-learner (often Logistic Regression or Ridge) is trained on the OOF predictions. It learns how to combine base model outputs optimally.",
-  },
-  {
-    id: "predict",
-    title: "Phase 4 — Final Prediction",
-    desc: "At inference: run all base models, collect predictions, feed into meta-learner → final output. Stacking beats any individual base model.",
-  },
-];
+// ── Phase IDs (for key only) ──────────────────────────────────────────────────
+const PHASE_IDS = ["train", "oof", "meta", "predict"];
 
 export default function StackingViz({ accentColor = "#6c63ff" }: { accentColor?: string }) {
   const [phase, setPhase] = useState(0);
   const vt = useVizTheme();
+  const L = useVizLocale(STACK_LABELS);
+  const PHASES = PHASE_IDS.map((id, i) => ({ id, ...L.phases[i] }));
   const cur = PHASES[phase];
 
   const cardBg  = "var(--bg-card)";
@@ -83,7 +138,7 @@ export default function StackingViz({ accentColor = "#6c63ff" }: { accentColor?:
       <div className="px-5 py-3 border-b" style={{ borderColor: border }}>
         <div className="flex items-center justify-between flex-wrap gap-2">
           <span className="text-sm font-semibold" style={{ color: textP }}>
-            Stacked Generalization (Stacking)
+            {L.title}
           </span>
           <div className="flex gap-1">
             {PHASES.map((p, i) => (
@@ -142,7 +197,7 @@ export default function StackingViz({ accentColor = "#6c63ff" }: { accentColor?:
             border: `1px solid ${accentColor}30`,
           }}
         >
-          ← Prev
+          {L.prev}
         </button>
         <div className="flex gap-1.5">
           {PHASES.map((_, i) => (
@@ -167,7 +222,7 @@ export default function StackingViz({ accentColor = "#6c63ff" }: { accentColor?:
             border: `1px solid ${accentColor}30`,
           }}
         >
-          Next →
+          {L.next}
         </button>
       </div>
     </div>

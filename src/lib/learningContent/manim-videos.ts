@@ -1,0 +1,1006 @@
+// ─── Manim Video Metadata ─────────────────────────────────────────────────────
+// Videos are rendered with:  manim -qh <file.py> <SceneClass>
+// Output goes to:            public/manim/<topic-id>/<SceneClass>.mp4
+// ─────────────────────────────────────────────────────────────────────────────
+
+export type Audience = "beginner" | "intermediate" | "advanced";
+
+export interface ManimVideoMeta {
+  id: string;           // unique slug within topic
+  title: string;
+  audience: Audience;
+  duration: string;     // human-readable, e.g. "~3 min"
+  description: string;  // 1-sentence summary shown in the card
+  sceneClass: string;   // Manim class name used to render
+  file: string;         // Python filename inside manim_videos/<topic-id>/
+  /** Path served by Next.js public folder after rendering */
+  src: string;
+}
+
+export const manimVideos: Record<string, ManimVideoMeta[]> = {
+
+  // ── 01. Linear Regression ──────────────────────────────────────────────────
+  "linear-regression": [
+    {
+      id:          "lr-v1",
+      title:       "What is Linear Regression?",
+      audience:    "beginner",
+      duration:    "~3 min",
+      description: "Story-based intro: scatter plot, bad lines vs best-fit, making a live prediction.",
+      sceneClass:  "LR_01_Intuition",
+      file:        "v1_intuition.py",
+      src:         "/manim/linear-regression/LR_01_Intuition.mp4",
+    },
+    {
+      id:          "lr-v2",
+      title:       "The Equation: ŷ = wx + b",
+      audience:    "beginner",
+      duration:    "~4 min",
+      description: "Live-animated slope & intercept sliders reveal how each parameter shapes the line.",
+      sceneClass:  "LR_02_Equation",
+      file:        "v2_equation.py",
+      src:         "/manim/linear-regression/LR_02_Equation.mp4",
+    },
+    {
+      id:          "lr-v3",
+      title:       "The Cost Function & MSE",
+      audience:    "intermediate",
+      duration:    "~4 min",
+      description: "Residuals → squared errors → MSE formula → parabolic cost curve with live tracking.",
+      sceneClass:  "LR_03_CostFunction",
+      file:        "v3_cost_function.py",
+      src:         "/manim/linear-regression/LR_03_CostFunction.mp4",
+    },
+    {
+      id:          "lr-v4",
+      title:       "Gradient Descent: How Machines Learn",
+      audience:    "intermediate",
+      duration:    "~5 min",
+      description: "Tangent lines, update rule animation, learning-rate comparison and convergence trail.",
+      sceneClass:  "LR_04_GradientDescent",
+      file:        "v4_gradient_descent.py",
+      src:         "/manim/linear-regression/LR_04_GradientDescent.mp4",
+    },
+    {
+      id:          "lr-v5",
+      title:       "R², RMSE & Residual Plot",
+      audience:    "intermediate",
+      duration:    "~4 min",
+      description: "SS_tot vs SS_res visual proof of R², RMSE/MAE side-by-side, residual diagnosis.",
+      sceneClass:  "LR_05_Evaluation",
+      file:        "v5_evaluation_metrics.py",
+      src:         "/manim/linear-regression/LR_05_Evaluation.mp4",
+    },
+    {
+      id:          "lr-v6a",
+      title:       "Multiple Features: From Line to Plane",
+      audience:    "advanced",
+      duration:    "~2 min",
+      description: "Equation transition from 1-feature line to 2-feature plane to p-feature hyperplane.",
+      sceneClass:  "LR_06a_FromOneTo2Features",
+      file:        "v6_multiple_regression.py",
+      src:         "/manim/linear-regression/LR_06a_FromOneTo2Features.mp4",
+    },
+    {
+      id:          "lr-v6b",
+      title:       "3D Regression Plane (Orbiting Camera)",
+      audience:    "advanced",
+      duration:    "~2 min",
+      description: "3-D scatter of study+sleep hours vs score; orbiting camera reveals the fitted plane.",
+      sceneClass:  "LR_06b_RegressionPlane",
+      file:        "v6_multiple_regression.py",
+      src:         "/manim/linear-regression/LR_06b_RegressionPlane.mp4",
+    },
+    {
+      id:          "lr-v6c",
+      title:       "Design Matrix & Normal Equations",
+      audience:    "advanced",
+      duration:    "~2 min",
+      description: "Design matrix X, the closed-form OLS solution, and GD vs Normal-Equations trade-offs.",
+      sceneClass:  "LR_06c_DesignMatrix",
+      file:        "v6_multiple_regression.py",
+      src:         "/manim/linear-regression/LR_06c_DesignMatrix.mp4",
+    },
+  ],
+
+  // ── 02. Decision Tree & Random Forest ──────────────────────────────────────
+  "decision-tree-rf": [
+    {
+      id:          "dtrf-v1",
+      title:       "What is a Decision Tree?",
+      audience:    "beginner",
+      duration:    "~3 min",
+      description: "A 20-questions analogy builds the tree node-by-node with colored feature splits.",
+      sceneClass:  "DTRF_01_TreeIntuition",
+      file:        "v1_tree_intuition.py",
+      src:         "/manim/decision-tree-rf/DTRF_01_TreeIntuition.mp4",
+    },
+    {
+      id:          "dtrf-v2",
+      title:       "Gini Impurity & Information Gain",
+      audience:    "intermediate",
+      duration:    "~4 min",
+      description: "Animated pie charts show how Gini impurity drops with each split, driving the tree growth.",
+      sceneClass:  "DTRF_02_GiniInfoGain",
+      file:        "v2_gini_infogain.py",
+      src:         "/manim/decision-tree-rf/DTRF_02_GiniInfoGain.mp4",
+    },
+    {
+      id:          "dtrf-v3",
+      title:       "Overfitting & Pruning",
+      audience:    "intermediate",
+      duration:    "~4 min",
+      description: "Deep tree memorises noise; pruning shaves branches until the validation curve improves.",
+      sceneClass:  "DTRF_03_OverfitPrune",
+      file:        "v3_overfit_pruning.py",
+      src:         "/manim/decision-tree-rf/DTRF_03_OverfitPrune.mp4",
+    },
+    {
+      id:          "dtrf-v4",
+      title:       "Bootstrap Sampling (Bagging)",
+      audience:    "intermediate",
+      duration:    "~3 min",
+      description: "Watch bootstrap resampling create diverse training sets before each tree is built.",
+      sceneClass:  "DTRF_04_Bootstrap",
+      file:        "v4_bootstrap.py",
+      src:         "/manim/decision-tree-rf/DTRF_04_Bootstrap.mp4",
+    },
+    {
+      id:          "dtrf-v5",
+      title:       "Random Forest: Wisdom of the Crowd",
+      audience:    "intermediate",
+      duration:    "~4 min",
+      description: "100 diverse trees vote; majority wins — visualised as a democratic ensemble.",
+      sceneClass:  "DTRF_05_RandomForest",
+      file:        "v5_random_forest.py",
+      src:         "/manim/decision-tree-rf/DTRF_05_RandomForest.mp4",
+    },
+    {
+      id:          "dtrf-v6",
+      title:       "Feature Importance from Random Forests",
+      audience:    "advanced",
+      duration:    "~3 min",
+      description: "Mean decrease in impurity aggregated across all trees; animated bar chart ranking.",
+      sceneClass:  "DTRF_06_FeatureImportance",
+      file:        "v6_feature_importance.py",
+      src:         "/manim/decision-tree-rf/DTRF_06_FeatureImportance.mp4",
+    },
+  ],
+
+  // ── 03. Python / ML Stack ─────────────────────────────────────────────────
+  "python-ml-stack": [
+    {
+      id: "pms-v1", title: "NumPy Arrays: The Engine of ML",
+      audience: "beginner", duration: "~4 min",
+      description: "ndarray creation, broadcasting rules, vectorised ops — why loops are slow.",
+      sceneClass: "PMS_01_NumpyArrays", file: "v1_numpy_arrays.py",
+      src: "/manim/python-ml-stack/PMS_01_NumpyArrays.mp4",
+    },
+    {
+      id: "pms-v2", title: "Pandas DataFrames for ML",
+      audience: "beginner", duration: "~4 min",
+      description: "Series, DataFrame anatomy, groupby, missing-value handling, and train/test splitting.",
+      sceneClass: "PMS_02_PandasDataFrame", file: "v2_pandas_dataframe.py",
+      src: "/manim/python-ml-stack/PMS_02_PandasDataFrame.mp4",
+    },
+    {
+      id: "pms-v3", title: "Matplotlib & Seaborn Visualisations",
+      audience: "beginner", duration: "~3 min",
+      description: "Scatter, histogram, heatmap, and pair-plot recipes for exploratory data analysis.",
+      sceneClass: "PMS_03_Visualization", file: "v3_matplotlib_seaborn.py",
+      src: "/manim/python-ml-stack/PMS_03_Visualization.mp4",
+    },
+    {
+      id: "pms-v4", title: "scikit-learn Pipeline: The Right Way",
+      audience: "intermediate", duration: "~4 min",
+      description: "Transformers → Pipeline → GridSearchCV: prevent leakage and streamline production code.",
+      sceneClass: "PMS_04_SklearnPipeline", file: "v4_sklearn_pipeline.py",
+      src: "/manim/python-ml-stack/PMS_04_SklearnPipeline.mp4",
+    },
+    {
+      id: "pms-v5", title: "EDA Workflow: From Raw Data to Insight",
+      audience: "intermediate", duration: "~5 min",
+      description: "Shape → dtypes → missing values → distributions → correlations — a full EDA walkthrough.",
+      sceneClass: "PMS_05_EDAWorkflow", file: "v5_eda_workflow.py",
+      src: "/manim/python-ml-stack/PMS_05_EDAWorkflow.mp4",
+    },
+  ],
+
+  // ── 04. Linear Algebra ─────────────────────────────────────────────────────
+  "linear-algebra": [
+    {
+      id: "la-v1", title: "Vectors & the Dot Product",
+      audience: "beginner", duration: "~4 min",
+      description: "Geometric vector intuition, magnitude, unit vectors, dot product as projection and cosine similarity.",
+      sceneClass: "LA_01_VectorsDotProduct", file: "v1_vectors_dotproduct.py",
+      src: "/manim/linear-algebra/LA_01_VectorsDotProduct.mp4",
+    },
+    {
+      id: "la-v2", title: "Matrix Multiplication Explained",
+      audience: "beginner", duration: "~4 min",
+      description: "Row×Column rule animated step-by-step; matrix as a linear transformation of space.",
+      sceneClass: "LA_02_MatrixMultiply", file: "v2_matrix_multiplication.py",
+      src: "/manim/linear-algebra/LA_02_MatrixMultiply.mp4",
+    },
+    {
+      id: "la-v3", title: "Eigenvalues & Eigenvectors",
+      audience: "intermediate", duration: "~4 min",
+      description: "Av = λv: directions preserved under transformation; power iteration and the characteristic equation.",
+      sceneClass: "LA_03_Eigenvalues", file: "v3_eigenvalues.py",
+      src: "/manim/linear-algebra/LA_03_Eigenvalues.mp4",
+    },
+    {
+      id: "la-v4", title: "Singular Value Decomposition (SVD)",
+      audience: "intermediate", duration: "~5 min",
+      description: "A = UΣVᵀ decomposition, singular values as importance weights, low-rank approximation.",
+      sceneClass: "LA_04_SVD", file: "v4_svd.py",
+      src: "/manim/linear-algebra/LA_04_SVD.mp4",
+    },
+    {
+      id: "la-v5", title: "Determinant & Geometric Intuition",
+      audience: "intermediate", duration: "~3 min",
+      description: "Determinant as signed area/volume scaling; det=0 means singular (no inverse).",
+      sceneClass: "LA_05_Determinant", file: "v5_determinant.py",
+      src: "/manim/linear-algebra/LA_05_Determinant.mp4",
+    },
+  ],
+
+  // ── 05. Calculus & Optimization ────────────────────────────────────────────
+  "calculus-optimization": [
+    {
+      id: "co-v1", title: "Derivatives: The Rate of Change",
+      audience: "beginner", duration: "~4 min",
+      description: "Tangent line limit definition, power/chain rules, critical points — all animated on a curve.",
+      sceneClass: "CO_01_Derivatives", file: "v1_derivatives.py",
+      src: "/manim/calculus-optimization/CO_01_Derivatives.mp4",
+    },
+    {
+      id: "co-v2", title: "Partial Derivatives & Gradients",
+      audience: "intermediate", duration: "~4 min",
+      description: "Multivariable functions, partial ∂f/∂x slices, gradient vector pointing uphill.",
+      sceneClass: "CO_02_PartialDerivatives", file: "v2_partial_derivatives.py",
+      src: "/manim/calculus-optimization/CO_02_PartialDerivatives.mp4",
+    },
+    {
+      id: "co-v3", title: "Chain Rule & Backpropagation",
+      audience: "intermediate", duration: "~5 min",
+      description: "Composite function derivatives; how the chain rule flows gradients backward through a network.",
+      sceneClass: "CO_03_ChainRuleBackprop", file: "v3_chain_rule_backprop.py",
+      src: "/manim/calculus-optimization/CO_03_ChainRuleBackprop.mp4",
+    },
+    {
+      id: "co-v4", title: "Optimizer Comparison: SGD, Momentum, Adam",
+      audience: "intermediate", duration: "~4 min",
+      description: "Loss-surface descent paths compared: vanilla GD vs momentum vs Adam on saddle points.",
+      sceneClass: "CO_04_Optimizers", file: "v4_optimizers.py",
+      src: "/manim/calculus-optimization/CO_04_Optimizers.mp4",
+    },
+    {
+      id: "co-v5", title: "Learning Rate Scheduling",
+      audience: "intermediate", duration: "~3 min",
+      description: "Step decay, exponential, cosine annealing and warmup strategies — plotted through training.",
+      sceneClass: "CO_05_LRScheduling", file: "v5_lr_scheduling.py",
+      src: "/manim/calculus-optimization/CO_05_LRScheduling.mp4",
+    },
+  ],
+
+  // ── 06. Probability & Statistics ───────────────────────────────────────────
+  "probability-statistics": [
+    {
+      id: "ps-v1", title: "Probability Distributions: Normal, Binomial, Poisson",
+      audience: "beginner", duration: "~5 min",
+      description: "PMF vs PDF, bell curve, binomial as coin flips, Poisson as rare event rate.",
+      sceneClass: "PS_01_Distributions", file: "v1_distributions.py",
+      src: "/manim/probability-statistics/PS_01_Distributions.mp4",
+    },
+    {
+      id: "ps-v2", title: "Bayes' Theorem",
+      audience: "beginner", duration: "~4 min",
+      description: "P(A|B) = P(B|A)P(A)/P(B): disease test example, prior/likelihood/posterior visualised.",
+      sceneClass: "PS_02_BayesTheorem", file: "v2_bayes_theorem.py",
+      src: "/manim/probability-statistics/PS_02_BayesTheorem.mp4",
+    },
+    {
+      id: "ps-v3", title: "Maximum Likelihood Estimation",
+      audience: "intermediate", duration: "~4 min",
+      description: "Likelihood function animated on normal parameters; MLE as peak-finding; log-likelihood trick.",
+      sceneClass: "PS_03_MLE", file: "v3_mle.py",
+      src: "/manim/probability-statistics/PS_03_MLE.mp4",
+    },
+    {
+      id: "ps-v4", title: "Hypothesis Testing: p-values & Tests",
+      audience: "intermediate", duration: "~4 min",
+      description: "Null hypothesis, z-test, t-test, p-value threshold, Type I/II errors explained.",
+      sceneClass: "PS_04_HypothesisTesting", file: "v4_hypothesis_testing.py",
+      src: "/manim/probability-statistics/PS_04_HypothesisTesting.mp4",
+    },
+    {
+      id: "ps-v5", title: "Confidence Intervals",
+      audience: "intermediate", duration: "~3 min",
+      description: "Bootstrap CI construction, interpretation pitfalls, and relationship to hypothesis tests.",
+      sceneClass: "PS_05_ConfidenceIntervals", file: "v5_confidence_intervals.py",
+      src: "/manim/probability-statistics/PS_05_ConfidenceIntervals.mp4",
+    },
+  ],
+
+  // ── 07. Information Theory ─────────────────────────────────────────────────
+  "information-theory": [
+    {
+      id: "it-v1", title: "Shannon Entropy: Measuring Uncertainty",
+      audience: "beginner", duration: "~4 min",
+      description: "H(X) = −Σ p log p: fair coin vs biased coin, maximum entropy, and tree node impurity.",
+      sceneClass: "IT_01_Entropy", file: "v1_entropy.py",
+      src: "/manim/information-theory/IT_01_Entropy.mp4",
+    },
+    {
+      id: "it-v2", title: "Cross-Entropy Loss Explained",
+      audience: "intermediate", duration: "~4 min",
+      description: "Cross-entropy as the cost for using the wrong distribution; why it's the standard classification loss.",
+      sceneClass: "IT_02_CrossEntropy", file: "v2_cross_entropy.py",
+      src: "/manim/information-theory/IT_02_CrossEntropy.mp4",
+    },
+    {
+      id: "it-v3", title: "KL Divergence: Measuring Distribution Distance",
+      audience: "intermediate", duration: "~4 min",
+      description: "D_KL(P‖Q) asymmetry, forward vs reverse KL, and its role in VAEs and information bottleneck.",
+      sceneClass: "IT_03_KLDivergence", file: "v3_kl_divergence.py",
+      src: "/manim/information-theory/IT_03_KLDivergence.mp4",
+    },
+    {
+      id: "it-v4", title: "Mutual Information & Feature Selection",
+      audience: "advanced", duration: "~4 min",
+      description: "I(X;Y) as shared information; MI-based feature selection vs correlation; connection to entropy.",
+      sceneClass: "IT_04_MutualInformation", file: "v4_mutual_information.py",
+      src: "/manim/information-theory/IT_04_MutualInformation.mp4",
+    },
+  ],
+
+  // ── 08. Model Evaluation ───────────────────────────────────────────────────
+  "model-evaluation": [
+    {
+      id: "me-v1", title: "Confusion Matrix: Every Error Visualised",
+      audience: "beginner", duration: "~4 min",
+      description: "TP/TN/FP/FN heatmap, precision, recall, F1-score derived step-by-step.",
+      sceneClass: "ME_01_ConfusionMatrix", file: "v1_confusion_matrix.py",
+      src: "/manim/model-evaluation/ME_01_ConfusionMatrix.mp4",
+    },
+    {
+      id: "me-v2", title: "ROC Curve & AUC",
+      audience: "intermediate", duration: "~5 min",
+      description: "TPR vs FPR at varying thresholds; AUC as probability of correct ranking; PR curve comparison.",
+      sceneClass: "ME_02_ROCAUC", file: "v2_roc_auc.py",
+      src: "/manim/model-evaluation/ME_02_ROCAUC.mp4",
+    },
+    {
+      id: "me-v3", title: "Cross-Validation Strategies",
+      audience: "intermediate", duration: "~4 min",
+      description: "K-fold, stratified, leave-one-out, time-series split — animated fold selection.",
+      sceneClass: "ME_03_CrossValidation", file: "v3_cross_validation.py",
+      src: "/manim/model-evaluation/ME_03_CrossValidation.mp4",
+    },
+    {
+      id: "me-v4", title: "Handling Imbalanced Classes",
+      audience: "intermediate", duration: "~4 min",
+      description: "SMOTE oversampling, undersampling, class-weight adjustments, and balanced accuracy.",
+      sceneClass: "ME_04_ImbalancedClasses", file: "v4_imbalanced_classes.py",
+      src: "/manim/model-evaluation/ME_04_ImbalancedClasses.mp4",
+    },
+    {
+      id: "me-v5", title: "Calibration: Do Probabilities Mean Anything?",
+      audience: "advanced", duration: "~4 min",
+      description: "Reliability diagram, Brier score, Platt scaling and isotonic regression for calibration.",
+      sceneClass: "ME_05_Calibration", file: "v5_calibration.py",
+      src: "/manim/model-evaluation/ME_05_Calibration.mp4",
+    },
+  ],
+
+  // ── 09. Error Analysis ─────────────────────────────────────────────────────
+  "error-analysis": [
+    {
+      id: "ea-v1", title: "Bias–Variance Trade-Off",
+      audience: "beginner", duration: "~4 min",
+      description: "Bulls-eye diagrams for bias and variance; underfitting vs overfitting on a polynomial curve.",
+      sceneClass: "EA_01_BiasVariance", file: "v1_bias_variance.py",
+      src: "/manim/error-analysis/EA_01_BiasVariance.mp4",
+    },
+    {
+      id: "ea-v2", title: "Learning Curves: Diagnosing Model Problems",
+      audience: "intermediate", duration: "~4 min",
+      description: "Train vs validation error vs dataset size: spot high bias, high variance, and just-right.",
+      sceneClass: "EA_02_LearningCurves", file: "v2_learning_curves.py",
+      src: "/manim/error-analysis/EA_02_LearningCurves.mp4",
+    },
+    {
+      id: "ea-v3", title: "Regularization: L1, L2 & Elastic Net",
+      audience: "intermediate", duration: "~4 min",
+      description: "Weight shrinkage geometry: L2 ball vs L1 diamond; sparsity of Lasso; Elastic Net balance.",
+      sceneClass: "EA_03_Regularization", file: "v3_regularization.py",
+      src: "/manim/error-analysis/EA_03_Regularization.mp4",
+    },
+    {
+      id: "ea-v4", title: "Validation Strategies: The Right Way to Tune",
+      audience: "intermediate", duration: "~4 min",
+      description: "Train/val/test split, nested CV, data leakage pitfalls, and holdout set best practices.",
+      sceneClass: "EA_04_ValidationStrategies", file: "v4_validation_strategies.py",
+      src: "/manim/error-analysis/EA_04_ValidationStrategies.mp4",
+    },
+  ],
+
+  // ── 10. Feature Engineering ────────────────────────────────────────────────
+  "feature-engineering": [
+    {
+      id: "fe-v1", title: "Scaling: StandardScaler vs MinMaxScaler",
+      audience: "beginner", duration: "~4 min",
+      description: "Why scale? StandardScaler z-score vs MinMaxScaler [0,1]; effect on gradient descent and SVM.",
+      sceneClass: "FE_01_Scaling", file: "v1_scaling.py",
+      src: "/manim/feature-engineering/FE_01_Scaling.mp4",
+    },
+    {
+      id: "fe-v2", title: "Encoding Categorical Features",
+      audience: "beginner", duration: "~4 min",
+      description: "Label encoding vs one-hot encoding vs target encoding — when to use each strategy.",
+      sceneClass: "FE_02_Encoding", file: "v2_encoding.py",
+      src: "/manim/feature-engineering/FE_02_Encoding.mp4",
+    },
+    {
+      id: "fe-v3", title: "Missing Value Imputation",
+      audience: "intermediate", duration: "~4 min",
+      description: "Mean/median/mode, KNN imputer, iterative imputer — MCAR vs MAR vs MNAR patterns.",
+      sceneClass: "FE_03_Imputation", file: "v3_imputation.py",
+      src: "/manim/feature-engineering/FE_03_Imputation.mp4",
+    },
+    {
+      id: "fe-v4", title: "Feature Creation: Interactions & Polynomials",
+      audience: "intermediate", duration: "~4 min",
+      description: "Polynomial features, interaction terms, log/sqrt transforms, date-time feature extraction.",
+      sceneClass: "FE_04_FeatureCreation", file: "v4_feature_creation.py",
+      src: "/manim/feature-engineering/FE_04_FeatureCreation.mp4",
+    },
+    {
+      id: "fe-v5", title: "Pipeline Design & Avoiding Data Leakage",
+      audience: "intermediate", duration: "~4 min",
+      description: "Why scalers must be fit only on train data; ColumnTransformer; full leakage-free pipeline.",
+      sceneClass: "FE_05_PipelineLeakage", file: "v5_pipeline_leakage.py",
+      src: "/manim/feature-engineering/FE_05_PipelineLeakage.mp4",
+    },
+  ],
+
+  // ── 11. Naive Bayes ────────────────────────────────────────────────────────
+  "naive-bayes": [
+    {
+      id: "nb-v1", title: "Naive Bayes Classifier Explained",
+      audience: "beginner", duration: "~4 min",
+      description: "Conditional independence assumption, posterior = likelihood × prior / evidence.",
+      sceneClass: "NB_01_BayesClassifier", file: "v1_bayes_classifier.py",
+      src: "/manim/naive-bayes/NB_01_BayesClassifier.mp4",
+    },
+    {
+      id: "nb-v2", title: "Gaussian Naive Bayes",
+      audience: "intermediate", duration: "~4 min",
+      description: "Continuous features modelled as Gaussians; class-conditional probability density visualised.",
+      sceneClass: "NB_02_GaussianNB", file: "v2_gaussian_nb.py",
+      src: "/manim/naive-bayes/NB_02_GaussianNB.mp4",
+    },
+    {
+      id: "nb-v3", title: "Laplace Smoothing: Handling Unseen Words",
+      audience: "intermediate", duration: "~3 min",
+      description: "Zero-frequency problem in text classification; additive smoothing formula and its effect.",
+      sceneClass: "NB_03_LaplaceSmoothing", file: "v3_laplace_smoothing.py",
+      src: "/manim/naive-bayes/NB_03_LaplaceSmoothing.mp4",
+    },
+    {
+      id: "nb-v4", title: "TF-IDF + Naive Bayes for Text Classification",
+      audience: "intermediate", duration: "~4 min",
+      description: "Multinomial NB with TF-IDF weights: spam filter walkthrough with vocabulary table.",
+      sceneClass: "NB_04_TFIDFNaiveBayes", file: "v4_tfidf_nb.py",
+      src: "/manim/naive-bayes/NB_04_TFIDFNaiveBayes.mp4",
+    },
+  ],
+
+  // ── 12. SVM / KNN / SVR ────────────────────────────────────────────────────
+  "svm-knn-svr": [
+    {
+      id: "svm-v1a", title: "SVM: Maximum Margin Hyperplane",
+      audience: "beginner", duration: "~4 min",
+      description: "Decision boundary, margin, support vectors — why maximising margin generalises better.",
+      sceneClass: "SVM_01_Hyperplane", file: "v1_svm_hyperplane.py",
+      src: "/manim/svm-knn-svr/SVM_01_Hyperplane.mp4",
+    },
+    {
+      id: "svm-v1b", title: "SVM Margin Geometry",
+      audience: "intermediate", duration: "~3 min",
+      description: "Hard-margin vs soft-margin (slack variables), C parameter trade-off visualised.",
+      sceneClass: "SVM_01_Margin", file: "v2_svm_margin.py",
+      src: "/manim/svm-knn-svr/SVM_01_Margin.mp4",
+    },
+    {
+      id: "svm-v2", title: "The Kernel Trick",
+      audience: "intermediate", duration: "~4 min",
+      description: "Lifting XOR data to 3D with RBF kernel; kernel as implicit feature map dot product.",
+      sceneClass: "SVM_02_Kernel", file: "v3_kernel_trick.py",
+      src: "/manim/svm-knn-svr/SVM_02_Kernel.mp4",
+    },
+    {
+      id: "svm-v3a", title: "K-Nearest Neighbours (KNN)",
+      audience: "beginner", duration: "~4 min",
+      description: "Distance-based voting: k=1 vs k=5 decision boundary animation, choosing k with CV.",
+      sceneClass: "KNN_01_Basics", file: "v4_knn_basics.py",
+      src: "/manim/svm-knn-svr/KNN_01_Basics.mp4",
+    },
+    {
+      id: "svm-v3b", title: "Support Vector Regression (SVR)",
+      audience: "intermediate", duration: "~4 min",
+      description: "ε-tube insensitive loss, ε and C trade-off, SVR vs linear regression on a noisy curve.",
+      sceneClass: "SVM_03_SVR", file: "v5_svr.py",
+      src: "/manim/svm-knn-svr/SVM_03_SVR.mp4",
+    },
+    {
+      id: "svm-v4", title: "KNN: Distance Metrics & Weighted Voting",
+      audience: "intermediate", duration: "~4 min",
+      description: "Euclidean vs Manhattan vs Minkowski; distance-weighted KNN; normalisation importance.",
+      sceneClass: "SVM_04_KNN", file: "v6_knn_distance.py",
+      src: "/manim/svm-knn-svr/SVM_04_KNN.mp4",
+    },
+    {
+      id: "svm-v5", title: "The Curse of Dimensionality",
+      audience: "advanced", duration: "~4 min",
+      description: "Why distance breaks in high-D; volume of hypersphere; its impact on KNN and SVM.",
+      sceneClass: "SVM_05_CurseDimensionality", file: "v7_curse_dimensionality.py",
+      src: "/manim/svm-knn-svr/SVM_05_CurseDimensionality.mp4",
+    },
+  ],
+
+  // ── 13. Clustering ────────────────────────────────────────────────────────
+  "clustering": [
+    {
+      id: "clu-v1", title: "K-Means Clustering Step by Step",
+      audience: "beginner", duration: "~4 min",
+      description: "Random init, assign, update centroid loop animated until convergence; choosing K.",
+      sceneClass: "CLU_01_KMeans", file: "v1_kmeans.py",
+      src: "/manim/clustering/CLU_01_KMeans.mp4",
+    },
+    {
+      id: "clu-v2", title: "Elbow Method & Silhouette Score",
+      audience: "intermediate", duration: "~4 min",
+      description: "WCSS elbow curve and silhouette coefficient for selecting the optimal number of clusters.",
+      sceneClass: "CL_02_ElbowSilhouette", file: "v2_elbow_silhouette.py",
+      src: "/manim/clustering/CL_02_ElbowSilhouette.mp4",
+    },
+  ],
+
+  // ── 14. PCA ───────────────────────────────────────────────────────────────
+  "pca": [
+    {
+      id: "pca-v1", title: "PCA: Principal Component Analysis Explained",
+      audience: "intermediate", duration: "~5 min",
+      description: "Covariance matrix, eigenvectors as new axes, variance explained, 2D→1D projection animated.",
+      sceneClass: "PCA_01_Intuition", file: "v1_pca_intuition.py",
+      src: "/manim/pca/PCA_01_Intuition.mp4",
+    },
+  ],
+
+  // ── 15. Anomaly Detection ─────────────────────────────────────────────────
+  "anomaly": [
+    {
+      id: "anom-v1", title: "Anomaly Detection: Finding the Odd One Out",
+      audience: "intermediate", duration: "~4 min",
+      description: "Z-score flagging, Isolation Forest path-length intuition, contamination parameter.",
+      sceneClass: "ANOM_01_Basics", file: "v1_anomaly_detection.py",
+      src: "/manim/anomaly/ANOM_01_Basics.mp4",
+    },
+  ],
+
+  // ── 16. Gradient Boosting ─────────────────────────────────────────────────
+  "gradient-boosting": [
+    {
+      id: "gb-v1", title: "Gradient Boosting: Learning from Mistakes",
+      audience: "intermediate", duration: "~5 min",
+      description: "Sequential residual fitting: each tree corrects previous errors; shrinkage and tree depth.",
+      sceneClass: "GB_01_BoostingConcept", file: "v1_boosting_concept.py",
+      src: "/manim/gradient-boosting/GB_01_BoostingConcept.mp4",
+    },
+  ],
+
+  // ── 17. Bagging & Stacking ────────────────────────────────────────────────
+  "bagging-stacking": [
+    {
+      id: "ens-v1", title: "Bagging vs Stacking: Two Ensemble Strategies",
+      audience: "intermediate", duration: "~4 min",
+      description: "Bootstrap aggregation for variance reduction vs meta-learner stacking with OOF predictions.",
+      sceneClass: "ENS_01_BaggingStacking", file: "v1_bagging_stacking.py",
+      src: "/manim/bagging-stacking/ENS_01_BaggingStacking.mp4",
+    },
+  ],
+
+  // ── 18. OvA / OvO ─────────────────────────────────────────────────────────
+  "ova-ovo": [
+    {
+      id: "mc-v1", title: "Multiclass Classification: OvA, OvO & Softmax",
+      audience: "intermediate", duration: "~4 min",
+      description: "One-vs-All binary decomposition, One-vs-One pairwise voting, and native Softmax output.",
+      sceneClass: "MC_01_Strategies", file: "v1_multiclass_strategies.py",
+      src: "/manim/ova-ovo/MC_01_Strategies.mp4",
+    },
+  ],
+
+  // ── 19. Hyperparameter Tuning ─────────────────────────────────────────────
+  "hyperparameter-tuning": [
+    {
+      id: "ht-v1", title: "Grid Search, Random Search & Bayesian Optimisation",
+      audience: "intermediate", duration: "~4 min",
+      description: "HP space coverage comparison; random search efficiency; Bayesian surrogate model strategy.",
+      sceneClass: "HT_01_Search", file: "v1_grid_random_search.py",
+      src: "/manim/hyperparameter-tuning/HT_01_Search.mp4",
+    },
+  ],
+
+  // ── 20. Feature Importance ────────────────────────────────────────────────
+  "feature-importance": [
+    {
+      id: "fi-v1", title: "Measuring Feature Importance: MDI, Permutation & SHAP",
+      audience: "intermediate", duration: "~4 min",
+      description: "Tree-based MDI bar chart, permutation importance, and SHAP additive explanation values.",
+      sceneClass: "FI_01_Visualization", file: "v1_feature_importance_viz.py",
+      src: "/manim/feature-importance/FI_01_Visualization.mp4",
+    },
+  ],
+
+  // ── 21. Partial Dependence ────────────────────────────────────────────────
+  "partial-dependence": [
+    {
+      id: "pdp-v1", title: "PDP & ICE Plots: How Features Affect Output",
+      audience: "intermediate", duration: "~4 min",
+      description: "Partial Dependence Plots marginalise other features; ICE curves reveal per-instance effects.",
+      sceneClass: "PDP_01_Basics", file: "v1_pdp_ice.py",
+      src: "/manim/partial-dependence/PDP_01_Basics.mp4",
+    },
+  ],
+
+  // ── 22. Time Series ───────────────────────────────────────────────────────
+  "time-series": [
+    {
+      id: "ts-v1", title: "Time Series: Trend, Seasonality & Stationarity",
+      audience: "intermediate", duration: "~4 min",
+      description: "Additive decomposition, ADF stationarity test, differencing and log-transform strategy.",
+      sceneClass: "TS_01_Basics", file: "v1_time_series_basics.py",
+      src: "/manim/time-series/TS_01_Basics.mp4",
+    },
+  ],
+
+  // ── 23. Neural Networks ────────────────────────────────────────────────────
+  "neural-networks": [
+    {
+      id:          "nn-v1",
+      title:       "The Perceptron: Birth of Neural Networks",
+      audience:    "beginner",
+      duration:    "~4 min",
+      description: "Frank Rosenblatt's 1958 perceptron: weights, bias, step activation, and linear decision boundary.",
+      sceneClass:  "NN_01_Perceptron",
+      file:        "v1_perceptron.py",
+      src:         "/manim/neural-networks/NN_01_Perceptron.mp4",
+    },
+    {
+      id:          "nn-v2",
+      title:       "Forward Propagation in an MLP",
+      audience:    "beginner",
+      duration:    "~5 min",
+      description: "Data flows layer-by-layer: weighted sums, activation functions, and the full computation trace.",
+      sceneClass:  "NN_02_ForwardProp",
+      file:        "v2_forward_propagation.py",
+      src:         "/manim/neural-networks/NN_02_ForwardProp.mp4",
+    },
+    {
+      id:          "nn-v3",
+      title:       "Backpropagation: Learning by Going Backwards",
+      audience:    "intermediate",
+      duration:    "~5 min",
+      description: "Chain rule unrolled: gradient flow from loss back to weights, and the weight update rule.",
+      sceneClass:  "NN_03_Backprop",
+      file:        "v3_backpropagation.py",
+      src:         "/manim/neural-networks/NN_03_Backprop.mp4",
+    },
+    {
+      id:          "nn-v4",
+      title:       "Activation Functions Deep Dive",
+      audience:    "intermediate",
+      duration:    "~4 min",
+      description: "Sigmoid, Tanh, ReLU, Leaky ReLU, GELU compared — vanishing gradients explained.",
+      sceneClass:  "NN_04_Activations",
+      file:        "v4_activation_functions.py",
+      src:         "/manim/neural-networks/NN_04_Activations.mp4",
+    },
+    {
+      id:          "nn-v5",
+      title:       "Network Architectures: Depth, Width & Skip Connections",
+      audience:    "intermediate",
+      duration:    "~4 min",
+      description: "Shallow vs deep, universal approximation theorem, and ResNet-style skip connections.",
+      sceneClass:  "NN_05_Architectures",
+      file:        "v5_network_architectures.py",
+      src:         "/manim/neural-networks/NN_05_Architectures.mp4",
+    },
+  ],
+
+  // ── 24. DL Optimization ────────────────────────────────────────────────────
+  "dl-optimization": [
+    {
+      id:          "dlopt-v1",
+      title:       "SGD, Mini-Batch & Momentum",
+      audience:    "intermediate",
+      duration:    "~4 min",
+      description: "Batch types compared, loss landscape descent animation, and momentum as a rolling ball.",
+      sceneClass:  "DLOpt_01_SGDMomentum",
+      file:        "v1_sgd_momentum.py",
+      src:         "/manim/dl-optimization/DLOpt_01_SGDMomentum.mp4",
+    },
+    {
+      id:          "dlopt-v2",
+      title:       "Adam Optimizer: Adaptive Learning Rates",
+      audience:    "intermediate",
+      duration:    "~4 min",
+      description: "RMSProp per-parameter scaling + momentum = Adam. Equations and convergence comparison.",
+      sceneClass:  "DLOpt_02_Adam",
+      file:        "v2_adam_rmsprop.py",
+      src:         "/manim/dl-optimization/DLOpt_02_Adam.mp4",
+    },
+    {
+      id:          "dlopt-v3",
+      title:       "Learning Rate Scheduling",
+      audience:    "intermediate",
+      duration:    "~3 min",
+      description: "Step decay, cosine annealing, warmup strategies — plotted and compared across training.",
+      sceneClass:  "DLOpt_03_LRSchedule",
+      file:        "v3_learning_rate_scheduling.py",
+      src:         "/manim/dl-optimization/DLOpt_03_LRSchedule.mp4",
+    },
+    {
+      id:          "dlopt-v4",
+      title:       "Regularization: Dropout & Batch Normalization",
+      audience:    "intermediate",
+      duration:    "~4 min",
+      description: "L1/L2 penalties, dropout neuron silencing animation, and BatchNorm normalizing per-layer.",
+      sceneClass:  "DLOpt_04_Regularization",
+      file:        "v4_regularization_dropout.py",
+      src:         "/manim/dl-optimization/DLOpt_04_Regularization.mp4",
+    },
+  ],
+
+  // ── 25. CNN Architectures ──────────────────────────────────────────────────
+  "cnn-architectures": [
+    {
+      id:          "cnn-v1",
+      title:       "The Convolution Operation",
+      audience:    "beginner",
+      duration:    "~5 min",
+      description: "3×3 kernel slides over a 5×5 image: element-wise multiply, sum, stride, padding explained.",
+      sceneClass:  "CNN_01_Convolution",
+      file:        "v1_convolution_operation.py",
+      src:         "/manim/cnn-architectures/CNN_01_Convolution.mp4",
+    },
+    {
+      id:          "cnn-v2",
+      title:       "Pooling Layers & Spatial Downsampling",
+      audience:    "beginner",
+      duration:    "~3 min",
+      description: "Max pooling animated on a 4×4 grid; average pooling vs max; Global Average Pooling.",
+      sceneClass:  "CNN_02_Pooling",
+      file:        "v2_pooling_layers.py",
+      src:         "/manim/cnn-architectures/CNN_02_Pooling.mp4",
+    },
+    {
+      id:          "cnn-v3",
+      title:       "Classic CNN Architectures: LeNet to ResNet",
+      audience:    "intermediate",
+      duration:    "~5 min",
+      description: "Architecture evolution: LeNet → AlexNet → VGGNet insight → ResNet skip connections.",
+      sceneClass:  "CNN_03_Architectures",
+      file:        "v3_cnn_architectures.py",
+      src:         "/manim/cnn-architectures/CNN_03_Architectures.mp4",
+    },
+  ],
+
+  // ── 26. RNN / LSTM / GRU ──────────────────────────────────────────────────
+  "rnn-lstm-gru": [
+    {
+      id:          "rnn-v1",
+      title:       "Recurrent Neural Networks: Sequences & Memory",
+      audience:    "intermediate",
+      duration:    "~4 min",
+      description: "Unrolled RNN over 5 time steps, hidden state equation, vanishing gradient through time.",
+      sceneClass:  "RNN_01_Basics",
+      file:        "v1_rnn_basics.py",
+      src:         "/manim/rnn-lstm-gru/RNN_01_Basics.mp4",
+    },
+    {
+      id:          "rnn-v2",
+      title:       "LSTM: Long Short-Term Memory",
+      audience:    "intermediate",
+      duration:    "~5 min",
+      description: "Cell state conveyor, forget/input/output gates, full LSTM equations animated step-by-step.",
+      sceneClass:  "RNN_02_LSTM",
+      file:        "v2_lstm.py",
+      src:         "/manim/rnn-lstm-gru/RNN_02_LSTM.mp4",
+    },
+    {
+      id:          "rnn-v3",
+      title:       "GRU: Gated Recurrent Unit",
+      audience:    "intermediate",
+      duration:    "~3 min",
+      description: "GRU's 2-gate design vs LSTM's 3 gates; update/reset equations; speed vs accuracy trade-off.",
+      sceneClass:  "RNN_03_GRU",
+      file:        "v3_gru.py",
+      src:         "/manim/rnn-lstm-gru/RNN_03_GRU.mp4",
+    },
+  ],
+
+  // ── 27. Object Detection ───────────────────────────────────────────────────
+  "object-detection": [
+    {
+      id:          "od-v1",
+      title:       "Object Detection: IoU, Anchors & NMS",
+      audience:    "intermediate",
+      duration:    "~5 min",
+      description: "Classification vs detection, IoU overlap measure, anchor box priors, Non-Maximum Suppression.",
+      sceneClass:  "OD_01_DetectionBasics",
+      file:        "v1_detection_basics.py",
+      src:         "/manim/object-detection/OD_01_DetectionBasics.mp4",
+    },
+  ],
+
+  // ── 28. Image Segmentation ─────────────────────────────────────────────────
+  "image-segmentation": [
+    {
+      id:          "seg-v1",
+      title:       "Semantic & Instance Segmentation + U-Net",
+      audience:    "intermediate",
+      duration:    "~4 min",
+      description: "Three segmentation types compared; U-Net encoder-decoder with skip connections animated.",
+      sceneClass:  "SEG_01_Basics",
+      file:        "v1_segmentation_basics.py",
+      src:         "/manim/image-segmentation/SEG_01_Basics.mp4",
+    },
+  ],
+
+  // ── 29. NLP Text ───────────────────────────────────────────────────────────
+  "nlp-text": [
+    {
+      id:          "nlp-v1",
+      title:       "Text Preprocessing Pipeline",
+      audience:    "beginner",
+      duration:    "~4 min",
+      description: "Tokenisation, lowercasing, stop words, stemming vs lemmatisation — the full pipeline.",
+      sceneClass:  "NLP_01_Preprocessing",
+      file:        "v1_text_preprocessing.py",
+      src:         "/manim/nlp-text/NLP_01_Preprocessing.mp4",
+    },
+    {
+      id:          "nlp-v2",
+      title:       "TF-IDF & Word Embeddings",
+      audience:    "intermediate",
+      duration:    "~5 min",
+      description: "Bag of Words → TF-IDF weighting → Word2Vec semantic space with king−man+woman≈queen.",
+      sceneClass:  "NLP_02_TFIDFEmbeddings",
+      file:        "v2_tfidf_embeddings.py",
+      src:         "/manim/nlp-text/NLP_02_TFIDFEmbeddings.mp4",
+    },
+  ],
+
+  // ── 30. Transformers & Attention ───────────────────────────────────────────
+  "transformers-attention": [
+    {
+      id:          "trf-v1",
+      title:       "The Attention Mechanism",
+      audience:    "intermediate",
+      duration:    "~5 min",
+      description: "Query-Key-Value search analogy, scaled dot-product formula, attention weights on a sentence.",
+      sceneClass:  "TRF_01_Attention",
+      file:        "v1_attention_mechanism.py",
+      src:         "/manim/transformers-attention/TRF_01_Attention.mp4",
+    },
+    {
+      id:          "trf-v2",
+      title:       "The Transformer Architecture",
+      audience:    "intermediate",
+      duration:    "~6 min",
+      description: "Positional encoding, multi-head attention, encoder block layout — Vaswani et al. 2017.",
+      sceneClass:  "TRF_02_Architecture",
+      file:        "v2_transformer_architecture.py",
+      src:         "/manim/transformers-attention/TRF_02_Architecture.mp4",
+    },
+    {
+      id:          "trf-v3",
+      title:       "BERT vs GPT: Encoders vs Decoders",
+      audience:    "intermediate",
+      duration:    "~4 min",
+      description: "Bidirectional BERT (masked LM) vs causal GPT (next-token); comparison table and use cases.",
+      sceneClass:  "TRF_03_BertGPT",
+      file:        "v3_bert_gpt.py",
+      src:         "/manim/transformers-attention/TRF_03_BertGPT.mp4",
+    },
+  ],
+
+  // ── 31. Audio ML ───────────────────────────────────────────────────────────
+  "audio-ml": [
+    {
+      id:          "aud-v1",
+      title:       "Audio Representations: Waveforms, Spectrograms & MFCCs",
+      audience:    "intermediate",
+      duration:    "~4 min",
+      description: "Raw waveform → STFT → spectrogram → Mel filterbank → MFCCs: the full audio feature pipeline.",
+      sceneClass:  "AUD_01_AudioRepr",
+      file:        "v1_audio_representation.py",
+      src:         "/manim/audio-ml/AUD_01_AudioRepr.mp4",
+    },
+  ],
+
+  // ── 32. Generative Models ──────────────────────────────────────────────────
+  "generative-models": [
+    {
+      id:          "gen-v1",
+      title:       "Variational Autoencoders (VAE)",
+      audience:    "intermediate",
+      duration:    "~5 min",
+      description: "Encoder → latent distribution (μ, σ) → reparameterisation trick → decoder. ELBO loss.",
+      sceneClass:  "GEN_01_VAE",
+      file:        "v1_vae.py",
+      src:         "/manim/generative-models/GEN_01_VAE.mp4",
+    },
+    {
+      id:          "gen-v2",
+      title:       "Generative Adversarial Networks (GANs)",
+      audience:    "intermediate",
+      duration:    "~5 min",
+      description: "Generator vs Discriminator minimax game, training dynamics, mode collapse challenges.",
+      sceneClass:  "GEN_02_GAN",
+      file:        "v2_gan.py",
+      src:         "/manim/generative-models/GEN_02_GAN.mp4",
+    },
+  ],
+
+  // ── 33. Reinforcement Learning ─────────────────────────────────────────────
+  "reinforcement-learning": [
+    {
+      id:          "rl-v1",
+      title:       "MDPs: The Framework of Reinforcement Learning",
+      audience:    "beginner",
+      duration:    "~4 min",
+      description: "Agent-environment loop, state/action/reward/policy concepts, discount factor and return.",
+      sceneClass:  "RL_01_MDP",
+      file:        "v1_mdp_basics.py",
+      src:         "/manim/reinforcement-learning/RL_01_MDP.mp4",
+    },
+    {
+      id:          "rl-v2",
+      title:       "Q-Learning & the Bellman Equation",
+      audience:    "intermediate",
+      duration:    "~5 min",
+      description: "Q-values, Bellman recursive equation, TD update rule, ε-greedy exploration with decay.",
+      sceneClass:  "RL_02_QLearning",
+      file:        "v2_q_learning.py",
+      src:         "/manim/reinforcement-learning/RL_02_QLearning.mp4",
+    },
+    {
+      id:          "rl-v3",
+      title:       "Policy Gradient & Actor-Critic",
+      audience:    "advanced",
+      duration:    "~4 min",
+      description: "REINFORCE gradient estimator, baseline variance reduction, Actor-Critic framework.",
+      sceneClass:  "RL_03_PolicyGradient",
+      file:        "v3_policy_gradient.py",
+      src:         "/manim/reinforcement-learning/RL_03_PolicyGradient.mp4",
+    },
+  ],
+
+};
+
+/** Helper — get videos for a topic, empty array if none exist yet */
+export function getTopicVideos(topicId: string): ManimVideoMeta[] {
+  return manimVideos[topicId] ?? [];
+}
+
+/** Audience display helpers */
+export const AUDIENCE_CONFIG: Record<Audience, { label: string; color: string; emoji: string }> = {
+  beginner:     { label: "Beginner",     color: "#22c55e", emoji: "🟢" },
+  intermediate: { label: "Intermediate", color: "#f59e0b", emoji: "🟡" },
+  advanced:     { label: "Advanced",     color: "#ef4444", emoji: "🔴" },
+};

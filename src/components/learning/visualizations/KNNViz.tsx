@@ -3,6 +3,44 @@
 import { useState, useRef, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useVizTheme } from "@/hooks/useVizTheme";
+import { useVizLocale } from "@/hooks/useVizLocale";
+import { VizCard, VizHeader, StatGrid, TabToggle } from "./shared";
+
+const KNN_LABELS = {
+  en: {
+    title: "K-Nearest Neighbors",
+    subtitle: "drag the ✦ query point · adjust k",
+    classA: "Class A",
+    classB: "Class B",
+    predBadge: (cls: string, votes: number, k: number) => `${cls} (${votes}/${k})`,
+    statsK: "k",
+    statsVotesA: "Votes A",
+    statsVotesB: "Votes B",
+    statsPredict: "Predict",
+  },
+  fr: {
+    title: "K Plus Proches Voisins",
+    subtitle: "glisser le point ✦ · ajuster k",
+    classA: "Classe A",
+    classB: "Classe B",
+    predBadge: (cls: string, votes: number, k: number) => `${cls} (${votes}/${k})`,
+    statsK: "k",
+    statsVotesA: "Votes A",
+    statsVotesB: "Votes B",
+    statsPredict: "Prédiction",
+  },
+  ar: {
+    title: "K من أقرب الجيران",
+    subtitle: "اسحب نقطة الاستعلام ✦ · اضبط k",
+    classA: "الصنف A",
+    classB: "الصنف B",
+    predBadge: (cls: string, votes: number, k: number) => `${cls} (${votes}/${k})`,
+    statsK: "k",
+    statsVotesA: "أصوات A",
+    statsVotesB: "أصوات B",
+    statsPredict: "التنبؤ",
+  },
+} as const;
 
 const W = 520, H = 320, PAD = 36;
 
@@ -66,6 +104,7 @@ export default function KNNViz({ accentColor = "#00d4aa" }: { accentColor?: stri
   const [dragging, setDragging] = useState(false);
   const svgRef = useRef<SVGSVGElement>(null);
   const vt = useVizTheme();
+  const L = useVizLocale(KNN_LABELS);
 
   const neighbors = useMemo(() => {
     return [...TRAIN]
@@ -94,11 +133,11 @@ export default function KNNViz({ accentColor = "#00d4aa" }: { accentColor?: stri
   }, []);
 
   return (
-    <div className="rounded-2xl overflow-hidden border" style={{ backgroundColor: "var(--bg-card)", borderColor: "var(--border)" }}>
+    <VizCard>
       <div className="flex items-center justify-between px-5 py-3 border-b" style={{ borderColor: "var(--border)" }}>
         <div>
-          <span className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>K-Nearest Neighbors</span>
-          <span className="text-xs ml-2" style={{ color: "var(--text-muted)" }}>drag the ✦ query point · adjust k</span>
+          <span className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>{L.title}</span>
+          <span className="text-xs ml-2" style={{ color: "var(--text-muted)" }}>{L.subtitle}</span>
         </div>
         <div className="flex items-center gap-1.5">
           <span className="text-xs" style={{ color: "var(--text-muted)" }}>k =</span>
@@ -219,7 +258,7 @@ export default function KNNViz({ accentColor = "#00d4aa" }: { accentColor?: stri
               fill={prediction === 0 ? "#6c63ff" : "#ff6b6b"} opacity={0.9} />
             <text x={toSVGX(query.x) + 45} y={toSVGY(query.y) - 10}
               textAnchor="middle" fontSize={9} fill="white" fontWeight="bold">
-              Class {prediction === 0 ? "A" : "B"} ({votes[prediction]}/{k})
+              {L.predBadge(prediction === 0 ? L.classA : L.classB, votes[prediction], k)}
             </text>
           </motion.g>
         </AnimatePresence>
@@ -229,19 +268,12 @@ export default function KNNViz({ accentColor = "#00d4aa" }: { accentColor?: stri
         <line x1={PAD} y1={PAD} x2={PAD} y2={H - PAD} stroke={vt.axis} strokeWidth={1.5} />
       </svg>
 
-      <div className="grid grid-cols-4 border-t text-center" style={{ borderColor: "var(--border)" }}>
-        {[
-          { label: "k", value: k.toString(), color: accentColor },
-          { label: "Votes A", value: votes[0].toString(), color: "#6c63ff" },
-          { label: "Votes B", value: votes[1].toString(), color: "#ff6b6b" },
-          { label: "Predict", value: prediction === 0 ? "Class A" : "Class B", color: prediction === 0 ? "#6c63ff" : "#ff6b6b" },
-        ].map(({ label, value, color }) => (
-          <div key={label} className="py-3">
-            <div className="text-xs" style={{ color: "var(--text-muted)" }}>{label}</div>
-            <div className="text-sm font-bold font-mono" style={{ color }}>{value}</div>
-          </div>
-        ))}
-      </div>
-    </div>
+      <StatGrid py="py-3" items={[
+          { label: L.statsK, value: k.toString(), color: accentColor },
+          { label: L.statsVotesA, value: votes[0].toString(), color: "#6c63ff" },
+          { label: L.statsVotesB, value: votes[1].toString(), color: "#ff6b6b" },
+          { label: L.statsPredict, value: prediction === 0 ? L.classA : L.classB, color: prediction === 0 ? "#6c63ff" : "#ff6b6b" },
+      ]} />
+    </VizCard>
   );
 }

@@ -4,6 +4,101 @@ import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Play, Pause, RotateCcw } from "lucide-react";
 import { useVizTheme } from "@/hooks/useVizTheme";
+import { useVizLocale } from "@/hooks/useVizLocale";
+import { VizCard, VizHeader, StatGrid, TabToggle } from "./shared";
+
+const CONV_LABELS = {
+  en: {
+    title: "CNN Operations",
+    convSubtitle: "8×8 input → 3×3 kernel → 6×6 feature map",
+    pipelineSubtitle: "Feature map → ReLU → 2×2 Max Pool",
+    tabConv: "Convolution",
+    tabPipeline: "ReLU + Pool",
+    kernelLabel: "Kernel:",
+    kernelNames: ["Edge Detect", "Horizontal", "Vertical", "Blur"] as readonly string[],
+    svgInput: "Input (8×8)",
+    svgKernel: "Kernel (3×3)",
+    svgFeatureMap: "Feature Map (6×6)",
+    pause: "Pause",
+    animate: "Animate",
+    resume: "Resume",
+    computed: (n: number) => `${n}/36 computed`,
+    outputLabel: "output =",
+    svgFmLabel: "Feature Map",
+    svgReluLabel: "After ReLU",
+    svgPoolLabel: "After 2×2 MaxPool",
+    animatePool: "Animate Pool",
+    hintPre: "ReLU kills",
+    hintNeg: "negative activations",
+    hintPost: "· 2×2 MaxPool: 6×6 →",
+    legendFm: "Feature Map",
+    legendFmVal: "6×6",
+    legendRelu: "After ReLU",
+    legendReluVal: "6×6 (neg → 0)",
+    legendPool: "After MaxPool",
+    legendPoolVal: "3×3",
+  },
+  fr: {
+    title: "Opérations CNN",
+    convSubtitle: "entrée 8×8 → noyau 3×3 → carte 6×6",
+    pipelineSubtitle: "Carte de caractéristiques → ReLU → MaxPool 2×2",
+    tabConv: "Convolution",
+    tabPipeline: "ReLU + Pool",
+    kernelLabel: "Noyau :",
+    kernelNames: ["Détection contours", "Horizontal", "Vertical", "Flou"] as readonly string[],
+    svgInput: "Entrée (8×8)",
+    svgKernel: "Noyau (3×3)",
+    svgFeatureMap: "Carte de caract. (6×6)",
+    pause: "Pause",
+    animate: "Animer",
+    resume: "Reprendre",
+    computed: (n: number) => `${n}/36 calculés`,
+    outputLabel: "sortie =",
+    svgFmLabel: "Carte de caract.",
+    svgReluLabel: "Après ReLU",
+    svgPoolLabel: "Après MaxPool 2×2",
+    animatePool: "Animer Pool",
+    hintPre: "ReLU supprime les",
+    hintNeg: "activations négatives",
+    hintPost: "· MaxPool 2×2 : 6×6 →",
+    legendFm: "Carte de caract.",
+    legendFmVal: "6×6",
+    legendRelu: "Après ReLU",
+    legendReluVal: "6×6 (nég → 0)",
+    legendPool: "Après MaxPool",
+    legendPoolVal: "3×3",
+  },
+  ar: {
+    title: "عمليات CNN",
+    convSubtitle: "مدخل 8×8 → نواة 3×3 → خريطة 6×6",
+    pipelineSubtitle: "خريطة الميزات → ReLU → MaxPool 2×2",
+    tabConv: "الالتفاف",
+    tabPipeline: "ReLU + Pool",
+    kernelLabel: "النواة:",
+    kernelNames: ["كشف الحواف", "أفقي", "عمودي", "تمويه"] as readonly string[],
+    svgInput: "المدخل (8×8)",
+    svgKernel: "النواة (3×3)",
+    svgFeatureMap: "خريطة الميزات (6×6)",
+    pause: "إيقاف مؤقت",
+    animate: "تحريك",
+    resume: "استئناف",
+    computed: (n: number) => `${n}/36 محسوب`,
+    outputLabel: "الخرج =",
+    svgFmLabel: "خريطة الميزات",
+    svgReluLabel: "بعد ReLU",
+    svgPoolLabel: "بعد MaxPool 2×2",
+    animatePool: "تحريك Pool",
+    hintPre: "يُلغي ReLU",
+    hintNeg: "التنشيطات السلبية",
+    hintPost: "· MaxPool 2×2: 6×6 →",
+    legendFm: "خريطة الميزات",
+    legendFmVal: "6×6",
+    legendRelu: "بعد ReLU",
+    legendReluVal: "6×6 (سلبي → 0)",
+    legendPool: "بعد MaxPool",
+    legendPoolVal: "3×3",
+  },
+} as const;
 
 // ── Input + Kernels ───────────────────────────────────────────────────────────
 const INPUT_8: number[][] = [
@@ -59,10 +154,15 @@ function maxPool2x2(m: number[][]): number[][] {
 
 // ── Color helpers ─────────────────────────────────────────────────────────────
 function cellColor(v: number, isDark: boolean) {
+  if (isDark) {
+    // dark navy (low) → bright sky blue (high) — never pure black
+    const r = Math.round(40 + v * 80);
+    const g = Math.round(50 + v * 160);
+    const b = Math.round(100 + v * 150);
+    return `rgb(${r},${g},${b})`;
+  }
   const i = Math.round(v * 255);
-  return isDark
-    ? `rgb(${i},${Math.round(i * 0.8)},${Math.round(i * 0.6 + 60)})`
-    : `rgb(${255 - i},${255 - Math.round(i * 0.7)},${255 - Math.round(i * 0.5)})`;
+  return `rgb(${255 - i},${255 - Math.round(i * 0.7)},${255 - Math.round(i * 0.5)})`;
 }
 
 function kernelColor(v: number) {
@@ -87,6 +187,7 @@ type Tab = "conv" | "pipeline";
 
 export default function ConvolutionViz({ accentColor = "#06b6d4" }: { accentColor?: string }) {
   const vt = useVizTheme();
+  const L = useVizLocale(CONV_LABELS);
   const [kernelIdx, setKernelIdx]   = useState(0);
   const [pos, setPos]               = useState(0);
   const [isPlaying, setIsPlaying]   = useState(false);
@@ -139,18 +240,15 @@ export default function ConvolutionViz({ accentColor = "#06b6d4" }: { accentColo
   }, [poolPos, tab]);
 
   return (
-    <div
-      className="rounded-2xl overflow-hidden border"
-      style={{ backgroundColor: "var(--bg-card)", borderColor: "var(--border)" }}
-    >
+    <VizCard>
       {/* ── Header ── */}
       <div className="flex items-center justify-between px-5 py-3 border-b" style={{ borderColor: "var(--border)" }}>
         <div>
           <span className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
-            CNN Operations
+            {L.title}
           </span>
           <span className="text-xs ml-2" style={{ color: "var(--text-muted)" }}>
-            {tab === "conv" ? "8×8 input → 3×3 kernel → 6×6 feature map" : "Feature map → ReLU → 2×2 Max Pool"}
+            {tab === "conv" ? L.convSubtitle : L.pipelineSubtitle}
           </span>
         </div>
         <div className="flex items-center gap-1.5">
@@ -162,7 +260,7 @@ export default function ConvolutionViz({ accentColor = "#06b6d4" }: { accentColo
                 color: tab === t ? accentColor : "var(--text-muted)",
                 border: `1px solid ${tab === t ? accentColor + "50" : "var(--border)"}`,
               }}>
-              {t === "conv" ? "Convolution" : "ReLU + Pool"}
+              {t === "conv" ? L.tabConv : L.tabPipeline}
             </button>
           ))}
         </div>
@@ -170,7 +268,7 @@ export default function ConvolutionViz({ accentColor = "#06b6d4" }: { accentColo
 
       {/* ── Kernel selector ── */}
       <div className="flex items-center gap-2 px-5 py-2 border-b" style={{ borderColor: "var(--border)" }}>
-        <span className="text-xs" style={{ color: "var(--text-muted)" }}>Kernel:</span>
+        <span className="text-xs" style={{ color: "var(--text-muted)" }}>{L.kernelLabel}</span>
         {KERNELS.map((k, i) => (
           <button key={k.name} onClick={() => setKernelIdx(i)}
             className="px-2 py-0.5 rounded-md text-xs font-medium transition-all"
@@ -179,7 +277,7 @@ export default function ConvolutionViz({ accentColor = "#06b6d4" }: { accentColo
               color: kernelIdx === i ? accentColor : "var(--text-muted)",
               border: `1px solid ${kernelIdx === i ? accentColor + "50" : "transparent"}`,
             }}>
-            {k.name}
+            {L.kernelNames[i]}
           </button>
         ))}
       </div>
@@ -190,7 +288,7 @@ export default function ConvolutionViz({ accentColor = "#06b6d4" }: { accentColo
           <div className="overflow-x-auto px-3 pt-4 pb-2">
             <svg viewBox={`0 0 ${TOTAL_W} ${8 * CELL + 22}`} style={{ width: "100%", minWidth: 400 }}>
               {/* Input label */}
-              <text x={INPUT_OFF + 4 * CELL} y={8 * CELL + 16} textAnchor="middle" fontSize={9} fill={vt.textMuted}>Input (8×8)</text>
+              <text x={INPUT_OFF + 4 * CELL} y={8 * CELL + 16} textAnchor="middle" fontSize={9} fill={vt.textMuted}>{L.svgInput}</text>
 
               {/* Input grid */}
               {INPUT_8.map((rowArr, r) =>
@@ -222,7 +320,7 @@ export default function ConvolutionViz({ accentColor = "#06b6d4" }: { accentColo
               <text x={KERNEL_OFF - 14} y={4 * CELL + 5} textAnchor="middle" fontSize={16} fill={accentColor} opacity={0.8}>✱</text>
 
               {/* Kernel grid */}
-              <text x={KERNEL_OFF + 1.5 * CELL} y={8 * CELL + 16} textAnchor="middle" fontSize={9} fill={vt.textMuted}>Kernel (3×3)</text>
+              <text x={KERNEL_OFF + 1.5 * CELL} y={8 * CELL + 16} textAnchor="middle" fontSize={9} fill={vt.textMuted}>{L.svgKernel}</text>
               {kernel.map((rowArr, r) =>
                 rowArr.map((v, c) => {
                   const kc = kernelColor(v);
@@ -243,7 +341,7 @@ export default function ConvolutionViz({ accentColor = "#06b6d4" }: { accentColo
               <text x={OUTPUT_OFF - 14} y={4 * CELL + 5} textAnchor="middle" fontSize={16} fill={accentColor} opacity={0.8}>=</text>
 
               {/* Feature map output */}
-              <text x={OUTPUT_OFF + 3 * CELL} y={8 * CELL + 16} textAnchor="middle" fontSize={9} fill={vt.textMuted}>Feature Map (6×6)</text>
+              <text x={OUTPUT_OFF + 3 * CELL} y={8 * CELL + 16} textAnchor="middle" fontSize={9} fill={vt.textMuted}>{L.svgFeatureMap}</text>
               {Array.from({ length: 6 }, (_, r) =>
                 Array.from({ length: 6 }, (_, c) => {
                   const isRev = revealed.has(r * 6 + c);
@@ -279,15 +377,15 @@ export default function ConvolutionViz({ accentColor = "#06b6d4" }: { accentColo
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold"
               style={{ backgroundColor: `${accentColor}25`, color: accentColor, border: `1px solid ${accentColor}50` }}
             >
-              {isPlaying ? <><Pause size={11} /> Pause</> : <><Play size={11} /> {revealed.size === 0 ? "Animate" : "Resume"}</>}
+              {isPlaying ? <><Pause size={11} /> {L.pause}</> : <><Play size={11} /> {revealed.size === 0 ? L.animate : L.resume}</>}
             </button>
             <button onClick={reset} className="p-1.5 rounded-lg"
               style={{ color: "var(--text-muted)", border: "1px solid var(--border)" }}>
               <RotateCcw size={12} />
             </button>
             <span className="text-xs" style={{ color: "var(--text-muted)" }}>
-              [{row},{col}] · {revealed.size}/36 computed ·
-              output = <span className="font-mono" style={{ color: accentColor }}>
+              [{row},{col}] · {L.computed(revealed.size)} ·
+              {L.outputLabel} <span className="font-mono" style={{ color: accentColor }}>
                 {outputNorm[row]?.[col]?.toFixed(3)}
               </span>
             </span>
@@ -317,9 +415,9 @@ export default function ConvolutionViz({ accentColor = "#06b6d4" }: { accentColo
               <svg viewBox={`0 0 ${P_TOTAL} ${P_H}`} style={{ width: "100%", minWidth: 400 }}>
 
                 {/* Labels */}
-                <text x={OFF_FM + 3 * P_CELL_FM} y={P_H - 6} textAnchor="middle" fontSize={9} fill={vt.textMuted}>Feature Map</text>
-                <text x={OFF_RELU + 3 * P_CELL_FM} y={P_H - 6} textAnchor="middle" fontSize={9} fill={vt.textMuted}>After ReLU</text>
-                <text x={OFF_POOL + 1.5 * P_CELL_PL} y={P_H - 6} textAnchor="middle" fontSize={9} fill={vt.textMuted}>After 2×2 MaxPool</text>
+                <text x={OFF_FM + 3 * P_CELL_FM} y={P_H - 6} textAnchor="middle" fontSize={9} fill={vt.textMuted}>{L.svgFmLabel}</text>
+                <text x={OFF_RELU + 3 * P_CELL_FM} y={P_H - 6} textAnchor="middle" fontSize={9} fill={vt.textMuted}>{L.svgReluLabel}</text>
+                <text x={OFF_POOL + 1.5 * P_CELL_PL} y={P_H - 6} textAnchor="middle" fontSize={9} fill={vt.textMuted}>{L.svgPoolLabel}</text>
 
                 {/* Arrows */}
                 <text x={OFF_FM + 6 * P_CELL_FM + 6} y={3 * P_CELL_FM + 6} fontSize={14} fill={accentColor} opacity={0.7}>→</text>
@@ -450,34 +548,26 @@ export default function ConvolutionViz({ accentColor = "#06b6d4" }: { accentColo
                 }}
               >
                 <Play size={11} />
-                Animate Pool
+                {L.animatePool}
               </button>
               <button onClick={() => setPoolPos(-1)} className="p-1.5 rounded-lg"
                 style={{ color: "var(--text-muted)", border: "1px solid var(--border)" }}>
                 <RotateCcw size={12} />
               </button>
               <span className="text-xs" style={{ color: "var(--text-muted)" }}>
-                ReLU kills <span style={{ color: "#ff6b6b" }}>negative activations</span> ·
-                2×2 MaxPool: 6×6 → <span style={{ color: "#f59e0b" }}>3×3</span>
+                {L.hintPre} <span style={{ color: "#ff6b6b" }}>{L.hintNeg}</span> {L.hintPost} <span style={{ color: "#f59e0b" }}>3×3</span>
               </span>
             </div>
 
             {/* Pipeline legend */}
-            <div className="grid grid-cols-3 border-t text-center" style={{ borderColor: "var(--border)" }}>
-              {[
-                { label: "Feature Map", value: "6×6", color: accentColor },
-                { label: "After ReLU", value: "6×6 (neg → 0)", color: "#ff6b6b" },
-                { label: "After MaxPool", value: "3×3", color: "#f59e0b" },
-              ].map(({ label, value, color }) => (
-                <div key={label} className="py-2.5">
-                  <div className="text-xs" style={{ color: "var(--text-muted)" }}>{label}</div>
-                  <div className="text-sm font-bold font-mono" style={{ color }}>{value}</div>
-                </div>
-              ))}
-            </div>
+            <StatGrid py="py-2.5" items={[
+                { label: L.legendFm, value: L.legendFmVal, color: accentColor },
+                { label: L.legendRelu, value: L.legendReluVal, color: "#ff6b6b" },
+                { label: L.legendPool, value: L.legendPoolVal, color: "#f59e0b" },
+            ]} />
           </>
         );
       })()}
-    </div>
+    </VizCard>
   );
 }

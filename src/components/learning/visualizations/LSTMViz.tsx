@@ -4,6 +4,38 @@ import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronRight, RotateCcw } from "lucide-react";
 import { useVizTheme } from "@/hooks/useVizTheme";
+import { useVizLocale } from "@/hooks/useVizLocale";
+import { VizCard, VizHeader, StatGrid, TabToggle } from "./shared";
+
+const LSTM_LABELS = {
+  en: {
+    title: "LSTM Cell — Gate-by-Gate",
+    subtitle: (step: number, total: number) => `token ${step}/${total} · Ct = f·Ct₋₁ + i·g̃`,
+    next: "Next",
+    cellLabel: "Cell state Cₜ (conveyor belt)",
+    gateNames: ["Forget", "Input", "Cell", "Output"] as readonly string[],
+    fHigh: "Keep most old memory", fMid: "Partial forget", fLow: "Forget old context",
+    iHigh: "Write to memory", iMid: "Selective write", iLow: "Block new input",
+  },
+  fr: {
+    title: "Cellule LSTM — Porte par Porte",
+    subtitle: (step: number, total: number) => `token ${step}/${total} · Ct = f·Ct₋₁ + i·g̃`,
+    next: "Suivant",
+    cellLabel: "État de cellule Cₜ (tapis roulant)",
+    gateNames: ["Oubli", "Entrée", "Cellule", "Sortie"] as readonly string[],
+    fHigh: "Conserver la mémoire ancienne", fMid: "Oubli partiel", fLow: "Oublier le contexte",
+    iHigh: "Écrire en mémoire", iMid: "Écriture sélective", iLow: "Bloquer la nouvelle entrée",
+  },
+  ar: {
+    title: "خلية LSTM — بوابة تلو بوابة",
+    subtitle: (step: number, total: number) => `رمز ${step}/${total} · Ct = f·Ct₋₁ + i·g̃`,
+    next: "التالي",
+    cellLabel: "حالة الخلية Cₜ (الحزام الناقل)",
+    gateNames: ["نسيان", "مدخل", "خلية", "مخرج"] as readonly string[],
+    fHigh: "الاحتفاظ بالذاكرة القديمة", fMid: "نسيان جزئي", fLow: "نسيان السياق القديم",
+    iHigh: "الكتابة في الذاكرة", iMid: "كتابة انتقائية", iLow: "حجب المدخل الجديد",
+  },
+} as const;
 
 // ── Gate functions ────────────────────────────────────────────────────────────
 function sigmoid(x: number) { return 1 / (1 + Math.exp(-x)); }
@@ -107,8 +139,13 @@ function gateColor(v: number, type: "gate" | "cell") {
 export default function LSTMViz({ accentColor = "#a855f7" }: { accentColor?: string }) {
   const [step, setStep] = useState(0);
   const vt = useVizTheme();
+  const L = useVizLocale(LSTM_LABELS);
   const cur = ALL_STEPS[step];
   const prev = step > 0 ? ALL_STEPS[step - 1] : null;
+
+  // Locale-aware gate descriptions
+  const fDescL = cur.f > 0.6 ? L.fHigh : cur.f > 0.35 ? L.fMid : L.fLow;
+  const iDescL = cur.i > 0.6 ? L.iHigh : cur.i > 0.35 ? L.iMid : L.iLow;
 
   const fColor = gateColor(cur.f, "gate");
   const iColor = gateColor(cur.i, "gate");
@@ -123,25 +160,22 @@ export default function LSTMViz({ accentColor = "#a855f7" }: { accentColor?: str
   );
 
   const gates = [
-    { key: "f", label: "f", name: "Forget", eq: "σ(Wf·[h,x]+bf)", value: cur.f, desc: cur.fDesc, color: fColor },
-    { key: "i", label: "i", name: "Input",  eq: "σ(Wi·[h,x]+bi)", value: cur.i, desc: cur.iDesc, color: iColor },
-    { key: "g", label: "g̃", name: "Cell",   eq: "tanh(Wg·[h,x]+bg)", value: cur.g, desc: cur.gDesc, color: gColor },
-    { key: "o", label: "o", name: "Output", eq: "σ(Wo·[h,x]+bo)", value: cur.o, desc: cur.oDesc, color: oColor },
-  ] as const;
+    { key: "f", label: "f", name: L.gateNames[0], eq: "σ(Wf·[h,x]+bf)", value: cur.f, desc: cur.fDesc, color: fColor },
+    { key: "i", label: "i", name: L.gateNames[1], eq: "σ(Wi·[h,x]+bi)", value: cur.i, desc: cur.iDesc, color: iColor },
+    { key: "g", label: "g̃", name: L.gateNames[2], eq: "tanh(Wg·[h,x]+bg)", value: cur.g, desc: cur.gDesc, color: gColor },
+    { key: "o", label: "o", name: L.gateNames[3], eq: "σ(Wo·[h,x]+bo)", value: cur.o, desc: cur.oDesc, color: oColor },
+  ];
 
   return (
-    <div
-      className="rounded-2xl overflow-hidden border"
-      style={{ backgroundColor: "var(--bg-card)", borderColor: "var(--border)" }}
-    >
+    <VizCard>
       {/* Header */}
       <div className="flex items-center justify-between px-5 py-3 border-b" style={{ borderColor: "var(--border)" }}>
         <div>
           <span className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
-            LSTM Cell — Gate-by-Gate
+            {L.title}
           </span>
           <span className="text-xs ml-2" style={{ color: "var(--text-muted)" }}>
-            token {step + 1}/{TOKENS.length} · Ct = f·Ct₋₁ + i·g̃
+            {L.subtitle(step + 1, TOKENS.length)}
           </span>
         </div>
         <div className="flex items-center gap-2">
@@ -157,7 +191,7 @@ export default function LSTMViz({ accentColor = "#a855f7" }: { accentColor?: str
             }}
           >
             <ChevronRight size={12} />
-            Next
+            {L.next}
           </button>
           <button onClick={() => setStep(0)} className="p-1.5 rounded-lg"
             style={{ color: "var(--text-muted)", border: "1px solid var(--border)" }}>
@@ -208,7 +242,7 @@ export default function LSTMViz({ accentColor = "#a855f7" }: { accentColor?: str
 
         {/* Cell state label */}
         <text x={PAD + 2} y={TRACK_Y - 16} fontSize={9} fill={vt.textMuted}>
-          Cell state Cₜ (conveyor belt)
+          {L.cellLabel}
         </text>
         <text x={W - PAD - 2} y={TRACK_Y - 16} textAnchor="end" fontSize={9} fill={cColor} fontFamily="monospace">
           Cₜ = {cur.c.toFixed(3)}
@@ -326,7 +360,7 @@ export default function LSTMViz({ accentColor = "#a855f7" }: { accentColor?: str
         {/* Step indicator */}
         <text x={W / 2} y={GATE_Y + GATE_H + 46} textAnchor="middle"
           fontSize={8} fill={vt.textMuted}>
-          {cur.fDesc} · {cur.iDesc}
+          {fDescL} · {iDescL}
         </text>
       </svg>
 
@@ -341,6 +375,6 @@ export default function LSTMViz({ accentColor = "#a855f7" }: { accentColor?: str
           </div>
         ))}
       </div>
-    </div>
+    </VizCard>
   );
 }

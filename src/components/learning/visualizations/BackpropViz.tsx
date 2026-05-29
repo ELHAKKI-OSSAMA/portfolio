@@ -4,6 +4,47 @@ import { useState, useCallback } from "react";
 import { motion } from "framer-motion";
 import { Play, RotateCcw, ChevronRight } from "lucide-react";
 import { useVizTheme } from "@/hooks/useVizTheme";
+import { useVizLocale } from "@/hooks/useVizLocale";
+import { VizCard, VizHeader, StatGrid, TabToggle } from "./shared";
+
+const BP_LABELS = {
+  en: {
+    title: "Backpropagation — Gradient Flow",
+    phaseReady: "ready",
+    phaseForward: "→ forward pass",
+    phaseBack: "← gradient flowing back",
+    trainStep: "Train Step",
+    layerNames: ["Input", "Hidden 1", "Hidden 2", "Output"] as readonly string[],
+    epochLabel: "Epoch",
+    lossLabel: "Loss",
+    lossCurve: "Loss curve",
+    gradLegend: "small → large gradient",
+  },
+  fr: {
+    title: "Rétropropagation — Flux du Gradient",
+    phaseReady: "prêt",
+    phaseForward: "→ passe avant",
+    phaseBack: "← gradient en retour",
+    trainStep: "Étape d'entraînement",
+    layerNames: ["Entrée", "Caché 1", "Caché 2", "Sortie"] as readonly string[],
+    epochLabel: "Époque",
+    lossLabel: "Perte",
+    lossCurve: "Courbe de perte",
+    gradLegend: "petit → grand gradient",
+  },
+  ar: {
+    title: "الانتشار الخلفي — تدفق التدرج",
+    phaseReady: "جاهز",
+    phaseForward: "→ مرور للأمام",
+    phaseBack: "← التدرج يعود للخلف",
+    trainStep: "خطوة تدريب",
+    layerNames: ["مدخل", "مخفي 1", "مخفي 2", "مخرج"] as readonly string[],
+    epochLabel: "حقبة",
+    lossLabel: "الخسارة",
+    lossCurve: "منحنى الخسارة",
+    gradLegend: "صغير → تدرج كبير",
+  },
+} as const;
 
 // Small network: 2 → 3 → 2 → 1
 const ARCH = [2, 3, 2, 1];
@@ -27,6 +68,7 @@ function initWeights(): number[][][] {
 
 export default function BackpropViz({ accentColor = "#ec4899" }: { accentColor?: string }) {
   const vt = useVizTheme();
+  const L = useVizLocale(BP_LABELS);
   const [weights, setWeights] = useState(initWeights);
   const [activations, setActivations] = useState<number[][]>(() => ARCH.map(c => Array(c).fill(0)));
   const [gradients, setGradients] = useState<number[][][]>([]);
@@ -130,17 +172,14 @@ export default function BackpropViz({ accentColor = "#ec4899" }: { accentColor?:
   };
 
   return (
-    <div
-      className="rounded-2xl overflow-hidden border"
-      style={{ backgroundColor: "var(--bg-card)", borderColor: "var(--border)" }}
-    >
+    <VizCard>
       <div className="flex items-center justify-between px-5 py-3 border-b" style={{ borderColor: "var(--border)" }}>
         <div>
           <span className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
-            Backpropagation — Gradient Flow
+            {L.title}
           </span>
           <span className="text-xs ml-2" style={{ color: "var(--text-muted)" }}>
-            {phase === "idle" ? "ready" : phase === "forward" ? "→ forward pass" : "← gradient flowing back"}
+            {phase === "idle" ? L.phaseReady : phase === "forward" ? L.phaseForward : L.phaseBack}
           </span>
         </div>
         <div className="flex items-center gap-2">
@@ -156,7 +195,7 @@ export default function BackpropViz({ accentColor = "#ec4899" }: { accentColor?:
             }}
           >
             <ChevronRight size={11} />
-            Train Step
+            {L.trainStep}
           </button>
           <button onClick={reset} className="p-1.5 rounded-lg"
             style={{ color: "var(--text-muted)", border: "1px solid var(--border)" }}>
@@ -190,7 +229,7 @@ export default function BackpropViz({ accentColor = "#ec4899" }: { accentColor?:
         )}
 
         {/* Layer labels */}
-        {["Input", "Hidden 1", "Hidden 2", "Output"].map((name, li) => {
+        {L.layerNames.map((name, li) => {
           const pos = getNeuronPos(li, 0);
           return (
             <text key={li} x={pos.x} y={H - 10} textAnchor="middle" fontSize={9} fill={vt.textMuted}>
@@ -262,17 +301,17 @@ export default function BackpropViz({ accentColor = "#ec4899" }: { accentColor?:
 
       <div className="px-5 py-3 border-t flex items-center gap-6" style={{ borderColor: "var(--border)" }}>
         <div>
-          <div className="text-xs" style={{ color: "var(--text-muted)" }}>Epoch</div>
+          <div className="text-xs" style={{ color: "var(--text-muted)" }}>{L.epochLabel}</div>
           <div className="text-sm font-bold font-mono" style={{ color: accentColor }}>{epoch}</div>
         </div>
         <div>
-          <div className="text-xs" style={{ color: "var(--text-muted)" }}>Loss</div>
+          <div className="text-xs" style={{ color: "var(--text-muted)" }}>{L.lossLabel}</div>
           <div className="text-sm font-bold font-mono" style={{ color: accentColor }}>
             {loss.length > 0 ? loss[loss.length - 1].toFixed(4) : "—"}
           </div>
         </div>
         <div className="flex-1">
-          <div className="text-xs mb-1" style={{ color: "var(--text-muted)" }}>Loss curve</div>
+          <div className="text-xs mb-1" style={{ color: "var(--text-muted)" }}>{L.lossCurve}</div>
           <svg viewBox="0 0 200 30" className="w-full h-6">
             {loss.length > 1 && (
               <polyline
@@ -284,9 +323,9 @@ export default function BackpropViz({ accentColor = "#ec4899" }: { accentColor?:
         </div>
         <div className="flex items-center gap-2 text-xs" style={{ color: "var(--text-muted)" }}>
           <div className="w-3 h-3 rounded" style={{ background: "linear-gradient(to right, #3232ff, #ff3232)" }} />
-          small → large gradient
+          {L.gradLegend}
         </div>
       </div>
-    </div>
+    </VizCard>
   );
 }

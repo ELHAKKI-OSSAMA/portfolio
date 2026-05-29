@@ -3,6 +3,50 @@
 import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useVizTheme } from "@/hooks/useVizTheme";
+import { useVizLocale } from "@/hooks/useVizLocale";
+import { VizCard, VizHeader, StatGrid, TabToggle } from "./shared";
+
+const AT_LABELS = {
+  en: {
+    title: "Transformer — Self-Attention Walkthrough",
+    stepLabels: ["Q, K, V", "Scores", "Softmax", "Output"] as readonly string[],
+    qkvHeaders: ["Token", "Q (query)", "K (key)", "V (value)"] as readonly string[],
+    keyTokensLabel: "← Key tokens (Kⱼ) →",
+    clickInspect: "(click a row to inspect)",
+    rawScoresLabel: (q: number) => `Step 1: raw scores  score[${q}][j] = Q[${q}]·Kⱼ / √4`,
+    softmaxLabel: "Step 2: attention weights  α = softmax(score)",
+    outHeaders: ["Token", "α weight", "V vector", "α × V"] as readonly string[],
+    attnOutput: (query: string, vals: string) => `Attention output for "${query}": [${vals}]`,
+    heatmapTitle: (head: number) => `Attention matrix — Head ${head} · click row to change query token`,
+    queryLabel: "Query:",
+  },
+  fr: {
+    title: "Transformer — Visualisation de l'Auto-Attention",
+    stepLabels: ["Q, K, V", "Scores", "Softmax", "Sortie"] as readonly string[],
+    qkvHeaders: ["Token", "Q (requête)", "K (clé)", "V (valeur)"] as readonly string[],
+    keyTokensLabel: "← Tokens clés (Kⱼ) →",
+    clickInspect: "(cliquer sur une ligne pour inspecter)",
+    rawScoresLabel: (q: number) => `Étape 1 : scores bruts  score[${q}][j] = Q[${q}]·Kⱼ / √4`,
+    softmaxLabel: "Étape 2 : poids d'attention  α = softmax(score)",
+    outHeaders: ["Token", "Poids α", "Vecteur V", "α × V"] as readonly string[],
+    attnOutput: (query: string, vals: string) => `Sortie d'attention pour « ${query} » : [${vals}]`,
+    heatmapTitle: (head: number) => `Matrice d'attention — Tête ${head} · cliquer sur une ligne pour changer le token requête`,
+    queryLabel: "Requête :",
+  },
+  ar: {
+    title: "Transformer — عرض الانتباه الذاتي",
+    stepLabels: ["Q, K, V", "نتائج", "Softmax", "مخرج"] as readonly string[],
+    qkvHeaders: ["رمز", "Q (استعلام)", "K (مفتاح)", "V (قيمة)"] as readonly string[],
+    keyTokensLabel: "← رموز المفاتيح (Kⱼ) →",
+    clickInspect: "(انقر على صف للفحص)",
+    rawScoresLabel: (q: number) => `خطوة 1: النتائج الخام  score[${q}][j] = Q[${q}]·Kⱼ / √4`,
+    softmaxLabel: "خطوة 2: أوزان الانتباه  α = softmax(score)",
+    outHeaders: ["رمز", "وزن α", "متجه V", "α × V"] as readonly string[],
+    attnOutput: (query: string, vals: string) => `مخرج الانتباه لـ "${query}": [${vals}]`,
+    heatmapTitle: (head: number) => `مصفوفة الانتباه — رأس ${head} · انقر على صف لتغيير رمز الاستعلام`,
+    queryLabel: "استعلام:",
+  },
+} as const;
 
 // ── Tokens and embeddings ─────────────────────────────────────────────────────
 const TOKENS = ["The", "cat", "sat", "mat"];
@@ -103,12 +147,8 @@ function VecBar({ values, x, y, w, h, color }: BarProps) {
 
 // ── Steps ─────────────────────────────────────────────────────────────────────
 type Step = "qkv" | "scores" | "weights" | "output";
-const STEPS: { key: Step; label: string; eq: string }[] = [
-  { key: "qkv",     label: "Q, K, V",   eq: "Q=Wᵩ·x, K=Wₖ·x, V=Wᵥ·x" },
-  { key: "scores",  label: "Scores",    eq: "score = Q·Kᵀ / √d" },
-  { key: "weights", label: "Softmax",   eq: "α = softmax(score)" },
-  { key: "output",  label: "Output",    eq: "out = Σ αᵢ·Vᵢ" },
-];
+const STEP_KEYS: Step[] = ["qkv", "scores", "weights", "output"];
+const STEP_EQS = ["Q=Wᵩ·x, K=Wₖ·x, V=Wᵥ·x", "score = Q·Kᵀ / √d", "α = softmax(score)", "out = Σ αᵢ·Vᵢ"];
 
 const W = 520, PAD = 20;
 
@@ -118,6 +158,8 @@ export default function AttentionViz({ accentColor = "#06b6d4" }: { accentColor?
   const [query, setQuery] = useState(1); // selected query token index
   const [head, setHead]   = useState(0);
   const vt = useVizTheme();
+  const L = useVizLocale(AT_LABELS);
+  const STEPS = STEP_KEYS.map((key, i) => ({ key, label: L.stepLabels[i], eq: STEP_EQS[i] }));
 
   // Head-specific attention matrices (3 fixed heads)
   const HEAD_MATRICES = useMemo(() => {
@@ -157,11 +199,11 @@ export default function AttentionViz({ accentColor = "#06b6d4" }: { accentColor?
     return (
       <svg viewBox={`0 0 ${W} ${rows * rowH + 50}`} className="w-full">
         {/* Column headers */}
-        {["Token", "Q (query)", "K (key)", "V (value)"].map((h, ci) => (
+        {L.qkvHeaders.map((h, ci) => (
           <text key={ci} x={PAD + ci * colW + colW / 2} y={18}
             textAnchor="middle" fontSize={9}
             fill={ci === 0 ? vt.textMuted : ci === 1 ? C_Q : ci === 2 ? C_K : C_V}>
-            {h}
+            {String(h)}
           </text>
         ))}
 
@@ -220,7 +262,7 @@ export default function AttentionViz({ accentColor = "#06b6d4" }: { accentColor?
             textAnchor="middle" fontSize={9} fill={C_K}>{tok}</text>
         ))}
         <text x={PAD + labW + N * CELL / 2} y={32} textAnchor="middle"
-          fontSize={8} fill={vt.textMuted}>← Key tokens (Kⱼ) →</text>
+          fontSize={8} fill={vt.textMuted}>{L.keyTokensLabel}</text>
 
         {TOKENS.map((tok, i) => {
           const isQ = i === query;
@@ -264,7 +306,7 @@ export default function AttentionViz({ accentColor = "#06b6d4" }: { accentColor?
         {/* Equation label */}
         <text x={W / 2} y={N * rowH + 55} textAnchor="middle" fontSize={9} fill={vt.textMuted}
           fontFamily="monospace">
-          score[i][j] = Q[i] · K[j] / √{D}   (click a row to inspect)
+          score[i][j] = Q[i] · K[j] / √{D}   {L.clickInspect}
         </text>
       </svg>
     );
@@ -279,7 +321,7 @@ export default function AttentionViz({ accentColor = "#06b6d4" }: { accentColor?
       <svg viewBox={`0 0 ${W} 220}`} className="w-full">
         {/* Raw scores bar chart */}
         <text x={PAD} y={18} fontSize={9} fill={vt.textMuted} fontFamily="monospace">
-          Step 1: raw scores  score[{query}][j] = Q[{query}]·Kⱼ / √{D}
+          {L.rawScoresLabel(query)}
         </text>
         {rawScores.map((sc, j) => {
           const bh = Math.abs(sc) / maxRaw * 50;
@@ -306,7 +348,7 @@ export default function AttentionViz({ accentColor = "#06b6d4" }: { accentColor?
 
         {/* Softmax weights */}
         <text x={PAD} y={125} fontSize={9} fill={vt.textMuted} fontFamily="monospace">
-          Step 2: attention weights  α = softmax(score)
+          {L.softmaxLabel}
         </text>
         {weights.map((w, j) => {
           const bh = w * 60;
@@ -346,9 +388,14 @@ export default function AttentionViz({ accentColor = "#06b6d4" }: { accentColor?
     return (
       <svg viewBox={`0 0 ${W} ${N * rowH + 90}`} className="w-full">
         {/* Column headers */}
-        {[["Token", PAD + 25], ["α weight", COL_ALPHA + 30], ["V vector", COL_V + vecW/2], ["α × V", COL_SCALED + vecW/2]].map(([lbl, x]) => (
+        {([
+          [L.outHeaders[0], PAD + 25],
+          [L.outHeaders[1], COL_ALPHA + 30],
+          [L.outHeaders[2], COL_V + vecW/2],
+          [L.outHeaders[3], COL_SCALED + vecW/2],
+        ] as [string, number][]).map(([lbl, x]) => (
           <text key={String(lbl)} x={Number(x)} y={18} textAnchor="middle" fontSize={9}
-            fill={lbl === "α weight" ? accentColor : lbl === "V vector" ? C_V : lbl === "α × V" ? "#f59e0b" : vt.textMuted}>
+            fill={lbl === L.outHeaders[1] ? accentColor : lbl === L.outHeaders[2] ? C_V : lbl === L.outHeaders[3] ? "#f59e0b" : vt.textMuted}>
             {String(lbl)}
           </text>
         ))}
@@ -398,7 +445,7 @@ export default function AttentionViz({ accentColor = "#06b6d4" }: { accentColor?
 
         {/* Equation summary */}
         <text x={W / 2} y={28 + N * rowH + 72} textAnchor="middle" fontSize={9} fill={vt.textMuted}>
-          Attention output for "{TOKENS[query]}": [{outputVec.map(v => v.toFixed(2)).join(", ")}]
+          {L.attnOutput(TOKENS[query], outputVec.map(v => v.toFixed(2)).join(", "))}
         </text>
       </svg>
     );
@@ -449,15 +496,12 @@ export default function AttentionViz({ accentColor = "#06b6d4" }: { accentColor?
   const curStepMeta = STEPS[stepIdx];
 
   return (
-    <div
-      className="rounded-2xl overflow-hidden border"
-      style={{ backgroundColor: "var(--bg-card)", borderColor: "var(--border)" }}
-    >
+    <VizCard>
       {/* Header */}
       <div className="flex items-center justify-between px-5 py-3 border-b" style={{ borderColor: "var(--border)" }}>
         <div>
           <span className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
-            Transformer — Self-Attention Walkthrough
+            {L.title}
           </span>
           <span className="text-xs ml-2 font-mono" style={{ color: "var(--text-muted)" }}>
             {curStepMeta.eq}
@@ -496,7 +540,7 @@ export default function AttentionViz({ accentColor = "#06b6d4" }: { accentColor?
           </button>
         ))}
         <div className="ml-auto text-xs" style={{ color: "var(--text-muted)" }}>
-          Query: <button onClick={() => setQuery(q => (q + 1) % TOKENS.length)}
+          {L.queryLabel} <button onClick={() => setQuery(q => (q + 1) % TOKENS.length)}
             className="font-bold px-1.5 py-0.5 rounded" style={{ color: accentColor, backgroundColor: `${accentColor}18` }}>
             {TOKENS[query]} ↻
           </button>
@@ -520,7 +564,7 @@ export default function AttentionViz({ accentColor = "#06b6d4" }: { accentColor?
       {/* Heatmap always visible */}
       <div className="border-t px-4 pb-2 pt-2" style={{ borderColor: "var(--border)" }}>
         <p className="text-xs text-center mb-2" style={{ color: "var(--text-muted)" }}>
-          Attention matrix — Head {head + 1} · click row to change query token
+          {L.heatmapTitle(head + 1)}
         </p>
         <HEATMAP />
       </div>
@@ -538,6 +582,6 @@ export default function AttentionViz({ accentColor = "#06b6d4" }: { accentColor?
           </div>
         ))}
       </div>
-    </div>
+    </VizCard>
   );
 }

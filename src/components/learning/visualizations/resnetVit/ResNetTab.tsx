@@ -1,5 +1,6 @@
 "use client";
 import { motion } from "framer-motion";
+import { useLocale } from "next-intl";
 import {
   Arrow, Block, FeatureMap,
   BLOCK_H, BLOCK_W, PATCH_COLORS,
@@ -7,17 +8,43 @@ import {
   type VT,
 } from './helpers';
 
+const RN_LABELS = {
+  en: {
+    inputX: "Input x",
+    outputFx: "F(x)+x",
+    skipActive: "Residual F(x)+x",
+    skipWaiting: "Skip path: x",
+    formula: "F(x) + x  →  gradients flow through skip path unchanged  →  train 100s of layers",
+  },
+  fr: {
+    inputX: "Entrée x",
+    outputFx: "F(x)+x",
+    skipActive: "Résidu F(x)+x",
+    skipWaiting: "Connexion résiduelle : x",
+    formula: "F(x) + x  →  les gradients traversent la connexion résiduelle inchangés  →  entraîner des centaines de couches",
+  },
+  ar: {
+    inputX: "مدخل x",
+    outputFx: "F(x)+x",
+    skipActive: "البقايا F(x)+x",
+    skipWaiting: "مسار التخطي: x",
+    formula: "F(x) + x  →  التدرجات تتدفق عبر مسار التخطي دون تغيير  →  تدريب مئات الطبقات",
+  },
+} as const;
+
 export default function ResNetTab({ step, accentColor, vt }: {
   step: number; accentColor: string; vt: VT;
 }) {
+  const locale = useLocale();
+  const L = RN_LABELS[(locale as keyof typeof RN_LABELS) in RN_LABELS ? (locale as keyof typeof RN_LABELS) : "en"];
   const W = 520, H = 240;
   const fmCellSize = 9;
   const fmSize = 6 * fmCellSize; // 54px
 
   const fmX = 8, fmY = (H - fmSize) / 2 - 8; // fmY≈79
-  const blockStartX = 90;
-  const bSpacing = 70;
-  const BW_BLOCK = 62;
+  const blockStartX = 80;
+  const bSpacing = 66;
+  const BW_BLOCK = 56;
 
   const blocks = [
     { label: "Conv 3×3", x: blockStartX },
@@ -26,11 +53,12 @@ export default function ResNetTab({ step, accentColor, vt }: {
     { label: "BN",        x: blockStartX + bSpacing * 3 },
   ];
 
-  const plusX  = blockStartX + bSpacing * 4 - 6;
-  const plusY  = H / 2 - BLOCK_H / 2 - 14 + BLOCK_H / 2;
+  // last block right edge: blockStartX + 3*bSpacing + BW_BLOCK = 80+198+56 = 334
   const blockY = H / 2 - BLOCK_H / 2 - 14;
-  const reluX  = plusX + 32;
-  const outFmX = reluX + BW_BLOCK + 4;
+  const plusX  = blockStartX + bSpacing * 3 + BW_BLOCK + 22; // 334+22=356, clear of last block
+  const plusY  = H / 2 - 14;
+  const reluX  = plusX + 28;          // 384
+  const outFmX = reluX + BW_BLOCK + 14; // 454, FM ends at 508 (within W=520)
 
   const skipActive = step >= 4;
   const outActive  = step >= 5;
@@ -39,7 +67,7 @@ export default function ResNetTab({ step, accentColor, vt }: {
     <svg viewBox={`0 0 ${W} ${H}`} className="w-full">
       {/* Input feature map label */}
       <text x={fmX + fmSize / 2} y={fmY - 8} textAnchor="middle" fontSize={9} fill={vt.textMuted}>
-        Input x
+        {L.inputX}
       </text>
       <FeatureMap
         data={step >= 1 && step <= 3 ? AFTER_CONV1 : INPUT_FM}
@@ -83,7 +111,7 @@ export default function ResNetTab({ step, accentColor, vt }: {
       <motion.text x={blockStartX + bSpacing * 1.8} y={blockY - 42}
         textAnchor="middle" fontSize={9} fill="#f59e0b" fontWeight="bold"
         animate={{ opacity: skipActive ? 1 : 0.6 }} transition={{ duration: 0.4 }}>
-        {skipActive ? "Residual F(x)+x" : "Skip path: x"}
+        {skipActive ? L.skipActive : L.skipWaiting}
       </motion.text>
 
       {/* + node */}
@@ -103,7 +131,7 @@ export default function ResNetTab({ step, accentColor, vt }: {
       <Arrow x1={reluX + BW_BLOCK + 4} y1={blockY + BLOCK_H / 2} x2={outFmX - 4} y2={fmY + fmSize / 2} color={outActive ? vt.axis : vt.border} />
       <motion.g animate={{ opacity: outActive ? 1 : 0.25 }} transition={{ duration: 0.4 }}>
         <text x={outFmX + fmSize / 2} y={fmY - 8} textAnchor="middle" fontSize={9} fill={vt.textMuted}>
-          F(x)+x
+          {L.outputFx}
         </text>
         <FeatureMap data={OUTPUT_FM} x={outFmX} y={fmY} cellSize={fmCellSize} vt={vt}
           highlight={outActive} highlightColor="#22c55e" />
@@ -111,7 +139,7 @@ export default function ResNetTab({ step, accentColor, vt }: {
 
       {/* Formula */}
       <text x={W / 2} y={H - 12} textAnchor="middle" fontSize={9} fill={vt.textMuted}>
-        F(x) + x  →  gradients flow through skip path unchanged  →  train 100s of layers
+        {L.formula}
       </text>
     </svg>
   );

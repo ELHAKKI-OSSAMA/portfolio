@@ -4,7 +4,7 @@ import { ARROW_DEFS, Arrow, Box, textOn } from './primitives';
 import type { VT } from './primitives';
 
 function TransformerArch({ accent, vt }: { accent: string; vt: VT }) {
-  const W = 540, H = 380;
+  const W = 540, H = 396;
   const ac = vt.isDark ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.35)";
   const BW = 170, CX = W / 2, BX = CX - BW / 2;
   const neutralBg = vt.isDark ? "#374151" : "#e2e8f0";
@@ -12,8 +12,8 @@ function TransformerArch({ accent, vt }: { accent: string; vt: VT }) {
   const green  = vt.isDark ? "#059669" : "#34d399";
 
   // Bottom-to-top layout (higher y = visually lower):
-  // y=330 → Token Embedding  (h=40, bottom=370)
-  // y=270 → MHA              (h=40, bottom=310) — gap 20px above
+  // y=344 → Token Embedding  (h=40, bottom=384) — OUTSIDE encoder block border (bottom=334)
+  // y=270 → MHA              (h=40, bottom=310) — gap 34px above
   // y=222 → Add & Norm ①     (h=30, bottom=252) — gap 18px above
   // y=166 → FFN              (h=38, bottom=204) — gap 18px above
   // y=118 → Add & Norm ②     (h=30, bottom=148) — gap 18px above
@@ -24,12 +24,12 @@ function TransformerArch({ accent, vt }: { accent: string; vt: VT }) {
     <svg viewBox={`0 0 ${W} ${H}`} className="w-full">
       {ARROW_DEFS("arr-tr", ac)}
 
-      {/* ── Token Embedding (bottom) ── */}
-      <Box x={BX} y={330} w={BW} h={40}
+      {/* ── Token Embedding (bottom) — placed below encoder block border (border bottom=334) ── */}
+      <Box x={BX} y={344} w={BW} h={40}
         label="Token Embedding" sublabel="xₜ + PE(pos)  →  d-dim vector"
         bg={neutralBg} textColor={vt.text} rx={8} />
-      {/* Arrow from Token Embed top (330) to MHA bottom (310) */}
-      <line x1={CX} y1={330} x2={CX} y2={312} stroke={ac} strokeWidth={1.5} markerEnd={`url(#arr-tr)`} />
+      {/* Arrow from Token Embed top (344) to MHA bottom (310) — 34px gap */}
+      <line x1={CX} y1={344} x2={CX} y2={310} stroke={ac} strokeWidth={1.5} markerEnd={`url(#arr-tr)`} />
 
       {/* ── Encoder block border ── */}
       <rect x={BX - 28} y={114} width={BW + 56} height={220} rx={10}
@@ -42,39 +42,39 @@ function TransformerArch({ accent, vt }: { accent: string; vt: VT }) {
         label="Multi-Head Self-Attention" sublabel="Attn(Q,K,V)=softmax(QKᵀ/√dₖ)V"
         bg={accent} textColor={textOn(accent)} rx={8} />
       {/* Arrow from MHA top (270) to Add&Norm1 bottom (252) */}
-      <line x1={CX} y1={270} x2={CX} y2={254} stroke={ac} strokeWidth={1.5} markerEnd={`url(#arr-tr)`} />
+      <line x1={CX} y1={270} x2={CX} y2={252} stroke={ac} strokeWidth={1.5} markerEnd={`url(#arr-tr)`} />
 
       {/* ── Add & Norm 1 ── */}
       <Box x={BX} y={222} w={BW} h={30}
         label="Add & LayerNorm ①  (x + sublayer)" bg={neutralBg} textColor={vt.text} rx={6} />
       {/* Arrow from Add&Norm1 top (222) to FFN bottom (204) */}
-      <line x1={CX} y1={222} x2={CX} y2={206} stroke={ac} strokeWidth={1.5} markerEnd={`url(#arr-tr)`} />
+      <line x1={CX} y1={222} x2={CX} y2={204} stroke={ac} strokeWidth={1.5} markerEnd={`url(#arr-tr)`} />
 
       {/* ── FFN ── */}
       <Box x={BX} y={166} w={BW} h={38}
         label="Feed-Forward Network" sublabel="FFN(x)=max(0,xW₁+b₁)W₂+b₂  d→4d→d"
         bg={purple} textColor="white" rx={8} />
       {/* Arrow from FFN top (166) to Add&Norm2 bottom (148) */}
-      <line x1={CX} y1={166} x2={CX} y2={150} stroke={ac} strokeWidth={1.5} markerEnd={`url(#arr-tr)`} />
+      <line x1={CX} y1={166} x2={CX} y2={148} stroke={ac} strokeWidth={1.5} markerEnd={`url(#arr-tr)`} />
 
       {/* ── Add & Norm 2 ── */}
       <Box x={BX} y={118} w={BW} h={30}
         label="Add & LayerNorm ②  (x + sublayer)" bg={neutralBg} textColor={vt.text} rx={6} />
       {/* Arrow from Add&Norm2 top (118) to Linear+Softmax bottom (100) */}
-      <line x1={CX} y1={118} x2={CX} y2={102} stroke={ac} strokeWidth={1.5} markerEnd={`url(#arr-tr)`} />
+      <line x1={CX} y1={118} x2={CX} y2={100} stroke={ac} strokeWidth={1.5} markerEnd={`url(#arr-tr)`} />
 
       {/* ── Output head ── */}
       <Box x={BX} y={62} w={BW} h={38}
         label="Linear + Softmax" sublabel="logits → P(vocab) or class probs"
         bg={green} textColor={textOn(green)} rx={8} />
       {/* Arrow from Linear+Softmax top (62) to Output box bottom (44) */}
-      <line x1={CX} y1={62} x2={CX} y2={46} stroke={ac} strokeWidth={1.5} markerEnd={`url(#arr-tr)`} />
+      <line x1={CX} y1={62} x2={CX} y2={44} stroke={ac} strokeWidth={1.5} markerEnd={`url(#arr-tr)`} />
       <Box x={BX} y={18} w={BW} h={26} label="Output: token probs / class"
         bg={neutralBg} textColor={vt.text} rx={6} />
 
       {/* ── Residual skip connections (left rail) ── */}
-      {/* Skip around MHA: from Token Embed top (330) to Add&Norm1 bottom (252) */}
-      <path d={`M ${BX - 8} 330 L ${BX - 22} 330 L ${BX - 22} 252 L ${BX - 8} 252`}
+      {/* Skip around MHA: from Token Embed top (344) to Add&Norm1 bottom (252) */}
+      <path d={`M ${BX - 8} 344 L ${BX - 22} 344 L ${BX - 22} 252 L ${BX - 8} 252`}
         fill="none" stroke="#f59e0b" strokeWidth={1.5} strokeDasharray="4,2" />
       {/* Skip around FFN: from Add&Norm1 top (222) to Add&Norm2 bottom (148) */}
       <path d={`M ${BX - 8} 222 L ${BX - 22} 222 L ${BX - 22} 148 L ${BX - 8} 148`}

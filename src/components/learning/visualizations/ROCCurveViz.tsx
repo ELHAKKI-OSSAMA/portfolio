@@ -3,6 +3,62 @@
 import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { useVizTheme } from "@/hooks/useVizTheme";
+import { useVizLocale } from "@/hooks/useVizLocale";
+import { VizCard, VizHeader, StatGrid, TabToggle } from "./shared";
+
+const ROC_LABELS = {
+  en: {
+    title: "ROC Curve — Interactive Threshold",
+    confusionMatrixLabel: "Confusion Matrix",
+    fprAxis: "FPR (1-Specificity)",
+    tprAxis: "TPR (Recall)",
+    truePositive: "True Positive",
+    falsePositive: "False Positive",
+    falseNegative: "False Negative",
+    trueNegative: "True Negative",
+    metricThreshold: "Threshold",
+    metricRecall: "Recall (TPR)",
+    metricFPR: "FPR",
+    metricPrecision: "Precision",
+    metricF1: "F1",
+    thresholdLabel: "Threshold:",
+    dragHint: "drag →",
+  },
+  fr: {
+    title: "Courbe ROC — Seuil Interactif",
+    confusionMatrixLabel: "Matrice de Confusion",
+    fprAxis: "TFP (1-Spécificité)",
+    tprAxis: "TVP (Rappel)",
+    truePositive: "Vrai Positif",
+    falsePositive: "Faux Positif",
+    falseNegative: "Faux Négatif",
+    trueNegative: "Vrai Négatif",
+    metricThreshold: "Seuil",
+    metricRecall: "Rappel (TVP)",
+    metricFPR: "TFP",
+    metricPrecision: "Précision",
+    metricF1: "F1",
+    thresholdLabel: "Seuil :",
+    dragHint: "glisser →",
+  },
+  ar: {
+    title: "منحنى ROC — عتبة تفاعلية",
+    confusionMatrixLabel: "مصفوفة الارتباك",
+    fprAxis: "معدل الإيجابية الكاذبة",
+    tprAxis: "معدل الإيجابية الحقيقية",
+    truePositive: "إيجابي حقيقي",
+    falsePositive: "إيجابي كاذب",
+    falseNegative: "سلبي كاذب",
+    trueNegative: "سلبي حقيقي",
+    metricThreshold: "العتبة",
+    metricRecall: "الاستدعاء (TVP)",
+    metricFPR: "TFP",
+    metricPrecision: "الدقة",
+    metricF1: "F1",
+    thresholdLabel: "العتبة:",
+    dragHint: "اسحب →",
+  },
+} as const;
 
 const W = 280, H = 280, PAD = 40;
 
@@ -47,6 +103,7 @@ function computeAUC(curve: Array<{ fpr: number; tpr: number }>): number {
 export default function ROCCurveViz({ accentColor = "#ff6b6b" }: { accentColor?: string }) {
   const [threshold, setThreshold] = useState(0.5);
   const vt = useVizTheme();
+  const L = useVizLocale(ROC_LABELS);
 
   const rocCurve = useMemo(() => computeFullROC(), []);
   const auc = useMemo(() => computeAUC(rocCurve), [rocCurve]);
@@ -67,20 +124,17 @@ export default function ROCCurveViz({ accentColor = "#ff6b6b" }: { accentColor?:
   const currentPt = toSVG(fpr, tpr);
 
   const cmCells = [
-    { label: "TP", value: tp, color: "#00d4aa", desc: "True Positive" },
-    { label: "FP", value: fp, color: "#ff6b6b", desc: "False Positive" },
-    { label: "FN", value: fn, color: "#f59e0b", desc: "False Negative" },
-    { label: "TN", value: tn, color: "#6c63ff", desc: "True Negative" },
+    { label: "TP", value: tp, color: "#00d4aa", desc: L.truePositive },
+    { label: "FP", value: fp, color: "#ff6b6b", desc: L.falsePositive },
+    { label: "FN", value: fn, color: "#f59e0b", desc: L.falseNegative },
+    { label: "TN", value: tn, color: "#6c63ff", desc: L.trueNegative },
   ];
 
   return (
-    <div
-      className="rounded-2xl overflow-hidden border"
-      style={{ backgroundColor: "var(--bg-card)", borderColor: "var(--border)" }}
-    >
+    <VizCard>
       <div className="flex items-center justify-between px-5 py-3 border-b" style={{ borderColor: "var(--border)" }}>
         <span className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
-          ROC Curve — Interactive Threshold
+          {L.title}
         </span>
         <span className="text-xs font-mono px-2 py-1 rounded" style={{ backgroundColor: `${accentColor}20`, color: accentColor }}>
           AUC = {auc.toFixed(4)}
@@ -122,9 +176,9 @@ export default function ROCCurveViz({ accentColor = "#ff6b6b" }: { accentColor?:
             {/* Axes */}
             <line x1={PAD} y1={H - PAD} x2={W - PAD} y2={H - PAD} stroke={vt.axis} strokeWidth={1.5} />
             <line x1={PAD} y1={PAD} x2={PAD} y2={H - PAD} stroke={vt.axis} strokeWidth={1.5} />
-            <text x={W / 2} y={H - 4} textAnchor="middle" fontSize={10} fill={vt.textMuted}>FPR (1-Specificity)</text>
+            <text x={W / 2} y={H - 4} textAnchor="middle" fontSize={10} fill={vt.textMuted}>{L.fprAxis}</text>
             <text x={10} y={H / 2} textAnchor="middle" fontSize={10} fill={vt.textMuted}
-              transform={`rotate(-90,10,${H / 2})`}>TPR (Recall)</text>
+              transform={`rotate(-90,10,${H / 2})`}>{L.tprAxis}</text>
 
             {/* Current threshold point */}
             <motion.circle
@@ -152,7 +206,7 @@ export default function ROCCurveViz({ accentColor = "#ff6b6b" }: { accentColor?:
         {/* Right panel */}
         <div className="p-4 flex flex-col gap-3 min-w-[180px]">
           <div>
-            <p className="text-xs mb-2" style={{ color: "var(--text-muted)" }}>Confusion Matrix</p>
+            <p className="text-xs mb-2" style={{ color: "var(--text-muted)" }}>{L.confusionMatrixLabel}</p>
             <div className="grid grid-cols-2 gap-1">
               {cmCells.map(({ label, value, color, desc }) => (
                 <motion.div
@@ -170,11 +224,11 @@ export default function ROCCurveViz({ accentColor = "#ff6b6b" }: { accentColor?:
           </div>
 
           {[
-            { label: "Threshold", value: threshold.toFixed(2), color: "var(--text-primary)" },
-            { label: "Recall (TPR)", value: tpr.toFixed(3), color: "#00d4aa" },
-            { label: "FPR", value: fpr.toFixed(3), color: "#ff6b6b" },
-            { label: "Precision", value: precision.toFixed(3), color: "#f59e0b" },
-            { label: "F1", value: f1.toFixed(3), color: accentColor },
+            { label: L.metricThreshold, value: threshold.toFixed(2), color: "var(--text-primary)" },
+            { label: L.metricRecall,    value: tpr.toFixed(3),       color: "#00d4aa" },
+            { label: L.metricFPR,       value: fpr.toFixed(3),       color: "#ff6b6b" },
+            { label: L.metricPrecision, value: precision.toFixed(3), color: "#f59e0b" },
+            { label: L.metricF1,        value: f1.toFixed(3),        color: accentColor },
           ].map(({ label, value, color }) => (
             <div key={label} className="flex justify-between items-center">
               <span className="text-xs" style={{ color: "var(--text-muted)" }}>{label}</span>
@@ -187,7 +241,7 @@ export default function ROCCurveViz({ accentColor = "#ff6b6b" }: { accentColor?:
       <div className="px-5 pb-4 pt-2 border-t" style={{ borderColor: "var(--border)" }}>
         <div className="flex items-center gap-3">
           <span className="text-xs w-20" style={{ color: "var(--text-muted)" }}>
-            Threshold: <span style={{ color: accentColor }} className="font-mono">{threshold.toFixed(2)}</span>
+            {L.thresholdLabel} <span style={{ color: accentColor }} className="font-mono">{threshold.toFixed(2)}</span>
           </span>
           <input
             type="range" min={0.01} max={0.99} step={0.01}
@@ -195,9 +249,9 @@ export default function ROCCurveViz({ accentColor = "#ff6b6b" }: { accentColor?:
             onChange={e => setThreshold(parseFloat(e.target.value))}
             className="flex-1" style={{ accentColor }}
           />
-          <span className="text-xs" style={{ color: "var(--text-muted)" }}>drag →</span>
+          <span className="text-xs" style={{ color: "var(--text-muted)" }}>{L.dragHint}</span>
         </div>
       </div>
-    </div>
+    </VizCard>
   );
 }

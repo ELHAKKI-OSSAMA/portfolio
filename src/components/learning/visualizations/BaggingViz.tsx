@@ -3,6 +3,83 @@
 import { useState, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useVizTheme } from "@/hooks/useVizTheme";
+import { useVizLocale } from "@/hooks/useVizLocale";
+import { VizCard, VizHeader, StatGrid, TabToggle } from "./shared";
+
+const BAG_LABELS = {
+  en: {
+    title: "Bagging — Bootstrap Aggregating",
+    steps: ["Dataset", "Bootstrap", "Boundaries", "Ensemble"] as readonly string[],
+    stepDescs: [
+      "Training data: 18 points, 2 classes. Each model will be trained on a random bootstrap sample drawn with replacement.",
+      "Bootstrap sampling: draw N=18 points with replacement. Some appear multiple times (×N shown), some are absent — each model sees a different version of reality.",
+      "Each model learns a slightly different decision boundary from its bootstrap data. Notice the 3 dashed lines don't perfectly agree.",
+      "Drag ✦ to test any point. Each model votes independently — majority vote is the ensemble prediction. Individual errors cancel out!",
+    ] as readonly string[],
+    svgTitles: [
+      "Original Dataset — N = 18",
+      "3 Bootstrap Samples (drawn with replacement)",
+      "Each Model Learns a Different Decision Boundary",
+      "Ensemble Voting — Drag ✦ to Test Any Point",
+    ] as readonly string[],
+    classA: "Class A (0)",
+    classB: "Class B (1)",
+    classAShort: "A",
+    classBShort: "B",
+    ensemblePred: (cls: string, votes: number) => `Ensemble: Class ${cls} (${votes}/3)`,
+    prev: "← Previous",
+    next: "Next →",
+    stepOf: (i: number, total: number) => `Step ${i} / ${total}`,
+  },
+  fr: {
+    title: "Bagging — Agrégation Bootstrap",
+    steps: ["Données", "Bootstrap", "Frontières", "Ensemble"] as readonly string[],
+    stepDescs: [
+      "Données d'entraînement : 18 points, 2 classes. Chaque modèle sera entraîné sur un échantillon bootstrap aléatoire tiré avec remplacement.",
+      "Échantillonnage bootstrap : tirer N=18 points avec remplacement. Certains apparaissent plusieurs fois (×N affiché), d'autres sont absents — chaque modèle voit une version différente de la réalité.",
+      "Chaque modèle apprend une frontière de décision légèrement différente à partir de ses données bootstrap. Les 3 lignes pointillées ne s'accordent pas parfaitement.",
+      "Faites glisser ✦ pour tester n'importe quel point. Chaque modèle vote indépendamment — vote majoritaire = prédiction d'ensemble. Les erreurs individuelles s'annulent !",
+    ] as readonly string[],
+    svgTitles: [
+      "Jeu de données original — N = 18",
+      "3 Échantillons Bootstrap (avec remplacement)",
+      "Chaque Modèle Apprend une Frontière Différente",
+      "Vote d'Ensemble — Glisser ✦ pour Tester",
+    ] as readonly string[],
+    classA: "Classe A (0)",
+    classB: "Classe B (1)",
+    classAShort: "A",
+    classBShort: "B",
+    ensemblePred: (cls: string, votes: number) => `Ensemble : Classe ${cls} (${votes}/3)`,
+    prev: "← Précédent",
+    next: "Suivant →",
+    stepOf: (i: number, total: number) => `Étape ${i} / ${total}`,
+  },
+  ar: {
+    title: "Bagging — التجميع التمهيدي",
+    steps: ["بيانات", "Bootstrap", "حدود", "مجموعة"] as readonly string[],
+    stepDescs: [
+      "بيانات التدريب: 18 نقطة، صنفان. سيتم تدريب كل نموذج على عينة bootstrap عشوائية مع الاستبدال.",
+      "أخذ عينة bootstrap: سحب N=18 نقطة مع الاستبدال. تظهر بعضها عدة مرات (×N مُعروض)، وبعضها غائب — يرى كل نموذج نسخة مختلفة من الواقع.",
+      "يتعلم كل نموذج حدود قرار مختلفة قليلاً من بيانات bootstrap. لاحظ أن الخطوط المتقطعة الثلاثة لا تتفق تماماً.",
+      "اسحب ✦ لاختبار أي نقطة. يصوت كل نموذج بشكل مستقل — الأغلبية = توقع المجموعة. تُلغى الأخطاء الفردية!",
+    ] as readonly string[],
+    svgTitles: [
+      "مجموعة البيانات الأصلية — N = 18",
+      "3 عينات Bootstrap (مع الاستبدال)",
+      "كل نموذج يتعلم حدود قرار مختلفة",
+      "تصويت المجموعة — اسحب ✦ لاختبار أي نقطة",
+    ] as readonly string[],
+    classA: "صنف A (0)",
+    classB: "صنف B (1)",
+    classAShort: "A",
+    classBShort: "B",
+    ensemblePred: (cls: string, votes: number) => `المجموعة: صنف ${cls} (${votes}/3)`,
+    prev: "→ السابق",
+    next: "التالي ←",
+    stepOf: (i: number, total: number) => `خطوة ${i} / ${total}`,
+  },
+} as const;
 
 const W = 540, H = 280, PAD = 30;
 
@@ -50,13 +127,6 @@ function classify(x: number, y: number, modelIdx: number): 0 | 1 {
   return x - y > THRESHOLDS[modelIdx] ? 1 : 0;
 }
 
-const STEPS = ["Dataset", "Bootstrap", "Boundaries", "Ensemble"];
-const STEP_DESCS = [
-  "Training data: 18 points, 2 classes. Each model will be trained on a random bootstrap sample drawn with replacement.",
-  "Bootstrap sampling: draw N=18 points with replacement. Some appear multiple times (×N shown), some are absent — each model sees a different version of reality.",
-  "Each model learns a slightly different decision boundary from its bootstrap data. Notice the 3 dashed lines don't perfectly agree.",
-  "Drag ✦ to test any point. Each model votes independently — majority vote is the ensemble prediction. Individual errors cancel out!",
-];
 
 export default function BaggingViz({ accentColor = "#06b6d4" }: { accentColor?: string }) {
   const [step, setStep] = useState(0);
@@ -64,6 +134,9 @@ export default function BaggingViz({ accentColor = "#06b6d4" }: { accentColor?: 
   const [dragging, setDragging] = useState(false);
   const svgRef = useRef<SVGSVGElement>(null);
   const vt = useVizTheme();
+  const L = useVizLocale(BAG_LABELS);
+  const STEPS = L.steps;
+  const STEP_DESCS = L.stepDescs;
 
   const getSVGPos = useCallback((e: React.MouseEvent) => {
     const svg = svgRef.current!;
@@ -83,12 +156,12 @@ export default function BaggingViz({ accentColor = "#06b6d4" }: { accentColor?: 
   const qy = toSY(query.y);
 
   return (
-    <div className="rounded-2xl overflow-hidden border" style={{ backgroundColor: "var(--bg-card)", borderColor: "var(--border)" }}>
+    <VizCard>
       {/* Header */}
       <div className="flex items-center justify-between px-5 py-3 border-b" style={{ borderColor: "var(--border)" }}>
         <div>
           <span className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
-            Bagging — Bootstrap Aggregating
+            {L.title}
           </span>
           <span className="text-xs ml-2" style={{ color: "var(--text-muted)" }}>
             {STEPS[step]}
@@ -126,7 +199,7 @@ export default function BaggingViz({ accentColor = "#06b6d4" }: { accentColor?: 
             <motion.g key="step0" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
               <text x={W / 2} y={20} textAnchor="middle" fontSize={11}
                 fill={vt.text} fontWeight="bold">
-                Original Dataset — N = 18
+                {L.svgTitles[0]}
               </text>
               {DATA.map(pt => (
                 <motion.circle key={pt.id}
@@ -141,9 +214,9 @@ export default function BaggingViz({ accentColor = "#06b6d4" }: { accentColor?: 
               ))}
               {/* Legend */}
               <circle cx={PAD + 8} cy={H - 12} r={5} fill="#6c63ff" />
-              <text x={PAD + 18} y={H - 8} fontSize={9} fill={vt.textMuted}>Class A (0)</text>
+              <text x={PAD + 18} y={H - 8} fontSize={9} fill={vt.textMuted}>{L.classA}</text>
               <circle cx={PAD + 85} cy={H - 12} r={5} fill="#ff6b6b" />
-              <text x={PAD + 95} y={H - 8} fontSize={9} fill={vt.textMuted}>Class B (1)</text>
+              <text x={PAD + 95} y={H - 8} fontSize={9} fill={vt.textMuted}>{L.classB}</text>
             </motion.g>
           )}
 
@@ -152,7 +225,7 @@ export default function BaggingViz({ accentColor = "#06b6d4" }: { accentColor?: 
             <motion.g key="step1" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
               <text x={W / 2} y={18} textAnchor="middle" fontSize={11}
                 fill={vt.text} fontWeight="bold">
-                3 Bootstrap Samples (drawn with replacement)
+                {L.svgTitles[1]}
               </text>
               {BOOTS.map((bs, bi) => {
                 const PW = (W - 2 * PAD - 16) / 3;
@@ -208,7 +281,7 @@ export default function BaggingViz({ accentColor = "#06b6d4" }: { accentColor?: 
             <motion.g key="step2" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
               <text x={W / 2} y={18} textAnchor="middle" fontSize={11}
                 fill={vt.text} fontWeight="bold">
-                Each Model Learns a Different Decision Boundary
+                {L.svgTitles[2]}
               </text>
               {/* Decision boundaries: y = x - threshold */}
               {THRESHOLDS.map((t, bi) => {
@@ -227,14 +300,19 @@ export default function BaggingViz({ accentColor = "#06b6d4" }: { accentColor?: 
                   />
                 );
               })}
-              {/* Labels for boundaries */}
+              {/* Labels for boundaries — stacked top-left to avoid overlap */}
               {THRESHOLDS.map((t, bi) => (
-                <text key={`bl-${bi}`}
-                  x={toSX(Math.max(0, t)) + 6}
-                  y={toSY(0) - 5}
-                  fontSize={9} fill={MODEL_COLORS[bi]} fontWeight="bold">
-                  {MODEL_NAMES[bi]}: x−y={t}
-                </text>
+                <g key={`bl-${bi}`}>
+                  <line x1={PAD + 2} y1={24 + bi * 16 - 4}
+                    x2={PAD + 18} y2={24 + bi * 16 - 4}
+                    stroke={MODEL_COLORS[bi]} strokeWidth={2} strokeDasharray="6,3" />
+                  <text
+                    x={PAD + 22}
+                    y={24 + bi * 16}
+                    fontSize={9} fill={MODEL_COLORS[bi]} fontWeight="bold">
+                    {MODEL_NAMES[bi]}: x−y={t}
+                  </text>
+                </g>
               ))}
               {/* Data points */}
               {DATA.map(pt => (
@@ -253,7 +331,7 @@ export default function BaggingViz({ accentColor = "#06b6d4" }: { accentColor?: 
             <motion.g key="step3" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
               <text x={W / 2} y={18} textAnchor="middle" fontSize={11}
                 fill={vt.text} fontWeight="bold">
-                Ensemble Voting — Drag ✦ to Test Any Point
+                {L.svgTitles[3]}
               </text>
 
               {/* Background region coloring (ensemble) */}
@@ -320,7 +398,7 @@ export default function BaggingViz({ accentColor = "#06b6d4" }: { accentColor?: 
                     </text>
                     <text x={bx + 44} y={by + 26} textAnchor="middle"
                       fontSize={9.5} fill={pred === 0 ? "#6c63ff" : "#ff6b6b"} fontWeight="bold">
-                      Class {pred === 0 ? "A" : "B"}
+                      {pred === 0 ? L.classAShort : L.classBShort}
                     </text>
                   </g>
                 );
@@ -350,7 +428,7 @@ export default function BaggingViz({ accentColor = "#06b6d4" }: { accentColor?: 
                       fill={ensemblePred === 0 ? "#6c63ff" : "#ff6b6b"} opacity={0.9} />
                     <text x={qx + 52} y={qy - 15} textAnchor="middle"
                       fontSize={9} fill="white" fontWeight="bold">
-                      Ensemble: Class {ensemblePred === 0 ? "A" : "B"} ({Math.max(voteA, voteB)}/3)
+                      {L.ensemblePred(ensemblePred === 0 ? L.classAShort : L.classBShort, Math.max(voteA, voteB))}
                     </text>
                   </motion.g>
                 </AnimatePresence>
@@ -373,7 +451,7 @@ export default function BaggingViz({ accentColor = "#06b6d4" }: { accentColor?: 
             className="px-4 py-1.5 rounded-lg text-xs font-semibold transition-all disabled:opacity-30"
             style={{ backgroundColor: `${accentColor}20`, color: accentColor }}
           >
-            ← Previous
+            {L.prev}
           </button>
 
           {step === 3 && (
@@ -384,13 +462,13 @@ export default function BaggingViz({ accentColor = "#06b6d4" }: { accentColor?: 
                 </span>
               ))}
               <span className="font-bold" style={{ color: ensemblePred === 0 ? "#6c63ff" : "#ff6b6b" }}>
-                → {ensemblePred === 0 ? "Class A" : "Class B"}
+                → {ensemblePred === 0 ? L.classA : L.classB}
               </span>
             </div>
           )}
           {step !== 3 && (
             <span className="text-xs font-semibold" style={{ color: accentColor }}>
-              Step {step + 1} / {STEPS.length}
+              {L.stepOf(step + 1, STEPS.length)}
             </span>
           )}
 
@@ -400,10 +478,10 @@ export default function BaggingViz({ accentColor = "#06b6d4" }: { accentColor?: 
             className="px-4 py-1.5 rounded-lg text-xs font-semibold transition-all disabled:opacity-30"
             style={{ backgroundColor: `${accentColor}20`, color: accentColor }}
           >
-            Next →
+            {L.next}
           </button>
         </div>
       </div>
-    </div>
+    </VizCard>
   );
 }

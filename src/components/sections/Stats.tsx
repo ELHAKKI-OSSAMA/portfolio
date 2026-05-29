@@ -1,3 +1,5 @@
+"use client";
+
 import { useTranslations } from "next-intl";
 import { BrainCircuit, BookOpen, Bot, Layers } from "lucide-react";
 

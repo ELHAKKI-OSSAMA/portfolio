@@ -4,6 +4,62 @@ import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronRight, RotateCcw, Play } from "lucide-react";
 import { useVizTheme } from "@/hooks/useVizTheme";
+import { useVizLocale } from "@/hooks/useVizLocale";
+import { VizCard, VizHeader, StatGrid, TabToggle } from "./shared";
+
+const DT_LABELS = {
+  en: {
+    title: "Decision Tree — 1D Regression",
+    statsText: (splits: number, leaves: number, mse: string) =>
+      `${splits} splits · ${leaves} leaves · MSE ${mse}`,
+    pauseBtn: "⏸ Pause",
+    replayBtn: "↺ Replay",
+    growBtn: "Grow",
+    stepBtn: "Step",
+    dtLegend: "DT step fn",
+    rootMsg1: "Root: predict mean(y) for all x",
+    rootMsg2: "Click Grow or Step to add splits →",
+    criterionText: "Split criterion: MSE gain = MSE(parent) − [nₗ/n·MSE(L) + nᵣ/n·MSE(R)]",
+    splitsLabel: "Splits",
+    leavesLabel: "Leaves",
+    mseLabel: "MSE",
+    targetLabel: "Target",
+  },
+  fr: {
+    title: "Arbre de Décision — Régression 1D",
+    statsText: (splits: number, leaves: number, mse: string) =>
+      `${splits} coupures · ${leaves} feuilles · ECM ${mse}`,
+    pauseBtn: "⏸ Pause",
+    replayBtn: "↺ Rejouer",
+    growBtn: "Grandir",
+    stepBtn: "Étape",
+    dtLegend: "fn. escalier",
+    rootMsg1: "Racine : prédire mean(y) pour tout x",
+    rootMsg2: "Cliquez Grandir ou Étape pour ajouter des coupures →",
+    criterionText: "Critère de coupure : gain ECM = ECM(parent) − [nₗ/n·ECM(G) + nᵣ/n·ECM(D)]",
+    splitsLabel: "Coupures",
+    leavesLabel: "Feuilles",
+    mseLabel: "ECM",
+    targetLabel: "Cible",
+  },
+  ar: {
+    title: "شجرة القرار — انحدار أحادي البعد",
+    statsText: (splits: number, leaves: number, mse: string) =>
+      `${splits} تقسيم · ${leaves} أوراق · MSE ${mse}`,
+    pauseBtn: "⏸ إيقاف",
+    replayBtn: "↺ إعادة",
+    growBtn: "نمو",
+    stepBtn: "خطوة",
+    dtLegend: "دالة درجية",
+    rootMsg1: "الجذر: التنبؤ بـmean(y) لجميع x",
+    rootMsg2: "انقر نمو أو خطوة لإضافة تقسيمات →",
+    criterionText: "معيار التقسيم: مكسب MSE = MSE(أصل) − [nₗ/n·MSE(ي) + nᵣ/n·MSE(ي)]",
+    splitsLabel: "تقسيمات",
+    leavesLabel: "أوراق",
+    mseLabel: "MSE",
+    targetLabel: "الهدف",
+  },
+} as const;
 
 // ── Dimensions ────────────────────────────────────────────────────────────────
 const W = 520, H = 300, PAD = 44;
@@ -121,6 +177,7 @@ export default function DecisionTreeViz({
   const [isPlaying, setIsPlaying] = useState(false);
   const [showY2, setShowY2]       = useState(false);
   const vt = useVizTheme();
+  const L = useVizLocale(DT_LABELS);
 
   const yKey      = showY2 ? "y2" : "y1";
   const trueColor = showY2 ? "#f97316" : "#6c63ff";
@@ -165,10 +222,7 @@ export default function DecisionTreeViz({
     .join(" ");
 
   return (
-    <div
-      className="rounded-2xl overflow-hidden border"
-      style={{ backgroundColor: "var(--bg-card)", borderColor: "var(--border)" }}
-    >
+    <VizCard>
       {/* ── Header ── */}
       <div
         className="flex items-center justify-between px-5 py-3 border-b flex-wrap gap-2"
@@ -176,10 +230,10 @@ export default function DecisionTreeViz({
       >
         <div>
           <span className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
-            Decision Tree — 1D Regression
+            {L.title}
           </span>
           <span className="text-xs ml-2" style={{ color: "var(--text-muted)" }}>
-            {revealed} splits · {currentLeaves.length} leaves · MSE {curMse.toFixed(3)}
+            {L.statsText(revealed, currentLeaves.length, curMse.toFixed(3))}
           </span>
         </div>
         <div className="flex items-center gap-2">
@@ -201,10 +255,10 @@ export default function DecisionTreeViz({
             style={{ backgroundColor: `${accentColor}25`, color: accentColor, border: `1px solid ${accentColor}50` }}
           >
             {isPlaying
-              ? "⏸ Pause"
+              ? L.pauseBtn
               : revealed >= ALL_SPLITS.length
-              ? "↺ Replay"
-              : <><Play size={11} /> Grow</>}
+              ? L.replayBtn
+              : <><Play size={11} /> {L.growBtn}</>}
           </button>
           <button
             disabled={revealed >= ALL_SPLITS.length}
@@ -216,7 +270,7 @@ export default function DecisionTreeViz({
               opacity: revealed >= ALL_SPLITS.length ? 0.4 : 1,
             }}
           >
-            <ChevronRight size={12} /> Step
+            <ChevronRight size={12} /> {L.stepBtn}
           </button>
           <button
             onClick={() => { setRevealed(0); setIsPlaying(false); }}
@@ -311,7 +365,7 @@ export default function DecisionTreeViz({
           {showY2 ? "π·cos(x)" : "π·sin(x)"}
         </text>
         <line x1={W - 108} y1={38} x2={W - 88} y2={38} stroke={stepColor} strokeWidth={2.5} />
-        <text x={W - 84} y={42} fontSize={8.5} fill={stepColor}>DT step fn</text>
+        <text x={W - 84} y={42} fontSize={8.5} fill={stepColor}>{L.dtLegend}</text>
 
         {/* Current split annotation */}
         {currentSplit && (
@@ -342,10 +396,10 @@ export default function DecisionTreeViz({
               fill={vt.isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.04)"}
               stroke={vt.border} strokeWidth={1} />
             <text x={PAD + 18} y={PAD + 20} fontSize={8.5} fill={vt.textMuted}>
-              Root: predict mean(y) for all x
+              {L.rootMsg1}
             </text>
             <text x={PAD + 18} y={PAD + 34} fontSize={8} fill={vt.textMuted}>
-              Click Grow or Step to add splits →
+              {L.rootMsg2}
             </text>
           </motion.g>
         )}
@@ -355,7 +409,7 @@ export default function DecisionTreeViz({
       <div className="px-5 py-2 border-t flex flex-wrap gap-x-5 gap-y-1 items-center"
         style={{ borderColor: "var(--border)" }}>
         <span className="text-xs font-mono" style={{ color: "var(--text-muted)" }}>
-          Split criterion: <span style={{ color: accentColor }}>MSE gain = MSE(parent) − [nₗ/n·MSE(L) + nᵣ/n·MSE(R)]</span>
+          <span style={{ color: accentColor }}>{L.criterionText}</span>
         </span>
         <span className="text-xs font-mono" style={{ color: "var(--text-muted)" }}>
           Gini = 1−Σpₖ²  ·  IG = H(parent)−Σwᵢ·H(childᵢ)
@@ -368,10 +422,10 @@ export default function DecisionTreeViz({
         style={{ borderColor: "var(--border)" }}
       >
         {[
-          { label: "Splits",    value: `${revealed} / ${ALL_SPLITS.length}` },
-          { label: "Leaves",   value: `${currentLeaves.length}` },
-          { label: "MSE",      value: curMse.toFixed(3) },
-          { label: "Target",   value: showY2 ? "π·cos(x)" : "π·sin(x)" },
+          { label: L.splitsLabel,  value: `${revealed} / ${ALL_SPLITS.length}` },
+          { label: L.leavesLabel,  value: `${currentLeaves.length}` },
+          { label: L.mseLabel,     value: curMse.toFixed(3) },
+          { label: L.targetLabel,  value: showY2 ? "π·cos(x)" : "π·sin(x)" },
         ].map(({ label, value }) => (
           <div key={label} className="py-3">
             <div className="text-xs" style={{ color: "var(--text-muted)" }}>{label}</div>
@@ -379,6 +433,6 @@ export default function DecisionTreeViz({
           </div>
         ))}
       </div>
-    </div>
+    </VizCard>
   );
 }

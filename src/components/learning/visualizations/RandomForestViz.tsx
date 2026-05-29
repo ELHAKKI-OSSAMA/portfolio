@@ -3,6 +3,71 @@
 import { useState, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useVizTheme } from "@/hooks/useVizTheme";
+import { useVizLocale } from "@/hooks/useVizLocale";
+import { VizCard, VizHeader, StatGrid, TabToggle } from "./shared";
+
+const RF_LABELS = {
+  en: {
+    title: "Random Forest",
+    stepOf: (step: number, label: string) => `Step ${step}/4 — ${label}`,
+    stepLabels: ["Dataset", "Bootstrap + Features", "Tree Boundaries", "Ensemble Vote"] as readonly string[],
+    treeLabels: ["Tree 1: uses x₁, x₂", "Tree 2: uses x₁ randomly", "Tree 3: uses x₂, x₁"] as readonly string[],
+    prev: "← Prev",
+    next: "Next →",
+    classALegend: "● Class A (n=10)",
+    classBLegend: "● Class B (n=10)",
+    withReplacement: (n: number) => `n=${n} (w/ replacement)`,
+    step3Hint: "drag ✦ · RF reduces variance — individual trees may err, ensemble corrects",
+    rfBadge: (cls: string) => `RF: ${cls}`,
+    classA: "Class A",
+    classB: "Class B",
+    statStep: "Step",
+    statTree1: "Tree 1",
+    statTree2: "Tree 2",
+    statEnsemble: "Ensemble",
+    statTree3: "Tree 3",
+  },
+  fr: {
+    title: "Forêt Aléatoire",
+    stepOf: (step: number, label: string) => `Étape ${step}/4 — ${label}`,
+    stepLabels: ["Données", "Bootstrap + Caractéristiques", "Frontières des arbres", "Vote d'ensemble"] as readonly string[],
+    treeLabels: ["Arbre 1 : utilise x₁, x₂", "Arbre 2 : utilise x₁ aléat.", "Arbre 3 : utilise x₂, x₁"] as readonly string[],
+    prev: "← Préc.",
+    next: "Suiv. →",
+    classALegend: "● Classe A (n=10)",
+    classBLegend: "● Classe B (n=10)",
+    withReplacement: (n: number) => `n=${n} (avec remise)`,
+    step3Hint: "glisser ✦ · la FA réduit la variance — des arbres individuels peuvent errer, l'ensemble corrige",
+    rfBadge: (cls: string) => `FA: ${cls}`,
+    classA: "Classe A",
+    classB: "Classe B",
+    statStep: "Étape",
+    statTree1: "Arbre 1",
+    statTree2: "Arbre 2",
+    statEnsemble: "Ensemble",
+    statTree3: "Arbre 3",
+  },
+  ar: {
+    title: "الغابة العشوائية",
+    stepOf: (step: number, label: string) => `خطوة ${step}/4 — ${label}`,
+    stepLabels: ["البيانات", "Bootstrap + الميزات", "حدود الأشجار", "تصويت المجموعة"] as readonly string[],
+    treeLabels: ["شجرة 1: تستخدم x₁, x₂", "شجرة 2: تستخدم x₁ عشوائياً", "شجرة 3: تستخدم x₂, x₁"] as readonly string[],
+    prev: "→ السابق",
+    next: "التالي ←",
+    classALegend: "● الصنف A (n=10)",
+    classBLegend: "● الصنف B (n=10)",
+    withReplacement: (n: number) => `n=${n} (مع الإرجاع)`,
+    step3Hint: "اسحب ✦ · الغابة تقلل التباين — الأشجار الفردية قد تخطئ، والمجموعة تصحح",
+    rfBadge: (cls: string) => `غ.ع.: ${cls}`,
+    classA: "الصنف A",
+    classB: "الصنف B",
+    statStep: "الخطوة",
+    statTree1: "شجرة 1",
+    statTree2: "شجرة 2",
+    statEnsemble: "المجموعة",
+    statTree3: "شجرة 3",
+  },
+} as const;
 
 const W = 520, H = 300, PAD = 36;
 
@@ -39,8 +104,6 @@ const BOOTS = [
   [0,1,2,3,4,5,6,7,8,8,9,10,11,12,13,14,15,17,18,19],
 ];
 
-const TREE_LABELS = ["Tree 1: uses x₁, x₂", "Tree 2: uses x₁ randomly", "Tree 3: uses x₂, x₁"];
-
 const toSVGX = (x: number) => PAD + (x / 10) * (W - 2 * PAD);
 const toSVGY = (y: number) => H - PAD - (y / 10) * (H - 2 * PAD);
 const fromSVGX = (px: number) => (px - PAD) / (W - 2 * PAD) * 10;
@@ -66,14 +129,13 @@ function ensemblePredict(x: number, y: number): 0 | 1 {
   return sumA >= 2 ? 0 : 1;
 }
 
-const STEP_LABELS = ["Dataset", "Bootstrap + Features", "Tree Boundaries", "Ensemble Vote"];
-
 export default function RandomForestViz({ accentColor = "#00d4aa" }: { accentColor?: string }) {
   const [step, setStep] = useState(0);
   const [query, setQuery] = useState({ x: 5.5, y: 5.5 });
   const [dragging, setDragging] = useState(false);
   const svgRef = useRef<SVGSVGElement>(null);
   const vt = useVizTheme();
+  const L = useVizLocale(RF_LABELS);
 
   const getSVGPos = useCallback((e: React.MouseEvent) => {
     const svg = svgRef.current!;
@@ -90,13 +152,13 @@ export default function RandomForestViz({ accentColor = "#00d4aa" }: { accentCol
   const votesB = treePreds.filter(v => v === 1).length;
 
   return (
-    <div className="rounded-2xl overflow-hidden border" style={{ backgroundColor: "var(--bg-card)", borderColor: "var(--border)" }}>
+    <VizCard>
       {/* Header */}
       <div className="flex items-center justify-between px-5 py-3 border-b" style={{ borderColor: "var(--border)" }}>
         <div>
-          <span className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>Random Forest</span>
+          <span className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>{L.title}</span>
           <span className="text-xs ml-2" style={{ color: "var(--text-muted)" }}>
-            Step {step + 1}/4 — {STEP_LABELS[step]}
+            {L.stepOf(step + 1, L.stepLabels[step])}
           </span>
         </div>
         <div className="flex items-center gap-2">
@@ -110,7 +172,7 @@ export default function RandomForestViz({ accentColor = "#00d4aa" }: { accentCol
               border: `1px solid ${step > 0 ? accentColor + "50" : "var(--border)"}`,
             }}
           >
-            ← Prev
+            {L.prev}
           </button>
           <button
             disabled={step === 3}
@@ -122,7 +184,7 @@ export default function RandomForestViz({ accentColor = "#00d4aa" }: { accentCol
               border: `1px solid ${step < 3 ? accentColor + "50" : "var(--border)"}`,
             }}
           >
-            Next →
+            {L.next}
           </button>
         </div>
       </div>
@@ -156,8 +218,8 @@ export default function RandomForestViz({ accentColor = "#00d4aa" }: { accentCol
                   transition={{ delay: i * 0.04, type: "spring", stiffness: 300, damping: 20 }}
                 />
               ))}
-              <text x={PAD + 8} y={PAD + 16} fontSize={10} fill={CLASS_A}>● Class A (n=10)</text>
-              <text x={PAD + 8} y={PAD + 30} fontSize={10} fill={CLASS_B}>● Class B (n=10)</text>
+              <text x={PAD + 8} y={PAD + 16} fontSize={10} fill={CLASS_A}>{L.classALegend}</text>
+              <text x={PAD + 8} y={PAD + 30} fontSize={10} fill={CLASS_B}>{L.classBLegend}</text>
             </svg>
           </motion.div>
         )}
@@ -181,7 +243,7 @@ export default function RandomForestViz({ accentColor = "#00d4aa" }: { accentCol
                     style={{ borderColor: MODEL_COLORS[treeIdx] + "60", backgroundColor: MODEL_COLORS[treeIdx] + "0a" }}
                   >
                     <div className="px-2 py-1 text-center" style={{ backgroundColor: MODEL_COLORS[treeIdx] + "20" }}>
-                      <span className="text-xs font-bold" style={{ color: MODEL_COLORS[treeIdx] }}>{TREE_LABELS[treeIdx]}</span>
+                      <span className="text-xs font-bold" style={{ color: MODEL_COLORS[treeIdx] }}>{L.treeLabels[treeIdx]}</span>
                     </div>
                     <svg viewBox={`0 0 ${miniW} ${miniH}`} className="w-full">
                       {[2, 5, 8].map(v => (
@@ -207,7 +269,7 @@ export default function RandomForestViz({ accentColor = "#00d4aa" }: { accentCol
                       ))}
                     </svg>
                     <div className="text-center pb-1">
-                      <span className="text-xs" style={{ color: vt.textMuted }}>n={bootData.length} (w/ replacement)</span>
+                      <span className="text-xs" style={{ color: vt.textMuted }}>{L.withReplacement(bootData.length)}</span>
                     </div>
                   </motion.div>
                 );
@@ -413,7 +475,7 @@ export default function RandomForestViz({ accentColor = "#00d4aa" }: { accentCol
                     fill="white"
                     fontWeight="bold"
                   >
-                    RF: Class {ensemblePred === 0 ? "A" : "B"}
+                    {L.rfBadge(ensemblePred === 0 ? L.classA : L.classB)}
                   </text>
                 </motion.g>
               </AnimatePresence>
@@ -423,7 +485,7 @@ export default function RandomForestViz({ accentColor = "#00d4aa" }: { accentCol
 
               {/* Info label */}
               <text x={W / 2} y={H - PAD + 14} textAnchor="middle" fontSize={9} fill={vt.textMuted}>
-                drag ✦ · RF reduces variance — individual trees may err, ensemble corrects
+                {L.step3Hint}
               </text>
             </svg>
           </motion.div>
@@ -431,19 +493,12 @@ export default function RandomForestViz({ accentColor = "#00d4aa" }: { accentCol
       </AnimatePresence>
 
       {/* Footer stats */}
-      <div className="grid grid-cols-4 border-t text-center" style={{ borderColor: "var(--border)" }}>
-        {[
-          { label: "Step", value: `${step + 1}/4`, color: accentColor },
-          { label: "Tree 1", value: step >= 3 ? (treePreds[0] === 0 ? "A" : "B") : "—", color: MODEL_COLORS[0] },
-          { label: "Tree 2", value: step >= 3 ? (treePreds[1] === 0 ? "A" : "B") : "—", color: MODEL_COLORS[1] },
-          { label: step >= 3 ? "Ensemble" : "Tree 3", value: step >= 3 ? `${ensemblePred === 0 ? "A" : "B"} (${votesA}v${votesB})` : "—", color: step >= 3 ? (ensemblePred === 0 ? CLASS_A : CLASS_B) : MODEL_COLORS[2] },
-        ].map(({ label, value, color }) => (
-          <div key={label} className="py-3">
-            <div className="text-xs" style={{ color: "var(--text-muted)" }}>{label}</div>
-            <div className="text-sm font-bold font-mono" style={{ color }}>{value}</div>
-          </div>
-        ))}
-      </div>
-    </div>
+      <StatGrid py="py-3" items={[
+          { label: L.statStep, value: `${step + 1}/4`, color: accentColor },
+          { label: L.statTree1, value: step >= 3 ? (treePreds[0] === 0 ? "A" : "B") : "—", color: MODEL_COLORS[0] },
+          { label: L.statTree2, value: step >= 3 ? (treePreds[1] === 0 ? "A" : "B") : "—", color: MODEL_COLORS[1] },
+          { label: step >= 3 ? L.statEnsemble : L.statTree3, value: step >= 3 ? `${ensemblePred === 0 ? "A" : "B"} (${votesA}v${votesB})` : "—", color: step >= 3 ? (ensemblePred === 0 ? CLASS_A : CLASS_B) : MODEL_COLORS[2] },
+      ]} />
+    </VizCard>
   );
 }

@@ -3,6 +3,108 @@
 import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useVizTheme } from "@/hooks/useVizTheme";
+import { useVizLocale } from "@/hooks/useVizLocale";
+import { useLocale } from "next-intl";
+import { VizCard, VizHeader, StatGrid, TabToggle } from "./shared";
+
+const GBV_LABELS = {
+  en: {
+    backBtn: "← Back",
+    forwardBtn: "Forward →",
+    roundCounter: (r: number, max: number) => `Round ${r}/${max}`,
+    trueFn: "true fn",
+    msePerRound: "MSE per round",
+    initialPred: (name: string) => `${name}: initial prediction (flat zero)`,
+    afterRounds: (name: string, r: number, lr: number) =>
+      `${name}: after ${r} boosting round${r > 1 ? "s" : ""}  (η=${lr})`,
+    detailsHeader: (name: string) => `${name} Details`,
+    roundLeaves: (r: number) => `Round ${r} tree leaves:`,
+    finalMse: "final MSE",
+  },
+  fr: {
+    backBtn: "← Retour",
+    forwardBtn: "Suivant →",
+    roundCounter: (r: number, max: number) => `Tour ${r}/${max}`,
+    trueFn: "vrai fn",
+    msePerRound: "ECM par tour",
+    initialPred: (name: string) => `${name} : prédiction initiale (zéro)`,
+    afterRounds: (name: string, r: number, lr: number) =>
+      `${name} : après ${r} tour${r > 1 ? "s" : ""} de boosting  (η=${lr})`,
+    detailsHeader: (name: string) => `Détails ${name}`,
+    roundLeaves: (r: number) => `Feuilles de l'arbre tour ${r} :`,
+    finalMse: "ECM finale",
+  },
+  ar: {
+    backBtn: "← رجوع",
+    forwardBtn: "تقدم →",
+    roundCounter: (r: number, max: number) => `جولة ${r}/${max}`,
+    trueFn: "الدالة الحقيقية",
+    msePerRound: "MSE لكل جولة",
+    initialPred: (name: string) => `${name}: تنبؤ ابتدائي (صفر)`,
+    afterRounds: (name: string, r: number, lr: number) =>
+      `${name}: بعد ${r} جولة${r > 1 ? "" : ""} تعزيز  (η=${lr})`,
+    detailsHeader: (name: string) => `تفاصيل ${name}`,
+    roundLeaves: (r: number) => `أوراق شجرة الجولة ${r}:`,
+    finalMse: "MSE النهائية",
+  },
+} as const;
+
+type InfoCard = { title: string; lines: string[] };
+type AlgoInfoData = Record<"xgboost" | "lightgbm" | "catboost", InfoCard[]>;
+
+const GBV_INFO: Record<"en" | "fr" | "ar", AlgoInfoData> = {
+  en: {
+    xgboost: [
+      { title: "Newton Step (2nd order)", lines: ["gᵢ = ∂L/∂F   (gradient)", "hᵢ = ∂²L/∂F²  (hessian)", "leaf val = −Σgᵢ / (Σhᵢ + λ)"] },
+      { title: "Regularized gain", lines: ["Gain = ½[GL²/(HL+λ) + GR²/(HR+λ)", "     − (GL+GR)²/(HL+HR+λ)] − γ", "γ=complexity penalty · λ=L2 reg"] },
+      { title: "Optimizations", lines: ["• Column (feature) subsampling", "• Row (sample) subsampling", "• Histogram approximation"] },
+    ],
+    lightgbm: [
+      { title: "Leaf-wise (best-first) growth", lines: ["Pick leaf with highest gain", "Split only that leaf (not all)", "→ deeper, unbalanced trees"] },
+      { title: "GOSS — Gradient-based Sampling", lines: ["Keep all large-gradient samples", "Randomly drop small-gradient", "Compensate with weight factor"] },
+      { title: "EFB — Exclusive Feature Bundling", lines: ["Bundle mutually exclusive features", "Reduces #features → faster splits", "10–100× faster than XGBoost"] },
+    ],
+    catboost: [
+      { title: "Ordered Boosting", lines: ["Use permuted dataset at each step", "hₜ trained on Dₜ (avoids leakage)", "→ prevents target statistics leak"] },
+      { title: "Ordered Target Statistics", lines: ["TS(xᵢ) = Σy[xⱼ=xᵢ, j<i] / count", "Categorical → numeric encoding", "No holdout set needed"] },
+      { title: "Symmetric (Oblivious) Trees", lines: ["Same split condition at each level", "Fast prediction (table lookup)", "Implicit regularization"] },
+    ],
+  },
+  fr: {
+    xgboost: [
+      { title: "Étape Newton (2ème ordre)", lines: ["gᵢ = ∂L/∂F   (gradient)", "hᵢ = ∂²L/∂F²  (hessien)", "val. feuille = −Σgᵢ / (Σhᵢ + λ)"] },
+      { title: "Gain régularisé", lines: ["Gain = ½[GL²/(HL+λ) + GR²/(HR+λ)", "     − (GL+GR)²/(HL+HR+λ)] − γ", "γ=pénalité complexité · λ=rég. L2"] },
+      { title: "Optimisations", lines: ["• Sous-échantillonnage colonnes", "• Sous-échantillonnage lignes", "• Approximation par histogramme"] },
+    ],
+    lightgbm: [
+      { title: "Croissance par feuille (meilleure d'abord)", lines: ["Choisir la feuille au gain le plus élevé", "Diviser seulement cette feuille", "→ arbres plus profonds, déséquilibrés"] },
+      { title: "GOSS — Échantillonnage par gradient", lines: ["Conserver grands gradients", "Supprimer aléatoirement petits gradients", "Compenser avec facteur de poids"] },
+      { title: "EFB — Regroupement de caractéristiques", lines: ["Regrouper les caractéristiques exclusives", "Réduit #caractéristiques → plus rapide", "10–100× plus rapide que XGBoost"] },
+    ],
+    catboost: [
+      { title: "Boosting Ordonné", lines: ["Utiliser données permutées à chaque étape", "hₜ entraîné sur Dₜ (évite la fuite)", "→ prévient la fuite statistiques cibles"] },
+      { title: "Statistiques de Cibles Ordonnées", lines: ["TS(xᵢ) = Σy[xⱼ=xᵢ, j<i] / count", "Catégoriel → encodage numérique", "Pas besoin d'ensemble de test séparé"] },
+      { title: "Arbres Symétriques (Oublieux)", lines: ["Même condition de division par niveau", "Prédiction rapide (recherche en table)", "Régularisation implicite"] },
+    ],
+  },
+  ar: {
+    xgboost: [
+      { title: "خطوة نيوتن (الرتبة الثانية)", lines: ["gᵢ = ∂L/∂F   (التدرج)", "hᵢ = ∂²L/∂F²  (الهيسيان)", "قيمة الورقة = −Σgᵢ / (Σhᵢ + λ)"] },
+      { title: "مكسب منظَّم", lines: ["Gain = ½[GL²/(HL+λ) + GR²/(HR+λ)", "     − (GL+GR)²/(HL+HR+λ)] − γ", "γ=عقوبة التعقيد · λ=تنظيم L2"] },
+      { title: "تحسينات", lines: ["• أخذ عينات الأعمدة (الميزات)", "• أخذ عينات الصفوف (العينات)", "• تقريب الرسم البياني"] },
+    ],
+    lightgbm: [
+      { title: "نمو بالورقة (الأفضل أولاً)", lines: ["اختيار الورقة ذات أعلى مكسب", "تقسيم تلك الورقة فقط", "→ أشجار أعمق وغير متوازنة"] },
+      { title: "GOSS — أخذ عينات بالتدرج", lines: ["الإبقاء على عينات التدرج الكبير", "حذف عشوائي لعينات التدرج الصغير", "التعويض بعامل ترجيح"] },
+      { title: "EFB — تجميع الميزات الحصرية", lines: ["تجميع الميزات المتبادلة الحصرية", "تقليل #الميزات → تقسيمات أسرع", "أسرع بـ10–100× من XGBoost"] },
+    ],
+    catboost: [
+      { title: "تعزيز مرتَّب", lines: ["استخدام بيانات مبدَّلة في كل خطوة", "hₜ مدرَّب على Dₜ (تجنب التسرب)", "→ يمنع تسرب إحصاءات الهدف"] },
+      { title: "إحصاءات الهدف المرتَّبة", lines: ["TS(xᵢ) = Σy[xⱼ=xᵢ, j<i] / count", "فئوي → ترميز رقمي", "لا حاجة لمجموعة حجب منفصلة"] },
+      { title: "أشجار متماثلة (غافلة)", lines: ["نفس شرط التقسيم في كل مستوى", "تنبؤ سريع (بحث في جدول)", "تنظيم ضمني"] },
+    ],
+  },
+};
 
 // ── Shared 1-D regression dataset ────────────────────────────────────────────
 const N = 18;
@@ -96,99 +198,23 @@ function mse(pred: number[]) {
 
 // ── Panel components ──────────────────────────────────────────────────────────
 function AlgoInfoPanel({
-  algo, round, vt,
+  algo, round, vt, labels,
 }: {
   algo: AlgoKey;
   round: number;
   vt: ReturnType<typeof import("@/hooks/useVizTheme").useVizTheme>;
+  labels: typeof GBV_LABELS[keyof typeof GBV_LABELS];
 }) {
+  const locale = useLocale();
+  const localeKey = (locale as keyof typeof GBV_INFO) in GBV_INFO ? (locale as keyof typeof GBV_INFO) : "en";
+  const INFO = GBV_INFO[localeKey];
+
   const cfg = ALGOS[algo];
   const rounds = ROUNDS[algo];
   const currentMSE = mse(rounds[round].pred);
   const prevMSE    = round > 0 ? mse(rounds[round - 1].pred) : currentMSE;
   const reduction  = round > 0 ? ((prevMSE - currentMSE) / prevMSE * 100) : 0;
   const nb = vt.isDark ? "#334155" : "#e2e8f0";
-
-  const INFO: Record<AlgoKey, { title: string; lines: string[] }[]> = {
-    xgboost: [
-      {
-        title: "Newton Step (2nd order)",
-        lines: [
-          "gᵢ = ∂L/∂F   (gradient)",
-          "hᵢ = ∂²L/∂F²  (hessian)",
-          "leaf val = −Σgᵢ / (Σhᵢ + λ)",
-        ],
-      },
-      {
-        title: "Regularized gain",
-        lines: [
-          "Gain = ½[GL²/(HL+λ) + GR²/(HR+λ)",
-          "     − (GL+GR)²/(HL+HR+λ)] − γ",
-          "γ=complexity penalty · λ=L2 reg",
-        ],
-      },
-      {
-        title: "Optimizations",
-        lines: [
-          "• Column (feature) subsampling",
-          "• Row (sample) subsampling",
-          "• Histogram approximation",
-        ],
-      },
-    ],
-    lightgbm: [
-      {
-        title: "Leaf-wise (best-first) growth",
-        lines: [
-          "Pick leaf with highest gain",
-          "Split only that leaf (not all)",
-          "→ deeper, unbalanced trees",
-        ],
-      },
-      {
-        title: "GOSS — Gradient-based Sampling",
-        lines: [
-          "Keep all large-gradient samples",
-          "Randomly drop small-gradient",
-          "Compensate with weight factor",
-        ],
-      },
-      {
-        title: "EFB — Exclusive Feature Bundling",
-        lines: [
-          "Bundle mutually exclusive features",
-          "Reduces #features → faster splits",
-          "10–100× faster than XGBoost",
-        ],
-      },
-    ],
-    catboost: [
-      {
-        title: "Ordered Boosting",
-        lines: [
-          "Use permuted dataset at each step",
-          "hₜ trained on Dₜ (avoids leakage)",
-          "→ prevents target statistics leak",
-        ],
-      },
-      {
-        title: "Ordered Target Statistics",
-        lines: [
-          "TS(xᵢ) = Σy[xⱼ=xᵢ, j<i] / count",
-          "Categorical → numeric encoding",
-          "No holdout set needed",
-        ],
-      },
-      {
-        title: "Symmetric (Oblivious) Trees",
-        lines: [
-          "Same split condition at each level",
-          "Fast prediction (table lookup)",
-          "Implicit regularization",
-        ],
-      },
-    ],
-  };
 
   const panel = round === 0
     ? INFO[algo][0]
@@ -216,12 +242,12 @@ function AlgoInfoPanel({
       {round > 0 && (
         <div className="px-3 py-2 rounded-xl text-xs" style={{ backgroundColor: nb }}>
           <div className="font-semibold mb-1" style={{ color: cfg.color }}>
-            Round {round} tree leaves:
+            {labels.roundLeaves(round)}
           </div>
-          <div className="font-mono grid grid-cols-3 gap-1" style={{ color: "var(--text-secondary)" }}>
+          <div className="font-mono grid grid-cols-2 gap-1" style={{ color: "var(--text-secondary)" }}>
             {rounds[round].tree.slice(0, 6).map((leaf, i) => (
-              <span key={i} className="px-1 rounded" style={{ backgroundColor: `${cfg.color}15` }}>
-                [{leaf.lo.toFixed(1)},{leaf.hi.toFixed(1)}]:{leaf.val > 0 ? "+" : ""}{leaf.val.toFixed(2)}
+              <span key={i} className="px-1 py-0.5 rounded text-[9px] truncate block" style={{ backgroundColor: `${cfg.color}15` }}>
+                [{leaf.lo.toFixed(2)},{leaf.hi.toFixed(2)}]:{leaf.val > 0 ? "+" : ""}{leaf.val.toFixed(2)}
               </span>
             ))}
           </div>
@@ -253,6 +279,7 @@ export default function GradientBoostingVariantsViz({
   const [algo, setAlgo]   = useState<AlgoKey>("xgboost");
   const [round, setRound] = useState(0);
   const vt = useVizTheme();
+  const L = useVizLocale(GBV_LABELS);
 
   const cfg    = ALGOS[algo];
   const rounds = ROUNDS[algo];
@@ -299,10 +326,10 @@ export default function GradientBoostingVariantsViz({
               border: `1px solid ${round > 0 ? color + "50" : "var(--border)"}`,
               opacity: round === 0 ? 0.5 : 1,
             }}>
-            ← Back
+            {L.backBtn}
           </button>
           <span className="text-xs font-mono px-2" style={{ color }}>
-            Round {round}/{MAX_ROUNDS}
+            {L.roundCounter(round, MAX_ROUNDS)}
           </span>
           <button disabled={round >= MAX_ROUNDS} onClick={() => setRound(r => Math.min(MAX_ROUNDS, r + 1))}
             className="px-2.5 py-1 rounded-lg text-xs font-semibold transition-all"
@@ -312,7 +339,7 @@ export default function GradientBoostingVariantsViz({
               border: `1px solid ${round < MAX_ROUNDS ? color + "50" : "var(--border)"}`,
               opacity: round >= MAX_ROUNDS ? 0.5 : 1,
             }}>
-            Forward →
+            {L.forwardBtn}
           </button>
         </div>
       </div>
@@ -339,7 +366,7 @@ export default function GradientBoostingVariantsViz({
             {/* True sine curve (ghost) */}
             <path d={pathD(SINE_PTS)} fill="none" stroke="#e94560"
               strokeWidth={1.5} strokeDasharray="7,4" opacity={0.6} />
-            <text x={PL + PW - 4} y={py(0.82)} textAnchor="end" fontSize={8} fill="#e94560">true fn</text>
+            <text x={PL + PW - 4} y={py(0.82)} textAnchor="end" fontSize={8} fill="#e94560">{L.trueFn}</text>
 
             {/* Residuals (before round) */}
             {round > 0 && DATA.map((d, i) => {
@@ -394,7 +421,7 @@ export default function GradientBoostingVariantsViz({
                   <rect x={SX - 2} y={SY - 2} width={SW + 4} height={SH + 4} rx={4}
                     fill={vt.isDark ? "rgba(0,0,0,0.3)" : "rgba(255,255,255,0.7)"} />
                   <text x={SX + SW/2} y={SY - 5} textAnchor="middle" fontSize={7} fill={vt.textMuted}>
-                    MSE per round
+                    {L.msePerRound}
                   </text>
                   {lossHistory.map((v, i) => {
                     const bx = SX + (i / MAX_ROUNDS) * SW;
@@ -410,9 +437,7 @@ export default function GradientBoostingVariantsViz({
 
             {/* Labels */}
             <text x={PL + PW / 2} y={VH - 4} textAnchor="middle" fontSize={8} fill={vt.textMuted}>
-              {round === 0
-                ? `${cfg.name}: initial prediction (flat zero)`
-                : `${cfg.name}: after ${round} boosting round${round > 1 ? "s" : ""}  (η=${cfg.lr})`}
+              {round === 0 ? L.initialPred(cfg.name) : L.afterRounds(cfg.name, round, cfg.lr)}
             </text>
           </svg>
         </div>
@@ -421,9 +446,9 @@ export default function GradientBoostingVariantsViz({
         <div className="w-full md:w-64 p-3 border-t md:border-t-0 md:border-l"
           style={{ borderColor: "var(--border)" }}>
           <div className="text-xs font-bold mb-2" style={{ color }}>
-            {cfg.name} Details
+            {L.detailsHeader(cfg.name)}
           </div>
-          <AlgoInfoPanel algo={algo} round={round} vt={vt} />
+          <AlgoInfoPanel algo={algo} round={round} vt={vt} labels={L} />
         </div>
       </div>
 
@@ -431,7 +456,7 @@ export default function GradientBoostingVariantsViz({
       <div className="flex items-center justify-center gap-1.5 py-2 border-t"
         style={{ borderColor: "var(--border)" }}>
         {Array.from({ length: MAX_ROUNDS + 1 }, (_, i) => (
-          <button key={i} onClick={() => setRound(i)} title={`Round ${i}`}
+          <button key={i} onClick={() => setRound(i)} title={L.roundCounter(i, MAX_ROUNDS)}
             className="rounded-full transition-all"
             style={{
               width: i === round ? 20 : 8, height: 8,
@@ -450,7 +475,7 @@ export default function GradientBoostingVariantsViz({
               <div className="text-sm font-bold font-mono" style={{ color: ALGOS[a].color }}>
                 {finalMSE.toFixed(4)}
               </div>
-              <div className="text-xs" style={{ color: "var(--text-muted)" }}>final MSE</div>
+              <div className="text-xs" style={{ color: "var(--text-muted)" }}>{L.finalMse}</div>
             </div>
           );
         })}

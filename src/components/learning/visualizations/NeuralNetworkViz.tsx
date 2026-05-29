@@ -4,9 +4,34 @@ import { useState, useCallback } from "react";
 import { motion } from "framer-motion";
 import { Play } from "lucide-react";
 import { useVizTheme } from "@/hooks/useVizTheme";
+import { useVizLocale } from "@/hooks/useVizLocale";
+import { VizCard, VizHeader, StatGrid, TabToggle } from "./shared";
+
+const NN_LABELS = {
+  en: {
+    title: "Neural Network — Forward Pass",
+    subtitle: "hover neurons to inspect",
+    forwardBtn: "Forward Pass",
+    activationLabel: "Activation:",
+    layerNames: ["Input", "Hidden 1", "Hidden 2", "Hidden 3", "Output"],
+  },
+  fr: {
+    title: "Réseau de Neurones — Propagation Avant",
+    subtitle: "survoler les neurones pour inspecter",
+    forwardBtn: "Propagation Avant",
+    activationLabel: "Activation :",
+    layerNames: ["Entrée", "Caché 1", "Caché 2", "Caché 3", "Sortie"],
+  },
+  ar: {
+    title: "الشبكة العصبية — الانتشار الأمامي",
+    subtitle: "مرّر على الخلايا العصبية للفحص",
+    forwardBtn: "انتشار أمامي",
+    activationLabel: "التنشيط:",
+    layerNames: ["إدخال", "مخفي 1", "مخفي 2", "مخفي 3", "إخراج"],
+  },
+} as const;
 
 const LAYERS = [3, 5, 4, 3, 1];
-const LAYER_NAMES = ["Input", "Hidden 1", "Hidden 2", "Hidden 3", "Output"];
 const W = 520, H = 320;
 
 function sigmoid(z: number) { return 1 / (1 + Math.exp(-z)); }
@@ -77,6 +102,7 @@ export default function NeuralNetworkViz({ accentColor = "#ec4899" }: { accentCo
   const [isPlaying, setIsPlaying] = useState(false);
   const [hoveredNeuron, setHoveredNeuron] = useState<string | null>(null);
   const vt = useVizTheme();
+  const L = useVizLocale(NN_LABELS);
 
   const runForward = useCallback(() => {
     if (isPlaying) return;
@@ -105,17 +131,14 @@ export default function NeuralNetworkViz({ accentColor = "#ec4899" }: { accentCo
   };
 
   return (
-    <div
-      className="rounded-2xl overflow-hidden border"
-      style={{ backgroundColor: "var(--bg-card)", borderColor: "var(--border)" }}
-    >
+    <VizCard>
       <div className="flex items-center justify-between px-5 py-3 border-b" style={{ borderColor: "var(--border)" }}>
         <div>
           <span className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
-            Neural Network — Forward Pass
+            {L.title}
           </span>
           <span className="text-xs ml-2" style={{ color: "var(--text-muted)" }}>
-            3 → 5 → 4 → 3 → 1 · hover neurons to inspect
+            3 → 5 → 4 → 3 → 1 · {L.subtitle}
           </span>
         </div>
         <button
@@ -130,7 +153,7 @@ export default function NeuralNetworkViz({ accentColor = "#ec4899" }: { accentCo
           }}
         >
           <Play size={11} />
-          Forward Pass
+          {L.forwardBtn}
         </button>
       </div>
 
@@ -156,7 +179,7 @@ export default function NeuralNetworkViz({ accentColor = "#ec4899" }: { accentCo
         })}
 
         {/* Layer labels */}
-        {LAYER_NAMES.map((name, li) => {
+        {L.layerNames.map((name, li) => {
           const n = neurons.find(n => n.layer === li);
           if (!n) return null;
           return (
@@ -220,7 +243,7 @@ export default function NeuralNetworkViz({ accentColor = "#ec4899" }: { accentCo
       </svg>
 
       <div className="px-5 py-3 flex items-center gap-4 border-t" style={{ borderColor: "var(--border)" }}>
-        <span className="text-xs" style={{ color: "var(--text-muted)" }}>Activation:</span>
+        <span className="text-xs" style={{ color: "var(--text-muted)" }}>{L.activationLabel}</span>
         <div className="flex items-center gap-1">
           {[0.1, 0.3, 0.5, 0.7, 0.9].map(v => (
             <div key={v} className="w-6 h-4 rounded"
@@ -229,6 +252,6 @@ export default function NeuralNetworkViz({ accentColor = "#ec4899" }: { accentCo
           <span className="text-xs ml-1" style={{ color: "var(--text-muted)" }}>0 → 1</span>
         </div>
       </div>
-    </div>
+    </VizCard>
   );
 }

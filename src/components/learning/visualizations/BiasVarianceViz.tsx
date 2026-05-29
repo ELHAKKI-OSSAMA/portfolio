@@ -3,6 +3,155 @@
 import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { useVizTheme } from "@/hooks/useVizTheme";
+import { useVizLocale } from "@/hooks/useVizLocale";
+import { VizCard, VizHeader, StatGrid, TabToggle } from "./shared";
+
+const BV_LABELS = {
+  en: {
+    title: "Bias–Variance Tradeoff",
+    subtitle: (d: number) =>
+      d <= 3
+        ? `degree ${d} — high bias · flat line misses sine curve`
+        : d >= 8
+        ? `degree ${d} — high variance · curves diverge across datasets`
+        : `degree ${d} — balanced · curves cluster near truth`,
+    trueFnBtn: "True fn",
+    otherDatasetsBtn: "Other datasets",
+    residualsBtn: "Residuals",
+    fittedCurveLabel: "Fitted curve — solid = this dataset · faint = 5 other bootstrap datasets",
+    highBiasAnnotation: "← HIGH BIAS: model can't capture the curved pattern →",
+    highVarAnnotation: "spread = HIGH VARIANCE",
+    trainLegend: "Train",
+    testLegend: "Test",
+    trueFnLegend: "True fn",
+    otherDatasetsLegend: "5 other datasets",
+    trainErrLegend: "Train err",
+    testErrLegend: "Test err",
+    panelATitle: "Train MSE vs Test MSE",
+    panelBLeft: "Train — Bias² / Var",
+    panelBRight: "Test — Bias² / Var",
+    bias2Legend: "Bias²",
+    varianceLegend: "Variance",
+    underfitZone: "Underfit",
+    goodZone: "Good",
+    overfitZone: "Overfit",
+    diagUnderfitting: "Underfitting (High Bias)",
+    diagUnderfittingHint: (cur: string, min: string) =>
+      `test MSE ${cur} > min ${min} — model too rigid`,
+    diagOptimal: (d: number) => `Optimal — degree ${d}`,
+    diagOptimalHint: (mse: string) => `min test MSE ${mse} — best generalisation`,
+    diagGoodBalance: "Good Balance",
+    diagGoodBalanceHint: (mse: string) => `slight overfit · test MSE ${mse}`,
+    diagOverfitting: "Overfitting (High Variance)",
+    diagOverfittingHint: (mse: string) =>
+      `test MSE ${mse} rising — variance hurts generalisation`,
+    degreeLabel: "Degree:",
+    footerFormula: (optDeg: number) =>
+      `E[(ŷ−y)²] = Bias²[ŷ] + Var[ŷ] + σ²  ·  ★ = degree ${optDeg} minimises test MSE`,
+    statDegree: "Degree",
+    statTrainBias2: "Train Bias²",
+    statTrainVar: "Train Var",
+    statTestBias2: "Test Bias²",
+    statTestVar: "Test Var",
+    statTestMSE: "Test MSE",
+  },
+  fr: {
+    title: "Compromis Biais–Variance",
+    subtitle: (d: number) =>
+      d <= 3
+        ? `degré ${d} — biais élevé · la droite rate la courbe sinusoïdale`
+        : d >= 8
+        ? `degré ${d} — variance élevée · les courbes divergent selon les jeux`
+        : `degré ${d} — équilibré · les courbes se regroupent près de la vérité`,
+    trueFnBtn: "Vrai fn",
+    otherDatasetsBtn: "Autres jeux",
+    residualsBtn: "Résidus",
+    fittedCurveLabel: "Courbe ajustée — pleine = ce jeu · estompé = 5 autres jeux bootstrap",
+    highBiasAnnotation: "← BIAIS ÉLEVÉ : le modèle ne peut pas capturer la courbe →",
+    highVarAnnotation: "dispersion = VARIANCE ÉLEVÉE",
+    trainLegend: "Entraîn.",
+    testLegend: "Test",
+    trueFnLegend: "Vrai fn",
+    otherDatasetsLegend: "5 autres jeux",
+    trainErrLegend: "Err. entraîn.",
+    testErrLegend: "Err. test",
+    panelATitle: "ECM entraîn. vs ECM test",
+    panelBLeft: "Entraîn. — Biais² / Var",
+    panelBRight: "Test — Biais² / Var",
+    bias2Legend: "Biais²",
+    varianceLegend: "Variance",
+    underfitZone: "Sous-ajust.",
+    goodZone: "Équilibré",
+    overfitZone: "Sur-ajust.",
+    diagUnderfitting: "Sous-ajustement (Biais Élevé)",
+    diagUnderfittingHint: (cur: string, min: string) =>
+      `ECM test ${cur} > min ${min} — modèle trop rigide`,
+    diagOptimal: (d: number) => `Optimal — degré ${d}`,
+    diagOptimalHint: (mse: string) => `ECM test min ${mse} — meilleure généralisation`,
+    diagGoodBalance: "Bon Équilibre",
+    diagGoodBalanceHint: (mse: string) => `léger sur-ajustement · ECM test ${mse}`,
+    diagOverfitting: "Sur-ajustement (Variance Élevée)",
+    diagOverfittingHint: (mse: string) =>
+      `ECM test ${mse} en hausse — la variance nuit à la généralisation`,
+    degreeLabel: "Degré :",
+    footerFormula: (optDeg: number) =>
+      `E[(ŷ−y)²] = Biais²[ŷ] + Var[ŷ] + σ²  ·  ★ = degré ${optDeg} minimise l'ECM test`,
+    statDegree: "Degré",
+    statTrainBias2: "Biais² Entraîn.",
+    statTrainVar: "Var Entraîn.",
+    statTestBias2: "Biais² Test",
+    statTestVar: "Var Test",
+    statTestMSE: "ECM Test",
+  },
+  ar: {
+    title: "مقايضة التحيز–التباين",
+    subtitle: (d: number) =>
+      d <= 3
+        ? `درجة ${d} — تحيز عالٍ · الخط المستقيم يفشل في التقاط المنحنى`
+        : d >= 8
+        ? `درجة ${d} — تباين عالٍ · المنحنيات تتباعد عبر مجموعات البيانات`
+        : `درجة ${d} — متوازن · المنحنيات تتجمع قرب الحقيقة`,
+    trueFnBtn: "الدالة الحقيقية",
+    otherDatasetsBtn: "مجموعات أخرى",
+    residualsBtn: "البواقي",
+    fittedCurveLabel: "المنحنى المُضبَّط — مصمت = هذا الجهاز · خافت = 5 مجموعات bootstrap أخرى",
+    highBiasAnnotation: "← تحيز عالٍ: النموذج لا يستطيع التقاط النمط المنحني →",
+    highVarAnnotation: "انتشار = تباين عالٍ",
+    trainLegend: "تدريب",
+    testLegend: "اختبار",
+    trueFnLegend: "الدالة الحقيقية",
+    otherDatasetsLegend: "5 مجموعات أخرى",
+    trainErrLegend: "خطأ التدريب",
+    testErrLegend: "خطأ الاختبار",
+    panelATitle: "MSE تدريب vs MSE اختبار",
+    panelBLeft: "تدريب — تحيز² / تباين",
+    panelBRight: "اختبار — تحيز² / تباين",
+    bias2Legend: "تحيز²",
+    varianceLegend: "تباين",
+    underfitZone: "تقصير",
+    goodZone: "توازن",
+    overfitZone: "إفراط",
+    diagUnderfitting: "تقصير في الملاءمة (تحيز عالٍ)",
+    diagUnderfittingHint: (cur: string, min: string) =>
+      `MSE اختبار ${cur} > الأدنى ${min} — النموذج صلب جداً`,
+    diagOptimal: (d: number) => `مثالي — درجة ${d}`,
+    diagOptimalHint: (mse: string) => `أدنى MSE اختبار ${mse} — أفضل تعميم`,
+    diagGoodBalance: "توازن جيد",
+    diagGoodBalanceHint: (mse: string) => `إفراط طفيف · MSE اختبار ${mse}`,
+    diagOverfitting: "إفراط في الملاءمة (تباين عالٍ)",
+    diagOverfittingHint: (mse: string) =>
+      `MSE اختبار ${mse} في ارتفاع — التباين يضر بالتعميم`,
+    degreeLabel: "الدرجة:",
+    footerFormula: (optDeg: number) =>
+      `E[(ŷ−y)²] = Bias²[ŷ] + Var[ŷ] + σ²  ·  ★ = درجة ${optDeg} تُقلل MSE الاختبار`,
+    statDegree: "الدرجة",
+    statTrainBias2: "تحيز² التدريب",
+    statTrainVar: "تباين التدريب",
+    statTestBias2: "تحيز² الاختبار",
+    statTestVar: "تباين الاختبار",
+    statTestMSE: "MSE الاختبار",
+  },
+} as const;
 
 // ── Dimensions ────────────────────────────────────────────────────────────────
 const W = 680, PAD = 56;
@@ -207,6 +356,7 @@ export default function BiasVarianceViz({ accentColor = "#10b981" }: { accentCol
   const [showGhost, setShowGhost]     = useState(true);
   const [showResiduals, setShowResiduals] = useState(true);
   const vt = useVizTheme();
+  const L = useVizLocale(BV_LABELS);
 
   const mainFn = useMemo(() => polyFit(TRAIN, degree), [degree]);
   const ghostFns = GHOST_FNS[degree - 1];
@@ -241,16 +391,16 @@ export default function BiasVarianceViz({ accentColor = "#10b981" }: { accentCol
   // Diagnosis from actual test-MSE curve — OPT_DEG is the real minimum
   const diagnosis =
     degree < OPT_DEG
-      ? { label: "Underfitting (High Bias)", color: "#ef4444",
-          hint: `test MSE ${curErr.testMSE.toFixed(3)} > min ${optTestMSE.toFixed(3)} — model too rigid` }
+      ? { label: L.diagUnderfitting, color: "#ef4444",
+          hint: L.diagUnderfittingHint(curErr.testMSE.toFixed(3), optTestMSE.toFixed(3)) }
     : degree === OPT_DEG
-      ? { label: `Optimal — degree ${OPT_DEG}`, color: accentColor,
-          hint: `min test MSE ${optTestMSE.toFixed(3)} — best generalisation` }
+      ? { label: L.diagOptimal(OPT_DEG), color: accentColor,
+          hint: L.diagOptimalHint(optTestMSE.toFixed(3)) }
     : curErr.testMSE < optTestMSE * 1.25
-      ? { label: "Good Balance", color: accentColor,
-          hint: `slight overfit · test MSE ${curErr.testMSE.toFixed(3)}` }
-      : { label: "Overfitting (High Variance)", color: "#f59e0b",
-          hint: `test MSE ${curErr.testMSE.toFixed(3)} rising — variance hurts generalisation` };
+      ? { label: L.diagGoodBalance, color: accentColor,
+          hint: L.diagGoodBalanceHint(curErr.testMSE.toFixed(3)) }
+      : { label: L.diagOverfitting, color: "#f59e0b",
+          hint: L.diagOverfittingHint(curErr.testMSE.toFixed(3)) };
 
   return (
     <div className="rounded-2xl overflow-hidden border"
@@ -261,14 +411,10 @@ export default function BiasVarianceViz({ accentColor = "#10b981" }: { accentCol
         style={{ borderColor: "var(--border)" }}>
         <div>
           <span className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
-            Bias–Variance Tradeoff
+            {L.title}
           </span>
           <span className="text-xs ml-2" style={{ color: diagnosis.color }}>
-            {degree <= 3
-              ? `degree ${degree} — high bias · flat line misses sine curve`
-              : degree >= 8
-              ? `degree ${degree} — high variance · curves diverge across datasets`
-              : `degree ${degree} — balanced · curves cluster near truth`}
+            {L.subtitle(degree)}
           </span>
         </div>
         <div className="flex gap-1.5">
@@ -279,7 +425,7 @@ export default function BiasVarianceViz({ accentColor = "#10b981" }: { accentCol
               color: showTrue ? "#e94560" : "var(--text-muted)",
               border: `1px solid ${showTrue ? "#e9456040" : "var(--border)"}`,
             }}>
-            True fn
+            {L.trueFnBtn}
           </button>
           <button onClick={() => setShowGhost(s => !s)}
             className="px-2.5 py-1 rounded-lg text-xs font-medium transition-all"
@@ -288,7 +434,7 @@ export default function BiasVarianceViz({ accentColor = "#10b981" }: { accentCol
               color: showGhost ? "#94a3b8" : "var(--text-muted)",
               border: `1px solid ${showGhost ? "#94a3b840" : "var(--border)"}`,
             }}>
-            Other datasets
+            {L.otherDatasetsBtn}
           </button>
           <button onClick={() => setShowResiduals(s => !s)}
             className="px-2.5 py-1 rounded-lg text-xs font-medium transition-all"
@@ -297,7 +443,7 @@ export default function BiasVarianceViz({ accentColor = "#10b981" }: { accentCol
               color: showResiduals ? "#3b82f6" : "var(--text-muted)",
               border: `1px solid ${showResiduals ? "#3b82f640" : "var(--border)"}`,
             }}>
-            Residuals
+            {L.residualsBtn}
           </button>
         </div>
       </div>
@@ -306,7 +452,7 @@ export default function BiasVarianceViz({ accentColor = "#10b981" }: { accentCol
 
         {/* ══ TOP PANEL: fitted curves ══ */}
         <text x={PAD} y={13} fontSize={12} fill={vt.textMuted}>
-          Fitted curve — solid = this dataset · faint = 5 other bootstrap datasets
+          {L.fittedCurveLabel}
         </text>
 
         {/* Grid */}
@@ -365,7 +511,7 @@ export default function BiasVarianceViz({ accentColor = "#10b981" }: { accentCol
             <rect x={PAD} y={toSY(0.8)} width={W - 2 * PAD} height={toSY(-0.8) - toSY(0.8)}
               fill="#ef444406" stroke="#ef444420" strokeWidth={1} strokeDasharray="4,3" />
             <text x={toSX(0.5)} y={toSY(1.2)} textAnchor="middle" fontSize={12} fill="#ef4444">
-              ← HIGH BIAS: model can't capture the curved pattern →
+              {L.highBiasAnnotation}
             </text>
           </g>
         )}
@@ -373,7 +519,7 @@ export default function BiasVarianceViz({ accentColor = "#10b981" }: { accentCol
         {/* High-variance annotation */}
         {degree >= 9 && showGhost && (
           <text x={toSX(0.85)} y={toSY(1.8)} textAnchor="end" fontSize={12} fill="#f59e0b">
-            spread = HIGH VARIANCE
+            {L.highVarAnnotation}
           </text>
         )}
 
@@ -393,31 +539,31 @@ export default function BiasVarianceViz({ accentColor = "#10b981" }: { accentCol
 
         {/* Legend */}
         <circle cx={PAD + 6}   cy={H_TOP - 24} r={3.5} fill="#3b82f6" />
-        <text   x={PAD + 14}  y={H_TOP - 20}  fontSize={11.5} fill={vt.textMuted}>Train</text>
+        <text   x={PAD + 14}  y={H_TOP - 20}  fontSize={11.5} fill={vt.textMuted}>{L.trainLegend}</text>
         <circle cx={PAD + 50}  cy={H_TOP - 24} r={3.5} fill="none" stroke="#ef4444" strokeWidth={1.8} />
-        <text   x={PAD + 58}  y={H_TOP - 20}  fontSize={11.5} fill={vt.textMuted}>Test</text>
+        <text   x={PAD + 58}  y={H_TOP - 20}  fontSize={11.5} fill={vt.textMuted}>{L.testLegend}</text>
         {showTrue && (
           <>
             <line x1={PAD + 94} y1={H_TOP - 24} x2={PAD + 112} y2={H_TOP - 24}
               stroke="#e94560" strokeWidth={2} strokeDasharray="6,3" />
-            <text x={PAD + 116} y={H_TOP - 20} fontSize={11.5} fill="#e94560">True fn</text>
+            <text x={PAD + 116} y={H_TOP - 20} fontSize={11.5} fill="#e94560">{L.trueFnLegend}</text>
           </>
         )}
         {showGhost && (
           <>
             <line x1={PAD + 158} y1={H_TOP - 24} x2={PAD + 176} y2={H_TOP - 24}
               stroke="#9ca3af" strokeWidth={1.5} />
-            <text x={PAD + 180} y={H_TOP - 20} fontSize={11.5} fill={vt.textMuted}>5 other datasets</text>
+            <text x={PAD + 180} y={H_TOP - 20} fontSize={11.5} fill={vt.textMuted}>{L.otherDatasetsLegend}</text>
           </>
         )}
         {showResiduals && (
           <>
             <line x1={PAD + 280} y1={H_TOP - 26} x2={PAD + 270} y2={H_TOP - 18}
               stroke="#3b82f6" strokeWidth={1.5} />
-            <text x={PAD + 286} y={H_TOP - 20} fontSize={11.5} fill="#3b82f6">Train err</text>
+            <text x={PAD + 286} y={H_TOP - 20} fontSize={11.5} fill="#3b82f6">{L.trainErrLegend}</text>
             <line x1={PAD + 346} y1={H_TOP - 26} x2={PAD + 346} y2={H_TOP - 18}
               stroke="#ef4444" strokeWidth={1.5} />
-            <text x={PAD + 352} y={H_TOP - 20} fontSize={11.5} fill="#ef4444">Test err</text>
+            <text x={PAD + 352} y={H_TOP - 20} fontSize={11.5} fill="#ef4444">{L.testErrLegend}</text>
           </>
         )}
 
@@ -433,32 +579,35 @@ export default function BiasVarianceViz({ accentColor = "#10b981" }: { accentCol
 
         {/* ══ PANEL A: Train MSE vs Test MSE ══ */}
         <text x={PAD} y={MSE_Y0 + 22} fontSize={11.5} fill={vt.textMuted} fontWeight="bold">
-          Train MSE vs Test MSE
+          {L.panelATitle}
         </text>
         {/* Panel A legend */}
         <line x1={W - 166} y1={MSE_Y0 + 18} x2={W - 152} y2={MSE_Y0 + 18}
           stroke="#3b82f6" strokeWidth={1.5} strokeDasharray="5,3" />
         <circle cx={W - 159} cy={MSE_Y0 + 18} r={2} fill="#3b82f6" />
-        <text x={W - 148} y={MSE_Y0 + 22} fontSize={11.5} fill="#3b82f6">Train</text>
+        <text x={W - 148} y={MSE_Y0 + 22} fontSize={11.5} fill="#3b82f6">{L.trainLegend}</text>
         <line x1={W - 104} y1={MSE_Y0 + 18} x2={W - 90} y2={MSE_Y0 + 18}
           stroke="#ef4444" strokeWidth={1.8} />
         <circle cx={W - 97} cy={MSE_Y0 + 18} r={2} fill="#ef4444" />
-        <text x={W - 86} y={MSE_Y0 + 22} fontSize={11.5} fill="#ef4444">Test</text>
+        <text x={W - 86} y={MSE_Y0 + 22} fontSize={11.5} fill="#ef4444">{L.testLegend}</text>
 
         {/* ── Panel A: zone fills — Underfit / Good Balance / Overfit ── */}
         {/* Underfit zone */}
         <rect x={mseX(1) - 4} y={MSE_Y0 + 36}
           width={mseX(OPT_DEG) - mseX(1) + 4} height={MSE_H}
           fill="#ef4444" opacity={0.05} />
-        {/* Good Balance zone (OPT_DEG … GOOD_DEG) */}
-        {GOOD_DEG > OPT_DEG && (
-          <rect x={mseX(OPT_DEG)} y={MSE_Y0 + 36}
-            width={mseX(GOOD_DEG) - mseX(OPT_DEG)} height={MSE_H}
-            fill={accentColor} opacity={0.07} />
-        )}
+        {/* Good Balance zone — always show at least 1-degree wide around OPT_DEG */}
+        {(() => {
+          const gEnd = GOOD_DEG > OPT_DEG ? mseX(GOOD_DEG) : mseX(Math.min(OPT_DEG + 1, MAX_DEGREE));
+          return (
+            <rect x={mseX(OPT_DEG)} y={MSE_Y0 + 36}
+              width={gEnd - mseX(OPT_DEG)} height={MSE_H}
+              fill={accentColor} opacity={0.10} />
+          );
+        })()}
         {/* Overfit zone */}
-        <rect x={mseX(GOOD_DEG)} y={MSE_Y0 + 36}
-          width={mseX(MAX_DEGREE) - mseX(GOOD_DEG) + 4} height={MSE_H}
+        <rect x={GOOD_DEG > OPT_DEG ? mseX(GOOD_DEG) : mseX(Math.min(OPT_DEG + 1, MAX_DEGREE))} y={MSE_Y0 + 36}
+          width={mseX(MAX_DEGREE) - (GOOD_DEG > OPT_DEG ? mseX(GOOD_DEG) : mseX(Math.min(OPT_DEG + 1, MAX_DEGREE))) + 4} height={MSE_H}
           fill="#f59e0b" opacity={0.05} />
         {/* OPT_DEG marker (green dashed) */}
         <line x1={mseX(OPT_DEG)} y1={MSE_Y0 + 36} x2={mseX(OPT_DEG)} y2={MSE_BOT}
@@ -516,15 +665,15 @@ export default function BiasVarianceViz({ accentColor = "#10b981" }: { accentCol
         {/* ── Panel A: zone labels ── */}
         {OPT_DEG > 1 && (
           <text x={mseX(Math.ceil(OPT_DEG / 2))} y={MSE_Y0 + 52}
-            textAnchor="middle" fontSize={10.5} fill="#ef4444" opacity={0.8}>Underfit</text>
+            textAnchor="middle" fontSize={10.5} fill="#ef4444" opacity={0.8}>{L.underfitZone}</text>
         )}
         {GOOD_DEG > OPT_DEG && (
           <text x={mseX(Math.round((OPT_DEG + GOOD_DEG) / 2))} y={MSE_Y0 + 52}
-            textAnchor="middle" fontSize={10.5} fill={accentColor} opacity={0.85}>Good</text>
+            textAnchor="middle" fontSize={10.5} fill={accentColor} opacity={0.85}>{L.goodZone}</text>
         )}
         {GOOD_DEG < MAX_DEGREE && (
           <text x={mseX(Math.round((GOOD_DEG + MAX_DEGREE) / 2))} y={MSE_Y0 + 52}
-            textAnchor="middle" fontSize={10.5} fill="#f59e0b" opacity={0.8}>Overfit</text>
+            textAnchor="middle" fontSize={10.5} fill="#f59e0b" opacity={0.8}>{L.overfitZone}</text>
         )}
         {/* ── Panel A: axes ── */}
         <line x1={PAD} y1={MSE_BOT} x2={W - PAD} y2={MSE_BOT} stroke={vt.axis} strokeWidth={1.5} />
@@ -536,39 +685,63 @@ export default function BiasVarianceViz({ accentColor = "#10b981" }: { accentCol
         {/* ══ PANEL B: Bias²/Variance — left=Train, right=Test ══ */}
         {/* Left label */}
         <text x={PAD} y={BV_Y0 + 26} fontSize={11.5} fill={vt.textMuted} fontWeight="bold">
-          Train — Bias² / Var
+          {L.panelBLeft}
         </text>
         {/* Shared legend (center) */}
         <rect x={HALF_W - 52} y={BV_Y0 + 16} width={10} height={10} rx={2} fill="#6c63ff" />
-        <text x={HALF_W - 38} y={BV_Y0 + 26} fontSize={12} fill="#6c63ff">Bias²</text>
+        <text x={HALF_W - 38} y={BV_Y0 + 26} fontSize={12} fill="#6c63ff">{L.bias2Legend}</text>
         <rect x={HALF_W + 2} y={BV_Y0 + 16} width={10} height={10} rx={2} fill="#f59e0b" />
-        <text x={HALF_W + 16} y={BV_Y0 + 26} fontSize={12} fill="#f59e0b">Variance</text>
+        <text x={HALF_W + 16} y={BV_Y0 + 26} fontSize={12} fill="#f59e0b">{L.varianceLegend}</text>
         {/* Right label */}
         <text x={W - PAD} y={BV_Y0 + 26} textAnchor="end" fontSize={11.5} fill={vt.textMuted} fontWeight="bold">
-          Test — Bias² / Var
+          {L.panelBRight}
         </text>
         {/* Center split line */}
         <line x1={HALF_W} y1={BV_Y0 + 32} x2={HALF_W} y2={BV_BOT + 10}
           stroke={vt.grid} strokeWidth={1} strokeDasharray="3,3" />
 
-        {/* Zone fills — left (CROSS_DEG boundary) */}
+        {/* Zone fills — left Train panel (CROSS_DEG boundary) */}
         {CROSS_DEG > 1 && (
           <rect x={bvXT(1) - BAR_W_BV} y={BV_Y0 + 36}
             width={bvXT(CROSS_DEG) - bvXT(1) + BAR_W_BV * 0.5} height={BV_H + 4}
             fill="#ef4444" opacity={0.05} />
         )}
+        {/* Green balance zone — Train: from OPT_DEG to CROSS_DEG (or ±1 if equal) */}
+        {(() => {
+          const balStart = bvXT(OPT_DEG) - BAR_W_BV * 0.5;
+          const balEnd   = CROSS_DEG > OPT_DEG
+            ? bvXT(CROSS_DEG) + BAR_W_BV * 0.5
+            : bvXT(Math.min(OPT_DEG + 1, MAX_DEGREE)) + BAR_W_BV * 0.5;
+          return (
+            <rect x={balStart} y={BV_Y0 + 36}
+              width={balEnd - balStart} height={BV_H + 4}
+              fill={accentColor} opacity={0.09} />
+          );
+        })()}
         <rect x={bvXT(CROSS_DEG) + BAR_W_BV * 0.5} y={BV_Y0 + 36}
           width={bvXT(MAX_DEGREE) - bvXT(CROSS_DEG) + BAR_W_BV} height={BV_H + 4}
           fill="#f59e0b" opacity={0.05} />
         <line x1={bvXT(OPT_DEG)} y1={BV_Y0 + 36} x2={bvXT(OPT_DEG)} y2={BV_BOT}
           stroke={accentColor} strokeWidth={1.5} strokeDasharray="4,3" opacity={0.65} />
 
-        {/* Zone fills — right (CROSS_DEG boundary) */}
+        {/* Zone fills — right Test panel (CROSS_DEG boundary) */}
         {CROSS_DEG > 1 && (
           <rect x={bvXE(1) - BAR_W_BV} y={BV_Y0 + 36}
             width={bvXE(CROSS_DEG) - bvXE(1) + BAR_W_BV * 0.5} height={BV_H + 4}
             fill="#ef4444" opacity={0.05} />
         )}
+        {/* Green balance zone — Test: same bounds as Train */}
+        {(() => {
+          const balStart = bvXE(OPT_DEG) - BAR_W_BV * 0.5;
+          const balEnd   = CROSS_DEG > OPT_DEG
+            ? bvXE(CROSS_DEG) + BAR_W_BV * 0.5
+            : bvXE(Math.min(OPT_DEG + 1, MAX_DEGREE)) + BAR_W_BV * 0.5;
+          return (
+            <rect x={balStart} y={BV_Y0 + 36}
+              width={balEnd - balStart} height={BV_H + 4}
+              fill={accentColor} opacity={0.09} />
+          );
+        })()}
         <rect x={bvXE(CROSS_DEG) + BAR_W_BV * 0.5} y={BV_Y0 + 36}
           width={bvXE(MAX_DEGREE) - bvXE(CROSS_DEG) + BAR_W_BV} height={BV_H + 4}
           fill="#f59e0b" opacity={0.05} />
@@ -659,7 +832,7 @@ export default function BiasVarianceViz({ accentColor = "#10b981" }: { accentCol
 
         {/* Footer formula */}
         <text x={W / 2} y={H - 4} textAnchor="middle" fontSize={12} fill={vt.textMuted}>
-          E[(ŷ−y)²] = Bias²[ŷ] + Var[ŷ] + σ²  ·  ★ = degree {OPT_DEG} minimises test MSE
+          {L.footerFormula(OPT_DEG)}
         </text>
 
       </svg>
@@ -668,7 +841,7 @@ export default function BiasVarianceViz({ accentColor = "#10b981" }: { accentCol
       <div className="px-5 pt-2 pb-3 border-t space-y-2" style={{ borderColor: "var(--border)" }}>
         <div className="flex items-center gap-3">
           <span className="text-xs w-24" style={{ color: "var(--text-muted)" }}>
-            Degree:{" "}
+            {L.degreeLabel}{" "}
             <span className="font-mono font-bold" style={{ color: accentColor }}>{degree}</span>
           </span>
           <input type="range" min={1} max={MAX_DEGREE} step={1} value={degree}
@@ -692,12 +865,12 @@ export default function BiasVarianceViz({ accentColor = "#10b981" }: { accentCol
       {/* ── Stats footer ── */}
       <div className="grid grid-cols-6 border-t text-center" style={{ borderColor: "var(--border)" }}>
         {[
-          { label: "Degree",      value: degree.toString(),              color: accentColor },
-          { label: "Train Bias²", value: curTr.bias2.toFixed(3),        color: "#6c63ff" },
-          { label: "Train Var",   value: curTr.variance.toFixed(3),     color: "#f59e0b" },
-          { label: "Test Bias²",  value: curTe.bias2.toFixed(3),        color: "#6c63ff" },
-          { label: "Test Var",    value: curTe.variance.toFixed(3),     color: "#f59e0b" },
-          { label: "Test MSE",    value: curErr.testMSE.toFixed(3),     color: diagnosis.color },
+          { label: L.statDegree,     value: degree.toString(),          color: accentColor },
+          { label: L.statTrainBias2, value: curTr.bias2.toFixed(3),    color: "#6c63ff" },
+          { label: L.statTrainVar,   value: curTr.variance.toFixed(3), color: "#f59e0b" },
+          { label: L.statTestBias2,  value: curTe.bias2.toFixed(3),    color: "#6c63ff" },
+          { label: L.statTestVar,    value: curTe.variance.toFixed(3), color: "#f59e0b" },
+          { label: L.statTestMSE,    value: curErr.testMSE.toFixed(3), color: diagnosis.color },
         ].map(({ label, value, color }) => (
           <div key={label} className="py-2">
             <div className="text-xs" style={{ color: "var(--text-muted)" }}>{label}</div>

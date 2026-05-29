@@ -3,6 +3,50 @@
 import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { useVizTheme } from "@/hooks/useVizTheme";
+import { useVizLocale } from "@/hooks/useVizLocale";
+import { VizCard, VizHeader, StatGrid, TabToggle } from "./shared";
+
+const SVR_LABELS = {
+  en: {
+    title: "SVR — Support Vector Regression",
+    subtitle: "ε-tube ignores points inside · only boundary points drive the fit",
+    tabSvr: "SVR",
+    tabLinear: "Linear Reg",
+    legendInside: "Inside ε-tube (ignored)",
+    legendSV: "Support vectors (drive fit)",
+    sliderEpsilonHint: "wider tube = fewer SVs",
+    sliderCHint: "high C = penalizes violations",
+    statSV: "Support Vectors",
+    statMSE: "ε-loss MSE",
+    statInside: "Inside tube",
+  },
+  fr: {
+    title: "SVR — Régression à Vecteurs de Support",
+    subtitle: "le tube ε ignore les points intérieurs · seuls les points frontières guident l'ajustement",
+    tabSvr: "SVR",
+    tabLinear: "Rég. Linéaire",
+    legendInside: "Dans le tube ε (ignoré)",
+    legendSV: "Vecteurs de support (guident l'ajust.)",
+    sliderEpsilonHint: "tube plus large = moins de VS",
+    sliderCHint: "C élevé = pénalise les violations",
+    statSV: "Vecteurs de support",
+    statMSE: "MSE ε-loss",
+    statInside: "Dans le tube",
+  },
+  ar: {
+    title: "SVR — انحدار متجهات الدعم",
+    subtitle: "الأنبوب ε يتجاهل النقاط الداخلية · نقاط الحدود فقط تحدد الملاءمة",
+    tabSvr: "SVR",
+    tabLinear: "انحدار خطي",
+    legendInside: "داخل الأنبوب ε (متجاهل)",
+    legendSV: "متجهات الدعم (تحدد الملاءمة)",
+    sliderEpsilonHint: "أنبوب أوسع = متجهات دعم أقل",
+    sliderCHint: "C مرتفع = يعاقب على الانتهاكات",
+    statSV: "متجهات الدعم",
+    statMSE: "MSE خسارة ε",
+    statInside: "داخل الأنبوب",
+  },
+} as const;
 
 const W = 520, H = 280, PAD = 40;
 
@@ -39,6 +83,7 @@ export default function SVRViz({ accentColor = "#f97316" }: { accentColor?: stri
   const [C, setC] = useState(1.0);
   const [mode, setMode] = useState<"svr" | "linear">("svr");
   const vt = useVizTheme();
+  const L = useVizLocale(SVR_LABELS);
 
   const { m, b } = useMemo(() => svrFit(DATA, C), [C]);
 
@@ -78,14 +123,14 @@ export default function SVRViz({ accentColor = "#f97316" }: { accentColor?: stri
   }, 0) / DATA.length;
 
   return (
-    <div className="rounded-2xl overflow-hidden border" style={{ backgroundColor: "var(--bg-card)", borderColor: "var(--border)" }}>
+    <VizCard>
       <div className="flex items-center justify-between px-5 py-3 border-b" style={{ borderColor: "var(--border)" }}>
         <div>
           <span className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
-            SVR — Support Vector Regression
+            {L.title}
           </span>
           <span className="text-xs ml-2" style={{ color: "var(--text-muted)" }}>
-            ε-tube ignores points inside · only boundary points drive the fit
+            {L.subtitle}
           </span>
         </div>
         <div className="flex gap-2">
@@ -97,7 +142,7 @@ export default function SVRViz({ accentColor = "#f97316" }: { accentColor?: stri
                 color: mode === m_ ? accentColor : "var(--text-muted)",
                 border: `1px solid ${mode === m_ ? accentColor + "50" : "var(--border)"}`,
               }}>
-              {m_ === "svr" ? "SVR" : "Linear Reg"}
+              {m_ === "svr" ? L.tabSvr : L.tabLinear}
             </button>
           ))}
         </div>
@@ -177,10 +222,10 @@ export default function SVRViz({ accentColor = "#f97316" }: { accentColor?: stri
 
         {/* Legend */}
         <circle cx={PAD + 8} cy={PAD + 14} r={4} fill={vt.pointFill} stroke={vt.axis} strokeWidth={1.5} />
-        <text x={PAD + 16} y={PAD + 18} fontSize={9} fill={vt.textMuted}>Inside ε-tube (ignored)</text>
+        <text x={PAD + 16} y={PAD + 18} fontSize={9} fill={vt.textMuted}>{L.legendInside}</text>
         <circle cx={PAD + 8} cy={PAD + 28} r={4} fill="#ff6b6b" />
         <circle cx={PAD + 8} cy={PAD + 28} r={10} fill="none" stroke="#ff6b6b" strokeWidth={1.5} opacity={0.5} />
-        <text x={PAD + 22} y={PAD + 32} fontSize={9} fill={vt.textMuted}>Support vectors (drive fit)</text>
+        <text x={PAD + 22} y={PAD + 32} fontSize={9} fill={vt.textMuted}>{L.legendSV}</text>
 
         {/* Axes */}
         <line x1={PAD} y1={H - PAD} x2={W - PAD} y2={H - PAD} stroke={vt.axis} strokeWidth={1.5} />
@@ -195,7 +240,7 @@ export default function SVRViz({ accentColor = "#f97316" }: { accentColor?: stri
           </span>
           <input type="range" min={0.1} max={2.5} step={0.05} value={epsilon}
             onChange={e => setEpsilon(parseFloat(e.target.value))} className="flex-1" style={{ accentColor }} />
-          <span className="text-xs" style={{ color: "var(--text-muted)" }}>wider tube = fewer SVs</span>
+          <span className="text-xs" style={{ color: "var(--text-muted)" }}>{L.sliderEpsilonHint}</span>
         </div>
         <div className="flex items-center gap-3">
           <span className="text-xs w-20" style={{ color: "var(--text-muted)" }}>
@@ -203,22 +248,15 @@ export default function SVRViz({ accentColor = "#f97316" }: { accentColor?: stri
           </span>
           <input type="range" min={0.1} max={10} step={0.1} value={C}
             onChange={e => setC(parseFloat(e.target.value))} className="flex-1" style={{ accentColor }} />
-          <span className="text-xs" style={{ color: "var(--text-muted)" }}>high C = penalizes violations</span>
+          <span className="text-xs" style={{ color: "var(--text-muted)" }}>{L.sliderCHint}</span>
         </div>
       </div>
 
-      <div className="grid grid-cols-3 border-t text-center" style={{ borderColor: "var(--border)" }}>
-        {[
-          { label: "Support Vectors", value: supportVectors.length.toString(), color: "#ff6b6b" },
-          { label: "ε-loss MSE", value: mse.toFixed(3), color: accentColor },
-          { label: "Inside tube", value: `${DATA.length - supportVectors.length}/${DATA.length}`, color: "var(--text-primary)" },
-        ].map(({ label, value, color }) => (
-          <div key={label} className="py-3">
-            <div className="text-xs" style={{ color: "var(--text-muted)" }}>{label}</div>
-            <div className="text-sm font-bold font-mono" style={{ color }}>{value}</div>
-          </div>
-        ))}
-      </div>
-    </div>
+      <StatGrid py="py-3" items={[
+          { label: L.statSV, value: supportVectors.length.toString(), color: "#ff6b6b" },
+          { label: L.statMSE, value: mse.toFixed(3), color: accentColor },
+          { label: L.statInside, value: `${DATA.length - supportVectors.length}/${DATA.length}`, color: "var(--text-primary)" },
+      ]} />
+    </VizCard>
   );
 }

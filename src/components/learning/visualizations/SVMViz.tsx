@@ -4,6 +4,53 @@ import { useState, useMemo } from "react";
 import type { ReactElement } from "react";
 import { motion } from "framer-motion";
 import { useVizTheme } from "@/hooks/useVizTheme";
+import { useVizLocale } from "@/hooks/useVizLocale";
+import { VizCard, VizHeader, StatGrid, TabToggle } from "./shared";
+
+const SVM_LABELS = {
+  en: {
+    title: "SVM — Maximum Margin Classifier",
+    linearBtn: "Linear",
+    rbfBtn: "RBF kernel",
+    classPos: "Class +1",
+    classNeg: "Class −1",
+    marginLabel: (m: string) => `margin = ${m}`,
+    supportVec: "Support vec",
+    cDesc: (c: number) => c < 1.5 ? "↔ wide margin" : c < 5 ? "balanced" : "↔ narrow margin",
+    gammaDesc: (g: number) => g < 0.4 ? "smooth" : g < 1.2 ? "moderate" : "tight (overfit)",
+    cPenalty: "C (penalty)",
+    supportVecsLabel: "Support Vecs",
+    accuracyLabel: "Accuracy",
+  },
+  fr: {
+    title: "SVM — Classificateur à Marge Maximale",
+    linearBtn: "Linéaire",
+    rbfBtn: "Noyau RBF",
+    classPos: "Classe +1",
+    classNeg: "Classe −1",
+    marginLabel: (m: string) => `marge = ${m}`,
+    supportVec: "Vect. support",
+    cDesc: (c: number) => c < 1.5 ? "↔ large marge" : c < 5 ? "équilibré" : "↔ marge étroite",
+    gammaDesc: (g: number) => g < 0.4 ? "lisse" : g < 1.2 ? "modéré" : "serré (sur-ajustement)",
+    cPenalty: "C (pénalité)",
+    supportVecsLabel: "Vect. support",
+    accuracyLabel: "Précision",
+  },
+  ar: {
+    title: "SVM — مُصنِّف الهامش الأقصى",
+    linearBtn: "خطي",
+    rbfBtn: "نواة RBF",
+    classPos: "الفئة +1",
+    classNeg: "الفئة −1",
+    marginLabel: (m: string) => `الهامش = ${m}`,
+    supportVec: "متجه دعم",
+    cDesc: (c: number) => c < 1.5 ? "↔ هامش واسع" : c < 5 ? "متوازن" : "↔ هامش ضيق",
+    gammaDesc: (g: number) => g < 0.4 ? "سلس" : g < 1.2 ? "معتدل" : "ضيق (إفراط)",
+    cPenalty: "C (عقوبة)",
+    supportVecsLabel: "متجهات دعم",
+    accuracyLabel: "دقة",
+  },
+} as const;
 
 const W = 520, H = 280, PAD = 40;
 
@@ -85,6 +132,7 @@ export default function SVMViz({ accentColor = "#f97316" }: { accentColor?: stri
   const [gamma, setGamma] = useState(0.5);
   const [kernelMode, setKernelMode] = useState<"linear" | "rbf">("linear");
   const vt = useVizTheme();
+  const L = useVizLocale(SVM_LABELS);
 
   // ── Linear helpers ────────────────────────────────────────────────────────
   const { halfMargin } = useMemo(() => computeLinear(C), [C]);
@@ -154,7 +202,7 @@ export default function SVMViz({ accentColor = "#f97316" }: { accentColor?: stri
       <div className="flex items-center justify-between px-5 py-3 border-b"
         style={{ borderColor: "var(--border)" }}>
         <span className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
-          SVM — Maximum Margin Classifier
+          {L.title}
         </span>
         <div className="flex gap-2">
           {(["linear", "rbf"] as const).map(k => (
@@ -165,7 +213,7 @@ export default function SVMViz({ accentColor = "#f97316" }: { accentColor?: stri
                 color: kernelMode === k ? accentColor : "var(--text-muted)",
                 border: `1px solid ${kernelMode === k ? accentColor + "50" : "var(--border)"}`,
               }}>
-              {k === "linear" ? "Linear" : "RBF kernel"}
+              {k === "linear" ? L.linearBtn : L.rbfBtn}
             </button>
           ))}
         </div>
@@ -224,7 +272,7 @@ export default function SVMViz({ accentColor = "#f97316" }: { accentColor?: stri
             {/* Margin annotation */}
             <text x={toCX(7.5)} y={toCY(5.5)} fontSize={9} fill={accentColor} opacity={0.9}
               fontFamily="monospace">
-              margin = {geometricMargin}
+              {L.marginLabel(geometricMargin)}
             </text>
 
             {/* Margin bracket arrows */}
@@ -237,9 +285,9 @@ export default function SVMViz({ accentColor = "#f97316" }: { accentColor?: stri
 
             {/* Class region labels */}
             <text x={toCX(1.8)} y={toCY(8.5)} fontSize={9} fill="#6c63ff" opacity={0.7}
-              fontWeight="bold">Class +1</text>
+              fontWeight="bold">{L.classPos}</text>
             <text x={toCX(6.5)} y={toCY(1.5)} fontSize={9} fill="#ff6b6b" opacity={0.7}
-              fontWeight="bold">Class −1</text>
+              fontWeight="bold">{L.classNeg}</text>
           </>
         )}
 
@@ -325,13 +373,13 @@ export default function SVMViz({ accentColor = "#f97316" }: { accentColor?: stri
 
         {/* Legend */}
         <circle cx={PAD + 6} cy={PAD + 12} r={4} fill="#6c63ff" />
-        <text x={PAD + 15} y={PAD + 16} fontSize={8.5} fill={vt.textMuted}>Class +1</text>
+        <text x={PAD + 15} y={PAD + 16} fontSize={8.5} fill={vt.textMuted}>{L.classPos}</text>
         <circle cx={PAD + 6} cy={PAD + 26} r={4} fill="#ff6b6b" />
-        <text x={PAD + 15} y={PAD + 30} fontSize={8.5} fill={vt.textMuted}>Class −1</text>
+        <text x={PAD + 15} y={PAD + 30} fontSize={8.5} fill={vt.textMuted}>{L.classNeg}</text>
         {kernelMode === "linear" && (
           <>
             <circle cx={PAD + 68} cy={PAD + 12} r={6} fill="none" stroke="#6c63ff" strokeWidth={1.5} opacity={0.6} />
-            <text x={PAD + 78} y={PAD + 16} fontSize={8.5} fill={vt.textMuted}>Support vec</text>
+            <text x={PAD + 78} y={PAD + 16} fontSize={8.5} fill={vt.textMuted}>{L.supportVec}</text>
           </>
         )}
 
@@ -350,7 +398,7 @@ export default function SVMViz({ accentColor = "#f97316" }: { accentColor?: stri
             onChange={e => setC(parseFloat(e.target.value))}
             className="flex-1" style={{ accentColor }} />
           <span className="text-xs w-28 text-right" style={{ color: "var(--text-muted)" }}>
-            {C < 1.5 ? "↔ wide margin" : C < 5 ? "balanced" : "↔ narrow margin"}
+            {L.cDesc(C)}
           </span>
         </div>
         {kernelMode === "rbf" && (
@@ -362,26 +410,19 @@ export default function SVMViz({ accentColor = "#f97316" }: { accentColor?: stri
               onChange={e => setGamma(parseFloat(e.target.value))}
               className="flex-1" style={{ accentColor }} />
             <span className="text-xs w-28 text-right" style={{ color: "var(--text-muted)" }}>
-              {gamma < 0.4 ? "smooth" : gamma < 1.2 ? "moderate" : "tight (overfit)"}
+              {L.gammaDesc(gamma)}
             </span>
           </div>
         )}
       </div>
 
       {/* Stats footer */}
-      <div className="grid grid-cols-3 border-t text-center" style={{ borderColor: "var(--border)" }}>
-        {[
-          { label: "C (penalty)", value: C.toFixed(1), color: accentColor },
-          { label: "Support Vecs", value: svCount.toString(), color: accentColor },
-          { label: "Accuracy", value: `${(accuracy * 100).toFixed(0)}%`,
+      <StatGrid py="py-2.5" items={[
+          { label: L.cPenalty, value: C.toFixed(1), color: accentColor },
+          { label: L.supportVecsLabel, value: svCount.toString(), color: accentColor },
+          { label: L.accuracyLabel, value: `${(accuracy * 100).toFixed(0)}%`,
             color: accuracy > 0.9 ? "#00d4aa" : accuracy > 0.7 ? "#f59e0b" : "#ff6b6b" },
-        ].map(({ label, value, color }) => (
-          <div key={label} className="py-2.5">
-            <div className="text-xs" style={{ color: "var(--text-muted)" }}>{label}</div>
-            <div className="text-sm font-bold font-mono" style={{ color }}>{value}</div>
-          </div>
-        ))}
-      </div>
+      ]} />
     </div>
   );
 }

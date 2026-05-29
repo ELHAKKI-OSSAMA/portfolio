@@ -99,6 +99,8 @@ function ResNetArch({ accent, vt }: { accent: string; vt: VT }) {
       <path d={`M 72 ${BY + BH/2 - 4} C 72 ${BY - 38}, ${plusCX} ${BY - 38}, ${plusCX} ${BY}`}
         fill="none" stroke="#f59e0b" strokeWidth={2} strokeDasharray="6,3"
         markerEnd="url(#arr-res)" />
+      <rect x={118} y={BY - 35} width={174} height={16} rx={3}
+        fill={vt.isDark ? "#1a1a30" : "#f7f7ff"} opacity={0.88} />
       <text x={205} y={BY - 22} textAnchor="middle" fontSize={9} fill="#f59e0b" fontWeight="bold">
         Identity shortcut: x
       </text>

@@ -3,6 +3,134 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { useVizTheme } from "@/hooks/useVizTheme";
+import { useVizLocale } from "@/hooks/useVizLocale";
+import { VizCard, VizHeader, StatGrid, TabToggle } from "./shared";
+
+const MA_LABELS = {
+  en: {
+    archLabels: {
+      cnn: "CNN Architecture",
+      transformer: "Transformer Encoder",
+      lstm: "LSTM Cell",
+      gan: "GAN Training Loop",
+      mlp: "Multi-Layer Perceptron",
+      "decision-tree": "Decision Tree",
+      svm: "SVM Geometry",
+    },
+    // CNN
+    cnnCaption: "Convolutional Neural Network — spatial feature extraction pipeline",
+    cnnLegend: { convRelu: "Conv + ReLU", pooling: "Pooling", flatten: "Flatten", fcSoftmax: "FC + Softmax" },
+    // Transformer
+    transCaption: "Transformer Encoder Block — Nx layers with attention + FFN",
+    transLegend: { mha: "Multi-Head Attention", ffn: "Feed-Forward", residual: "Residual connections" },
+    transResidual: "residual",
+    // LSTM
+    lstmGates: ["Forget", "Input", "Cell", "Output"] as readonly string[],
+    lstmInput: "Input: [hₜ₋₁, xₜ]",
+    lstmConcat: "← concatenated hidden state + current input →",
+    lstmOutput: "hₜ output",
+    lstmCaption: "LSTM Cell: Cₜ = fₜ·Cₜ₋₁ + iₜ·g̃ₜ   hₜ = oₜ·tanh(Cₜ)",
+    lstmLegend: { forget: "Forget gate", input: "Input gate", cell: "Cell gate", output: "Output gate" },
+    // GAN
+    ganNoise: "Noise z",
+    ganGen: "Generator",
+    ganFake: "Fake",
+    ganReal: "Real",
+    ganRealData: "Real Data",
+    ganDisc: "Discriminator",
+    ganRealFake: "Real/Fake?",
+    ganDiscLoss: "Disc loss ∇",
+    ganGenLoss: "Gen loss ∇ (fool D)",
+    ganCaption: "GAN min-max game: min_G max_D V(D,G)",
+    // MLP
+    mlpCaption: "Multi-Layer Perceptron — fully-connected layers with non-linear activations",
+  },
+  fr: {
+    archLabels: {
+      cnn: "Architecture CNN",
+      transformer: "Encodeur Transformer",
+      lstm: "Cellule LSTM",
+      gan: "Boucle GAN",
+      mlp: "Perceptron Multicouche",
+      "decision-tree": "Arbre de Décision",
+      svm: "Géométrie SVM",
+    },
+    cnnCaption: "Réseau neuronal convolutif — pipeline d'extraction de caractéristiques spatiales",
+    cnnLegend: { convRelu: "Conv + ReLU", pooling: "Poolage", flatten: "Aplatissement", fcSoftmax: "FC + Softmax" },
+    transCaption: "Bloc encodeur Transformer — N couches avec attention + FFN",
+    transLegend: { mha: "Attention multi-têtes", ffn: "Réseau direct", residual: "Connexions résiduelles" },
+    transResidual: "résiduel",
+    lstmGates: ["Oubli", "Entrée", "Cellule", "Sortie"] as readonly string[],
+    lstmInput: "Entrée : [hₜ₋₁, xₜ]",
+    lstmConcat: "← état caché concaténé + entrée courante →",
+    lstmOutput: "sortie hₜ",
+    lstmCaption: "Cellule LSTM : Cₜ = fₜ·Cₜ₋₁ + iₜ·g̃ₜ   hₜ = oₜ·tanh(Cₜ)",
+    lstmLegend: { forget: "Porte d'oubli", input: "Porte d'entrée", cell: "Porte cellule", output: "Porte de sortie" },
+    ganNoise: "Bruit z",
+    ganGen: "Générateur",
+    ganFake: "Faux",
+    ganReal: "Réel",
+    ganRealData: "Données réelles",
+    ganDisc: "Discriminateur",
+    ganRealFake: "Réel/Faux ?",
+    ganDiscLoss: "Perte disc. ∇",
+    ganGenLoss: "Perte gén. ∇ (tromper D)",
+    ganCaption: "Jeu min-max GAN : min_G max_D V(D,G)",
+    mlpCaption: "Perceptron multicouche — couches entièrement connectées avec activations non linéaires",
+  },
+  ar: {
+    archLabels: {
+      cnn: "بنية CNN",
+      transformer: "مشفر المحول",
+      lstm: "خلية LSTM",
+      gan: "حلقة GAN",
+      mlp: "الشبكة الكاملة الاتصال",
+      "decision-tree": "شجرة القرار",
+      svm: "هندسة SVM",
+    },
+    cnnCaption: "الشبكة العصبية الالتفافية — خط أنابيب استخراج الميزات المكانية",
+    cnnLegend: { convRelu: "Conv + ReLU", pooling: "التجميع", flatten: "التسطيح", fcSoftmax: "FC + Softmax" },
+    transCaption: "كتلة مشفر المحول — N طبقات مع الانتباه + FFN",
+    transLegend: { mha: "الانتباه متعدد الرؤوس", ffn: "الشبكة الأمامية", residual: "الاتصالات المتبقية" },
+    transResidual: "متبقي",
+    lstmGates: ["النسيان", "الإدخال", "الخلية", "الإخراج"] as readonly string[],
+    lstmInput: "المدخل: [hₜ₋₁, xₜ]",
+    lstmConcat: "← الحالة المخفية المتسلسلة + المدخل الحالي →",
+    lstmOutput: "خرج hₜ",
+    lstmCaption: "خلية LSTM: Cₜ = fₜ·Cₜ₋₁ + iₜ·g̃ₜ   hₜ = oₜ·tanh(Cₜ)",
+    lstmLegend: { forget: "بوابة النسيان", input: "بوابة الإدخال", cell: "بوابة الخلية", output: "بوابة الإخراج" },
+    ganNoise: "ضوضاء z",
+    ganGen: "المولد",
+    ganFake: "مزيف",
+    ganReal: "حقيقي",
+    ganRealData: "البيانات الحقيقية",
+    ganDisc: "المميِّز",
+    ganRealFake: "حقيقي/مزيف؟",
+    ganDiscLoss: "خسارة المميِّز ∇",
+    ganGenLoss: "خسارة المولد ∇ (خداع D)",
+    ganCaption: "لعبة min-max: min_G max_D V(D,G)",
+    mlpCaption: "الشبكة الكاملة الاتصال — طبقات متصلة بالكامل مع تنشيطات غير خطية",
+  },
+} as const;
+
+interface MALabels {
+  archLabels: { cnn: string; transformer: string; lstm: string; gan: string; mlp: string; "decision-tree": string; svm: string };
+  cnnCaption: string;
+  cnnLegend: { convRelu: string; pooling: string; flatten: string; fcSoftmax: string };
+  transCaption: string;
+  transLegend: { mha: string; ffn: string; residual: string };
+  transResidual: string;
+  lstmGates: readonly string[];
+  lstmInput: string;
+  lstmConcat: string;
+  lstmOutput: string;
+  lstmCaption: string;
+  lstmLegend: { forget: string; input: string; cell: string; output: string };
+  ganNoise: string; ganGen: string; ganFake: string; ganReal: string;
+  ganRealData: string; ganDisc: string; ganRealFake: string;
+  ganDiscLoss: string; ganGenLoss: string; ganCaption: string;
+  mlpCaption: string;
+}
 
 // ── Shared helpers ────────────────────────────────────────────────────────────
 interface BoxProps {
@@ -49,19 +177,9 @@ const ARROW_DEFS = (color: string) => (
 // ── Model architecture types ──────────────────────────────────────────────────
 export type ArchType = "cnn" | "transformer" | "lstm" | "gan" | "mlp" | "decision-tree" | "svm";
 
-const ARCH_LABELS: Record<ArchType, string> = {
-  cnn: "CNN Architecture",
-  transformer: "Transformer Encoder",
-  lstm: "LSTM Cell",
-  gan: "GAN Training Loop",
-  mlp: "Multi-Layer Perceptron",
-  "decision-tree": "Decision Tree",
-  svm: "SVM Geometry",
-};
-
 // ── Individual architecture diagrams ─────────────────────────────────────────
 
-function CNNArch({ accentColor, vt }: { accentColor: string; vt: ReturnType<typeof useVizTheme> }) {
+function CNNArch({ accentColor, vt, labels }: { accentColor: string; vt: ReturnType<typeof useVizTheme>; labels: MALabels }) {
   const blocks = [
     { label: "Input",    sublabel: "H×W×C",    fill: "#475569", x: 20 },
     { label: "Conv+ReLU", sublabel: "filters",  fill: accentColor, x: 108 },
@@ -97,13 +215,13 @@ function CNNArch({ accentColor, vt }: { accentColor: string; vt: ReturnType<type
       ))}
       {/* Label */}
       <text x={W_ / 2} y={H_ - 4} textAnchor="middle" fontSize={9} fill={vt.textMuted}>
-        Convolutional Neural Network — spatial feature extraction pipeline
+        {labels.cnnCaption}
       </text>
     </svg>
   );
 }
 
-function TransformerArch({ accentColor, vt }: { accentColor: string; vt: ReturnType<typeof useVizTheme> }) {
+function TransformerArch({ accentColor, vt, labels }: { accentColor: string; vt: ReturnType<typeof useVizTheme>; labels: MALabels }) {
   const W_ = 520, H_ = 280;
   const BW = 150, BH = 38, CX = W_ / 2, BX = CX - BW / 2;
 
@@ -152,27 +270,27 @@ function TransformerArch({ accentColor, vt }: { accentColor: string; vt: ReturnT
           fill="none" stroke="#f59e0b" strokeWidth={1.5} strokeDasharray="4,2" />
       ))}
       <text x={BX - 30} y={175} fontSize={8} fill="#f59e0b" transform={`rotate(-90,${BX-30},175)`}>
-        residual
+        {labels.transResidual}
       </text>
 
       <text x={W_ / 2} y={H_ - 4} textAnchor="middle" fontSize={9} fill={vt.textMuted}>
-        Transformer Encoder Block — Nx layers with attention + FFN
+        {labels.transCaption}
       </text>
     </svg>
   );
 }
 
-function LSTMArch({ accentColor, vt }: { accentColor: string; vt: ReturnType<typeof useVizTheme> }) {
+function LSTMArch({ accentColor, vt, labels }: { accentColor: string; vt: ReturnType<typeof useVizTheme>; labels: MALabels }) {
   const W_ = 520, H_ = 220;
   // Cell state conveyor at top, gates below
   const GATE_W = 70, GATE_H = 40;
   const CY = 90; // gate y
 
   const gates = [
-    { label: "Forget", eq: "σ(Wf·[h,x]+b)", color: "#ff6b6b", x: 60 },
-    { label: "Input",  eq: "σ(Wi·[h,x]+b)", color: "#f59e0b", x: 160 },
-    { label: "Cell",   eq: "tanh(Wg·[h,x]+b)", color: accentColor, x: 260 },
-    { label: "Output", eq: "σ(Wo·[h,x]+b)", color: "#a855f7", x: 380 },
+    { label: labels.lstmGates[0], eq: "σ(Wf·[h,x]+b)", color: "#ff6b6b", x: 60 },
+    { label: labels.lstmGates[1], eq: "σ(Wi·[h,x]+b)", color: "#f59e0b", x: 160 },
+    { label: labels.lstmGates[2], eq: "tanh(Wg·[h,x]+b)", color: accentColor, x: 260 },
+    { label: labels.lstmGates[3], eq: "σ(Wo·[h,x]+b)", color: "#a855f7", x: 380 },
   ];
 
   return (
@@ -218,13 +336,13 @@ function LSTMArch({ accentColor, vt }: { accentColor: string; vt: ReturnType<typ
       <rect x={10} y={148} width={480} height={26} rx={8}
         fill={vt.isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.04)"}
         stroke={vt.border} strokeWidth={1} />
-      <text x={30} y={164} fontSize={9} fill={vt.textMuted}>Input: [hₜ₋₁, xₜ]</text>
+      <text x={30} y={164} fontSize={9} fill={vt.textMuted}>{labels.lstmInput}</text>
       <text x={250} y={164} textAnchor="middle" fontSize={8} fill={vt.textMuted}>
-        ← concatenated hidden state + current input →
+        {labels.lstmConcat}
       </text>
 
       {/* Hidden state output */}
-      <Box x={350} y={160} w={80} h={24} label="hₜ output" fill="#a855f7" rx={6} />
+      <Box x={350} y={160} w={80} h={24} label={labels.lstmOutput} fill="#a855f7" rx={6} />
 
       {/* Input arrows up to gates */}
       {gates.map(g => (
@@ -232,13 +350,13 @@ function LSTMArch({ accentColor, vt }: { accentColor: string; vt: ReturnType<typ
       ))}
 
       <text x={W_ / 2} y={H_ - 4} textAnchor="middle" fontSize={9} fill={vt.textMuted}>
-        LSTM Cell: Cₜ = fₜ·Cₜ₋₁ + iₜ·g̃ₜ   hₜ = oₜ·tanh(Cₜ)
+        {labels.lstmCaption}
       </text>
     </svg>
   );
 }
 
-function GANArch({ accentColor, vt }: { accentColor: string; vt: ReturnType<typeof useVizTheme> }) {
+function GANArch({ accentColor, vt, labels }: { accentColor: string; vt: ReturnType<typeof useVizTheme>; labels: MALabels }) {
   const W_ = 520, H_ = 180;
 
   return (
@@ -246,43 +364,43 @@ function GANArch({ accentColor, vt }: { accentColor: string; vt: ReturnType<type
       {ARROW_DEFS(vt.axis)}
 
       {/* Generator path */}
-      <Box x={10} y={40} w={70} h={40} label="Noise z" sublabel="p(z)" fill="#475569" />
+      <Box x={10} y={40} w={70} h={40} label={labels.ganNoise} sublabel="p(z)" fill="#475569" />
       <Arrow x1={80} y1={60} x2={110} y2={60} color={vt.axis} />
-      <Box x={110} y={30} w={100} h={60} label="Generator" sublabel="G(z)" fill={accentColor} />
+      <Box x={110} y={30} w={100} h={60} label={labels.ganGen} sublabel="G(z)" fill={accentColor} />
       <Arrow x1={210} y1={60} x2={250} y2={60} color={vt.axis} />
-      <text x={228} y={55} textAnchor="middle" fontSize={8} fill={vt.textMuted}>Fake</text>
+      <text x={228} y={55} textAnchor="middle" fontSize={8} fill={vt.textMuted}>{labels.ganFake}</text>
 
       {/* Real data */}
-      <Box x={10} y={110} w={70} h={40} label="Real Data" sublabel="p_data(x)" fill="#059669" />
+      <Box x={10} y={110} w={70} h={40} label={labels.ganRealData} sublabel="p_data(x)" fill="#059669" />
       <Arrow x1={80} y1={130} x2={250} y2={100} color={vt.axis} />
-      <text x={170} y={115} textAnchor="middle" fontSize={8} fill={vt.textMuted}>Real</text>
+      <text x={170} y={115} textAnchor="middle" fontSize={8} fill={vt.textMuted}>{labels.ganReal}</text>
 
       {/* Discriminator */}
-      <Box x={250} y={45} w={110} h={70} label="Discriminator" sublabel="D(x) → [0,1]" fill="#7c3aed" />
+      <Box x={250} y={45} w={110} h={70} label={labels.ganDisc} sublabel="D(x) → [0,1]" fill="#7c3aed" />
 
       {/* Output */}
       <Arrow x1={360} y1={80} x2={400} y2={80} color={vt.axis} />
-      <Box x={400} y={58} w={80} h={44} label="Real/Fake?" sublabel="0 or 1" fill="#374151" />
+      <Box x={400} y={58} w={80} h={44} label={labels.ganRealFake} sublabel="0 or 1" fill="#374151" />
 
       {/* Feedback arrows */}
       {/* Discriminator loss → back to D */}
       <path d="M 450 102 L 450 148 L 305 148 L 305 115" fill="none"
         stroke="#f59e0b" strokeWidth={1.5} strokeDasharray="5,3" markerEnd="url(#arrowhead)" />
-      <text x={360} y={163} textAnchor="middle" fontSize={8} fill="#f59e0b">Disc loss ∇</text>
+      <text x={360} y={163} textAnchor="middle" fontSize={8} fill="#f59e0b">{labels.ganDiscLoss}</text>
 
       {/* Generator loss → back to G */}
       <path d="M 360 60 L 380 60 L 380 20 L 160 20 L 160 30" fill="none"
         stroke="#ff6b6b" strokeWidth={1.5} strokeDasharray="5,3" markerEnd="url(#arrowhead)" />
-      <text x={270} y={16} textAnchor="middle" fontSize={8} fill="#ff6b6b">Gen loss ∇ (fool D)</text>
+      <text x={270} y={16} textAnchor="middle" fontSize={8} fill="#ff6b6b">{labels.ganGenLoss}</text>
 
       <text x={W_ / 2} y={H_ - 4} textAnchor="middle" fontSize={9} fill={vt.textMuted}>
-        GAN min-max game: min_G max_D V(D,G)
+        {labels.ganCaption}
       </text>
     </svg>
   );
 }
 
-function MLPArch({ accentColor, vt }: { accentColor: string; vt: ReturnType<typeof useVizTheme> }) {
+function MLPArch({ accentColor, vt, labels }: { accentColor: string; vt: ReturnType<typeof useVizTheme>; labels: MALabels }) {
   const W_ = 520, H_ = 200;
   const layers = [
     { label: "Input",   n: 3, x: 40,  color: "#475569" },
@@ -356,7 +474,7 @@ function MLPArch({ accentColor, vt }: { accentColor: string; vt: ReturnType<type
       </text>
 
       <text x={W_ / 2} y={H_ - 42} textAnchor="middle" fontSize={9} fill={vt.textMuted}>
-        Multi-Layer Perceptron — fully-connected layers with non-linear activations
+        {labels.mlpCaption}
       </text>
     </svg>
   );
@@ -371,26 +489,24 @@ export default function ModelArchViz({ accentColor = "#6c63ff", defaultType = "m
 }) {
   const [archType, setArchType] = useState<ArchType>(defaultType);
   const vt = useVizTheme();
+  const L = useVizLocale(MA_LABELS);
 
   const renderArch = () => {
     switch (archType) {
-      case "cnn":         return <CNNArch accentColor={accentColor} vt={vt} />;
-      case "transformer": return <TransformerArch accentColor={accentColor} vt={vt} />;
-      case "lstm":        return <LSTMArch accentColor={accentColor} vt={vt} />;
-      case "gan":         return <GANArch accentColor={accentColor} vt={vt} />;
-      case "mlp":         return <MLPArch accentColor={accentColor} vt={vt} />;
-      default:            return <MLPArch accentColor={accentColor} vt={vt} />;
+      case "cnn":         return <CNNArch accentColor={accentColor} vt={vt} labels={L} />;
+      case "transformer": return <TransformerArch accentColor={accentColor} vt={vt} labels={L} />;
+      case "lstm":        return <LSTMArch accentColor={accentColor} vt={vt} labels={L} />;
+      case "gan":         return <GANArch accentColor={accentColor} vt={vt} labels={L} />;
+      case "mlp":         return <MLPArch accentColor={accentColor} vt={vt} labels={L} />;
+      default:            return <MLPArch accentColor={accentColor} vt={vt} labels={L} />;
     }
   };
 
   return (
-    <div
-      className="rounded-2xl overflow-hidden border"
-      style={{ backgroundColor: "var(--bg-card)", borderColor: "var(--border)" }}
-    >
+    <VizCard>
       <div className="flex items-center justify-between px-5 py-3 border-b" style={{ borderColor: "var(--border)" }}>
         <span className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
-          {ARCH_LABELS[archType]}
+          {L.archLabels[archType]}
         </span>
         <div className="flex items-center gap-1.5 flex-wrap justify-end">
           {ARCH_OPTIONS.map(opt => (
@@ -422,10 +538,10 @@ export default function ModelArchViz({ accentColor = "#6c63ff", defaultType = "m
       <div className="px-5 pb-3 border-t" style={{ borderColor: "var(--border)" }}>
         <div className="flex flex-wrap gap-3 mt-2">
           {archType === "cnn" && [
-            { c: accentColor,  l: "Conv + ReLU" },
-            { c: "#0891b2",    l: "Pooling" },
-            { c: "#7c3aed",    l: "Flatten" },
-            { c: "#059669",    l: "FC + Softmax" },
+            { c: accentColor,  l: L.cnnLegend.convRelu },
+            { c: "#0891b2",    l: L.cnnLegend.pooling },
+            { c: "#7c3aed",    l: L.cnnLegend.flatten },
+            { c: "#059669",    l: L.cnnLegend.fcSoftmax },
           ].map(({ c, l }) => (
             <span key={l} className="flex items-center gap-1 text-xs" style={{ color: vt.textMuted }}>
               <span className="w-3 h-3 rounded-sm" style={{ backgroundColor: c }} />
@@ -433,9 +549,9 @@ export default function ModelArchViz({ accentColor = "#6c63ff", defaultType = "m
             </span>
           ))}
           {archType === "transformer" && [
-            { c: accentColor,  l: "Multi-Head Attention" },
-            { c: "#7c3aed",    l: "Feed-Forward" },
-            { c: "#f59e0b",    l: "Residual connections" },
+            { c: accentColor,  l: L.transLegend.mha },
+            { c: "#7c3aed",    l: L.transLegend.ffn },
+            { c: "#f59e0b",    l: L.transLegend.residual },
           ].map(({ c, l }) => (
             <span key={l} className="flex items-center gap-1 text-xs" style={{ color: vt.textMuted }}>
               <span className="w-3 h-3 rounded-sm" style={{ backgroundColor: c }} />
@@ -443,10 +559,10 @@ export default function ModelArchViz({ accentColor = "#6c63ff", defaultType = "m
             </span>
           ))}
           {archType === "lstm" && [
-            { c: "#ff6b6b", l: "Forget gate" },
-            { c: "#f59e0b", l: "Input gate" },
-            { c: accentColor, l: "Cell gate" },
-            { c: "#a855f7", l: "Output gate" },
+            { c: "#ff6b6b", l: L.lstmLegend.forget },
+            { c: "#f59e0b", l: L.lstmLegend.input },
+            { c: accentColor, l: L.lstmLegend.cell },
+            { c: "#a855f7", l: L.lstmLegend.output },
           ].map(({ c, l }) => (
             <span key={l} className="flex items-center gap-1 text-xs" style={{ color: vt.textMuted }}>
               <span className="w-3 h-3 rounded-sm" style={{ backgroundColor: c }} />
@@ -455,6 +571,6 @@ export default function ModelArchViz({ accentColor = "#6c63ff", defaultType = "m
           ))}
         </div>
       </div>
-    </div>
+    </VizCard>
   );
 }

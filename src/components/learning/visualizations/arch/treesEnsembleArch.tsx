@@ -194,7 +194,7 @@ function LightGBMArch({ accent, vt }: { accent: string; vt: VT }) {
           </text>
         </g>
       ))}
-      <text x={lf[1].cx + NW / 2 + 6} y={lf[1].y + 13} fontSize={7.5} fill={accent}>← max gain</text>
+      <text x={lf[1].cx} y={lf[1].y - 7} textAnchor="middle" fontSize={7} fill={accent}>↓ max gain</text>
       <text x={400} y={118} textAnchor="middle" fontSize={7.5} fill={accent}>
         Always split leaf with highest gain
       </text>
@@ -235,7 +235,7 @@ function LightGBMArch({ accent, vt }: { accent: string; vt: VT }) {
 }
 
 function CatBoostArch({ accent, vt }: { accent: string; vt: VT }) {
-  const W = 540, H = 280;
+  const W = 540, H = 292;
   const ac = vt.isDark ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.35)";
   const nb = vt.isDark ? "#334155" : "#e2e8f0";
   const green = vt.isDark ? "#059669" : "#34d399";
@@ -253,7 +253,7 @@ function CatBoostArch({ accent, vt }: { accent: string; vt: VT }) {
       {ARROW_DEFS("arr-cat", ac)}
 
       {/* ── Left: Ordered Target Statistics ── */}
-      <rect x={6} y={8} width={252} height={116} rx={8}
+      <rect x={6} y={8} width={252} height={124} rx={8}
         fill={`${accent}10`} stroke={`${accent}35`} strokeWidth={1.5} />
       <text x={132} y={24} textAnchor="middle" fontSize={9} fontWeight="bold" fill={accent}>
         ① Ordered Target Statistics
@@ -262,25 +262,25 @@ function CatBoostArch({ accent, vt }: { accent: string; vt: VT }) {
         Encode categoricals without target leakage
       </text>
 
-      <rect x={16} y={42} width={232} height={28} rx={5}
+      <rect x={16} y={42} width={232} height={36} rx={5}
         fill={vt.isDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.05)"} />
-      <text x={132} y={54} textAnchor="middle" fontSize={7.5} fill={vt.text} fontFamily="monospace">
-        TS(xᵢ) = Σ&#123;yⱼ: xⱼ=xᵢ, j&lt;i&#125; + a·prior
+      <text x={132} y={55} textAnchor="middle" fontSize={7.5} fill={vt.text} fontFamily="monospace">
+        TS(xᵢ) = Σ&#123;y_j: x_j=xᵢ, j&lt;i&#125; + a·prior
       </text>
-      <text x={132} y={65} textAnchor="middle" fontSize={7} fill={vt.textMuted} fontFamily="monospace">
-        count(xⱼ=xᵢ, j&lt;i) + a
+      <text x={132} y={70} textAnchor="middle" fontSize={7} fill={vt.textMuted} fontFamily="monospace">
+        count(x_j=xᵢ, j&lt;i) + a
       </text>
 
-      <text x={16} y={84} fontSize={7.5} fill={vt.textMuted}>
+      <text x={16} y={92} fontSize={7.5} fill={vt.textMuted}>
         • Sample i uses ONLY targets from samples 1..i−1
       </text>
-      <text x={16} y={96} fontSize={7.5} fill={vt.textMuted}>
+      <text x={16} y={104} fontSize={7.5} fill={vt.textMuted}>
         • Different ordering per boosting round
       </text>
-      <text x={16} y={108} fontSize={7.5} fill={vt.textMuted}>
+      <text x={16} y={116} fontSize={7.5} fill={vt.textMuted}>
         • No manual one-hot / label encoding needed
       </text>
-      <text x={16} y={120} fontSize={7.5} fill={accent} fontWeight="bold">
+      <text x={16} y={128} fontSize={7.5} fill={accent} fontWeight="bold">
         → prevents overfitting on high-cardinality cats
       </text>
 
@@ -319,24 +319,24 @@ function CatBoostArch({ accent, vt }: { accent: string; vt: VT }) {
       </text>
 
       {/* ── Bottom cards ── */}
-      <rect x={6} y={162} width={162} height={70} rx={6} fill={nb} stroke={vt.border} strokeWidth={1} />
-      <text x={87} y={179} textAnchor="middle" fontSize={8.5} fontWeight="bold" fill={vt.text}>③ Ordered Boosting</text>
-      <text x={87} y={193} textAnchor="middle" fontSize={7.5} fill={vt.textMuted}>Train hₜ on random permutation</text>
-      <text x={87} y={206} textAnchor="middle" fontSize={7.5} fill={vt.textMuted}>→ prevents target leakage</text>
-      <text x={87} y={219} textAnchor="middle" fontSize={7} fill={vt.textMuted}>in boosting residuals</text>
+      <rect x={6} y={170} width={162} height={70} rx={6} fill={nb} stroke={vt.border} strokeWidth={1} />
+      <text x={87} y={187} textAnchor="middle" fontSize={8.5} fontWeight="bold" fill={vt.text}>③ Ordered Boosting</text>
+      <text x={87} y={201} textAnchor="middle" fontSize={7.5} fill={vt.textMuted}>Train hₜ on random permutation</text>
+      <text x={87} y={214} textAnchor="middle" fontSize={7.5} fill={vt.textMuted}>→ prevents target leakage</text>
+      <text x={87} y={227} textAnchor="middle" fontSize={7} fill={vt.textMuted}>in boosting residuals</text>
 
-      <rect x={178} y={162} width={162} height={70} rx={6} fill={nb} stroke={vt.border} strokeWidth={1} />
-      <text x={259} y={179} textAnchor="middle" fontSize={8.5} fontWeight="bold" fill={vt.text}>GPU Training</text>
-      <text x={259} y={193} textAnchor="middle" fontSize={7.5} fill={vt.textMuted}>Native GPU support</text>
-      <text x={259} y={206} textAnchor="middle" fontSize={7.5} fill={vt.textMuted}>Symmetric trees enable</text>
-      <text x={259} y={219} textAnchor="middle" fontSize={7} fill={vt.textMuted}>efficient GPU computation</text>
+      <rect x={178} y={170} width={162} height={70} rx={6} fill={nb} stroke={vt.border} strokeWidth={1} />
+      <text x={259} y={187} textAnchor="middle" fontSize={8.5} fontWeight="bold" fill={vt.text}>GPU Training</text>
+      <text x={259} y={201} textAnchor="middle" fontSize={7.5} fill={vt.textMuted}>Native GPU support</text>
+      <text x={259} y={214} textAnchor="middle" fontSize={7.5} fill={vt.textMuted}>Symmetric trees enable</text>
+      <text x={259} y={227} textAnchor="middle" fontSize={7} fill={vt.textMuted}>efficient GPU computation</text>
 
-      <rect x={350} y={162} width={184} height={70} rx={6}
+      <rect x={350} y={170} width={184} height={70} rx={6}
         fill={`${accent}12`} stroke={`${accent}35`} strokeWidth={1.5} />
-      <text x={442} y={179} textAnchor="middle" fontSize={8.5} fontWeight="bold" fill={accent}>Out-of-the-box</text>
-      <text x={442} y={193} textAnchor="middle" fontSize={7.5} fill={vt.textMuted}>No manual cat encoding</text>
-      <text x={442} y={206} textAnchor="middle" fontSize={7.5} fill={vt.textMuted}>Great defaults, minimal tuning</text>
-      <text x={442} y={219} textAnchor="middle" fontSize={7} fill={accent}>Best for categorical-heavy data</text>
+      <text x={442} y={187} textAnchor="middle" fontSize={8.5} fontWeight="bold" fill={accent}>Out-of-the-box</text>
+      <text x={442} y={201} textAnchor="middle" fontSize={7.5} fill={vt.textMuted}>No manual cat encoding</text>
+      <text x={442} y={214} textAnchor="middle" fontSize={7.5} fill={vt.textMuted}>Great defaults, minimal tuning</text>
+      <text x={442} y={227} textAnchor="middle" fontSize={7} fill={accent}>Best for categorical-heavy data</text>
 
       <text x={W / 2} y={H - 8} textAnchor="middle" fontSize={8.5} fill={vt.textMuted}>
         CatBoost: ordered TS + symmetric trees + ordered boosting → top tabular performance out-of-box

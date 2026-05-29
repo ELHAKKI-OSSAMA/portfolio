@@ -39,3 +39,27 @@ export interface TopicContent {
   sections: ContentSection[];
 }
 
+// ── i18n overlay types ────────────────────────────────────────────────────────
+export interface SectionI18n {
+  headingFr?: string;
+  headingAr?: string;
+  textFr?: string;
+  textAr?: string;
+  calloutFr?: string;
+  calloutAr?: string;
+  stepsFr?: string[];
+  stepsAr?: string[];
+  // formula label (the short title shown below the LaTeX block)
+  formulaLabelFr?: string;
+  formulaLabelAr?: string;
+  // code — French only (Arabic keeps English code)
+  codeFr?: string;
+}
+
+export interface KeyFormulaI18n {
+  nameFr?: string;
+  nameAr?: string;
+  meaningFr?: string;
+  meaningAr?: string;
+}
+

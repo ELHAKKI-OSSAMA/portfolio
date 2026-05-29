@@ -5,7 +5,7 @@ export const neuralContent: Record<string, TopicContent> = {
     id: "neural-networks",
     tagline: "Universal approximators built from threshold logic, optimized by calculus",
     accentColor: "#ec4899",
-    visualization: "backprop",
+    visualization: "neural-network-backprop",
     keyFormulas: [
       { name: "Forward Pass", latex: "\\mathbf{z}^{[l]} = \\mathbf{W}^{[l]}\\mathbf{a}^{[l-1]} + \\mathbf{b}^{[l]}", meaning: "Linear transformation at layer l" },
       { name: "Activation", latex: "\\mathbf{a}^{[l]} = g^{[l]}(\\mathbf{z}^{[l]})", meaning: "Non-linear activation applied element-wise" },

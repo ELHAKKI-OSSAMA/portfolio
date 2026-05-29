@@ -5,7 +5,7 @@ export const evaluationContent: Record<string, TopicContent> = {
     id: "model-evaluation",
     tagline: "Accuracy is a lie — learning to choose the right metric for the real problem",
     accentColor: "#ff6b6b",
-    visualization: "roc-curve",
+    visualization: "evaluation-suite",
     keyFormulas: [
       { name: "F1 Score", latex: "F_1 = \\frac{2 \\cdot \\text{Precision} \\cdot \\text{Recall}}{\\text{Precision} + \\text{Recall}} = \\frac{2\\,TP}{2\\,TP + FP + FN}", meaning: "Harmonic mean of precision and recall" },
       { name: "AUC-ROC", latex: "\\text{AUC} = \\int_0^1 \\text{TPR}(\\text{FPR}) \\, d(\\text{FPR})", meaning: "Probability that a random positive ranks higher than a random negative" },

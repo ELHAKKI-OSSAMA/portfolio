@@ -3,13 +3,47 @@
 import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { useVizTheme } from "@/hooks/useVizTheme";
+import { useVizLocale } from "@/hooks/useVizLocale";
+import { VizCard, VizHeader, StatGrid, TabToggle } from "./shared";
+
+const MC_LABELS = {
+  en: {
+    title: "Multiclass — OvA vs OvO Strategies",
+    ovaSubtitle: "3 binary classifiers (each class vs rest)",
+    ovoSubtitle: "3 pairwise classifiers (C(3,2) = 3 pairs)",
+    classNames: ["Class A", "Class B", "Class C"] as readonly string[],
+    vsRest: "vs Rest",
+    ovaInfo: "3 classifiers",
+    ovoInfo: "3 pairwise",
+    hoverHint: "hover to highlight",
+  },
+  fr: {
+    title: "Multiclasse — Stratégies OvA vs OvO",
+    ovaSubtitle: "3 classifieurs binaires (chaque classe contre le reste)",
+    ovoSubtitle: "3 classifieurs par paires (C(3,2) = 3 paires)",
+    classNames: ["Classe A", "Classe B", "Classe C"] as readonly string[],
+    vsRest: "vs Reste",
+    ovaInfo: "3 classifieurs",
+    ovoInfo: "3 paires",
+    hoverHint: "survoler pour mettre en évidence",
+  },
+  ar: {
+    title: "متعدد الأصناف — استراتيجيات OvA مقابل OvO",
+    ovaSubtitle: "3 مصنّفات ثنائية (كل صنف ضد الباقي)",
+    ovoSubtitle: "3 مصنّفات زوجية (C(3,2) = 3 أزواج)",
+    classNames: ["صنف A", "صنف B", "صنف C"] as readonly string[],
+    vsRest: "ضد الباقي",
+    ovaInfo: "3 مصنّفات",
+    ovoInfo: "3 أزواج",
+    hoverHint: "مرر الماوس للإبراز",
+  },
+} as const;
 
 const W = 520, H = 300, PAD = 36;
 
 type Strategy = "ova" | "ovo";
 
 const CLASS_COLORS = ["#6c63ff", "#00d4aa", "#ff6b6b"];
-const CLASS_NAMES = ["Class A", "Class B", "Class C"];
 
 // Three Gaussian clusters
 const CLUSTERS = [
@@ -88,6 +122,8 @@ export default function MulticlassViz({ accentColor = "#f59e0b" }: { accentColor
   const [strategy, setStrategy] = useState<Strategy>("ova");
   const [activeClassifier, setActiveClassifier] = useState<number | null>(null);
   const vt = useVizTheme();
+  const L = useVizLocale(MC_LABELS);
+  const CLASS_NAMES = L.classNames;
 
   const ovaLines = useMemo(() => [0, 1, 2].map(i => ({ idx: i, ...ovaLine(i) })), []);
   const ovoPairsList = useMemo(() => ovoPairs(), []);
@@ -95,17 +131,14 @@ export default function MulticlassViz({ accentColor = "#f59e0b" }: { accentColor
   const boundaries = strategy === "ova" ? ovaLines : ovoPairsList;
 
   return (
-    <div
-      className="rounded-2xl overflow-hidden border"
-      style={{ backgroundColor: "var(--bg-card)", borderColor: "var(--border)" }}
-    >
+    <VizCard>
       <div className="flex items-center justify-between px-5 py-3 border-b" style={{ borderColor: "var(--border)" }}>
         <div>
           <span className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
-            Multiclass — OvA vs OvO Strategies
+            {L.title}
           </span>
           <span className="text-xs ml-2" style={{ color: "var(--text-muted)" }}>
-            {strategy === "ova" ? "3 binary classifiers (each class vs rest)" : "3 pairwise classifiers (C(3,2) = 3 pairs)"}
+            {strategy === "ova" ? L.ovaSubtitle : L.ovoSubtitle}
           </span>
         </div>
         <div className="flex gap-2">
@@ -222,7 +255,7 @@ export default function MulticlassViz({ accentColor = "#f59e0b" }: { accentColor
                   color: CLASS_COLORS[i],
                   border: `1px solid ${CLASS_COLORS[i]}40`,
                 }}>
-                {name} vs Rest
+                {name} {L.vsRest}
               </button>
             ))
           : ovoPairsList.map((pair, i) => (
@@ -240,9 +273,9 @@ export default function MulticlassViz({ accentColor = "#f59e0b" }: { accentColor
             ))
         }
         <div className="ml-auto text-xs" style={{ color: "var(--text-muted)" }}>
-          {strategy === "ova" ? "3 classifiers" : "3 pairwise"} · hover to highlight
+          {strategy === "ova" ? L.ovaInfo : L.ovoInfo} · {L.hoverHint}
         </div>
       </div>
-    </div>
+    </VizCard>
   );
 }

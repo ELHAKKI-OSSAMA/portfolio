@@ -4,6 +4,53 @@ import { useState, useRef, useCallback, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Play, RotateCcw, Plus, StopCircle } from "lucide-react";
 import { useVizTheme } from "@/hooks/useVizTheme";
+import { useVizLocale } from "@/hooks/useVizLocale";
+import { VizCard, VizHeader, StatGrid, TabToggle } from "./shared";
+
+const LR_LABELS = {
+  en: {
+    title: "Interactive Linear Regression",
+    subtitle: "drag points · watch gradient descent learn",
+    addBtn: "Add",
+    residualsBtn: "Residuals",
+    stopBtn: "Stop",
+    gdBtn: "GD",
+    iterLabel: "iter",
+    lossLabel: "Loss ↓",
+    slopeLabel: "Slope β₁",
+    r2Label: "R²",
+    mseLabel: "MSE",
+    olsTarget: "OLS:",
+  },
+  fr: {
+    title: "Régression Linéaire Interactive",
+    subtitle: "faites glisser les points · regardez la descente de gradient apprendre",
+    addBtn: "Ajouter",
+    residualsBtn: "Résidus",
+    stopBtn: "Arrêter",
+    gdBtn: "DG",
+    iterLabel: "iter",
+    lossLabel: "Perte ↓",
+    slopeLabel: "Pente β₁",
+    r2Label: "R²",
+    mseLabel: "ECM",
+    olsTarget: "MCO:",
+  },
+  ar: {
+    title: "الانحدار الخطي التفاعلي",
+    subtitle: "اسحب النقاط · شاهد الانحدار التدرجي يتعلم",
+    addBtn: "إضافة",
+    residualsBtn: "البواقي",
+    stopBtn: "إيقاف",
+    gdBtn: "GD",
+    iterLabel: "تكرار",
+    lossLabel: "خسارة ↓",
+    slopeLabel: "ميل β₁",
+    r2Label: "R²",
+    mseLabel: "MSE",
+    olsTarget: "MCO:",
+  },
+} as const;
 
 interface Point { x: number; y: number; }
 
@@ -66,6 +113,7 @@ export default function LinearRegressionViz({ accentColor = "#6c63ff" }: { accen
   const [lossHistory, setLossHistory] = useState<number[]>([]);
   const svgRef = useRef<SVGSVGElement>(null);
   const vt = useVizTheme();
+  const L = useVizLocale(LR_LABELS);
 
   // Current displayed line — OLS baseline or GD animation step
   const olsResult = ols(points);
@@ -151,32 +199,32 @@ export default function LinearRegressionViz({ accentColor = "#6c63ff" }: { accen
   }).join(" ") : "";
 
   const stats = [
-    { label: "Slope β₁", value: liveStats.slope.toFixed(3), target: olsStats.slope.toFixed(3) },
-    { label: "R²", value: liveStats.r2.toFixed(4), target: olsStats.r2.toFixed(4) },
-    { label: "MSE", value: liveStats.mse.toFixed(3), target: olsStats.mse.toFixed(3) },
+    { label: L.slopeLabel, value: liveStats.slope.toFixed(3), target: olsStats.slope.toFixed(3) },
+    { label: L.r2Label, value: liveStats.r2.toFixed(4), target: olsStats.r2.toFixed(4) },
+    { label: L.mseLabel, value: liveStats.mse.toFixed(3), target: olsStats.mse.toFixed(3) },
   ];
 
   return (
-    <div className="rounded-2xl overflow-hidden border" style={{ backgroundColor: "var(--bg-card)", borderColor: "var(--border)" }}>
+    <VizCard>
       {/* Header */}
       <div className="flex items-center justify-between px-5 py-3 border-b" style={{ borderColor: "var(--border)" }}>
         <div>
-          <span className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>Interactive Linear Regression</span>
-          <span className="text-xs ml-2" style={{ color: "var(--text-muted)" }}>drag points · watch gradient descent learn</span>
+          <span className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>{L.title}</span>
+          <span className="text-xs ml-2" style={{ color: "var(--text-muted)" }}>{L.subtitle}</span>
         </div>
         <div className="flex items-center gap-2">
           <button onClick={() => setAddMode(m => !m)} className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium transition-all"
             style={{ backgroundColor: addMode ? `${accentColor}30` : "var(--bg-card)", color: addMode ? accentColor : "var(--text-muted)", border: `1px solid ${addMode ? accentColor : "var(--border)"}` }}>
-            <Plus size={11} /> Add
+            <Plus size={11} /> {L.addBtn}
           </button>
           <button onClick={() => setShowResiduals(r => !r)} className="px-2.5 py-1 rounded-lg text-xs font-medium transition-all"
             style={{ backgroundColor: showResiduals ? "#ff6b6b20" : "var(--bg-card)", color: showResiduals ? "#ff6b6b" : "var(--text-muted)", border: `1px solid ${showResiduals ? "#ff6b6b50" : "var(--border)"}` }}>
-            Residuals
+            {L.residualsBtn}
           </button>
           <button onClick={isAnimating ? () => setIsAnimating(false) : runGradientDescent}
             className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-medium transition-all"
             style={{ backgroundColor: isAnimating ? "#ff6b6b20" : `${accentColor}20`, color: isAnimating ? "#ff6b6b" : accentColor, border: `1px solid ${isAnimating ? "#ff6b6b50" : accentColor + "50"}` }}>
-            {isAnimating ? <><StopCircle size={11} /> Stop</> : <><Play size={11} /> GD</>}
+            {isAnimating ? <><StopCircle size={11} /> {L.stopBtn}</> : <><Play size={11} /> {L.gdBtn}</>}
           </button>
           <button onClick={() => { setPoints(INIT_PTS); setGdPath([]); setGdStep(0); setLossHistory([]); setIsAnimating(false); }}
             className="p-1.5 rounded-lg transition-all" style={{ color: "var(--text-muted)", border: "1px solid var(--border)" }}>
@@ -239,7 +287,7 @@ export default function LinearRegressionViz({ accentColor = "#6c63ff" }: { accen
         {/* GD iteration counter */}
         {isLearning && (
           <text x={W - PAD - 4} y={PAD + 14} textAnchor="end" fontSize={10} fill={accentColor} fontFamily="monospace">
-            iter {gdStep}/{gdPath.length - 1}
+            {L.iterLabel} {gdStep}/{gdPath.length - 1}
           </text>
         )}
 
@@ -247,7 +295,7 @@ export default function LinearRegressionViz({ accentColor = "#6c63ff" }: { accen
         {lossSpark && (
           <g transform={`translate(${W - PAD - 95}, ${PAD + 20})`}>
             <rect x={-2} y={-2} width={96} height={26} rx={4} fill={vt.isDark ? "rgba(0,0,0,0.4)" : "rgba(255,255,255,0.7)"} />
-            <text x={0} y={-4} fontSize={8} fill={vt.textMuted}>Loss ↓</text>
+            <text x={0} y={-4} fontSize={8} fill={vt.textMuted}>{L.lossLabel}</text>
             <path d={lossSpark} fill="none" stroke={accentColor} strokeWidth={1.5} />
           </g>
         )}
@@ -282,12 +330,12 @@ export default function LinearRegressionViz({ accentColor = "#6c63ff" }: { accen
             </AnimatePresence>
             {isLearning && (
               <div className="text-xs font-mono mt-0.5" style={{ color: vt.textFaint }}>
-                OLS: {target}
+                {L.olsTarget} {target}
               </div>
             )}
           </div>
         ))}
       </div>
-    </div>
+    </VizCard>
   );
 }

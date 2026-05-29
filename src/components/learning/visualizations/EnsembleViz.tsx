@@ -3,6 +3,38 @@
 import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
 import { useVizTheme } from "@/hooks/useVizTheme";
+import { useVizLocale } from "@/hooks/useVizLocale";
+import { VizCard, VizHeader, StatGrid, TabToggle } from "./shared";
+
+const ENS_LABELS = {
+  en: {
+    title: "Ensemble — Variance Reduction",
+    subtitle: "toggle individual models to see effect on ensemble",
+    ensembleBtn: "Ensemble",
+    trueFunc: "True function",
+    ensembleMean: "Ensemble mean",
+    modelLabel: (i: number) => `Model ${i}`,
+    ensembleMSE: "Ensemble MSE:",
+  },
+  fr: {
+    title: "Ensemble — Réduction de Variance",
+    subtitle: "activer/désactiver les modèles individuels pour voir l'effet sur l'ensemble",
+    ensembleBtn: "Ensemble",
+    trueFunc: "Fonction vraie",
+    ensembleMean: "Moyenne de l'ensemble",
+    modelLabel: (i: number) => `Modèle ${i}`,
+    ensembleMSE: "MSE de l'ensemble :",
+  },
+  ar: {
+    title: "المجموعة — تقليل التباين",
+    subtitle: "تبديل النماذج الفردية لرؤية تأثيرها على المجموعة",
+    ensembleBtn: "المجموعة",
+    trueFunc: "الدالة الحقيقية",
+    ensembleMean: "متوسط المجموعة",
+    modelLabel: (i: number) => `نموذج ${i}`,
+    ensembleMSE: "MSE المجموعة:",
+  },
+} as const;
 
 const W = 520, H = 270, PAD = 40;
 const N_MODELS = 5;
@@ -37,6 +69,7 @@ export default function EnsembleViz({ accentColor = "#f59e0b" }: { accentColor?:
   const [activeModels, setActiveModels] = useState<boolean[]>(Array(N_MODELS).fill(true));
   const [showEnsemble, setShowEnsemble] = useState(true);
   const vt = useVizTheme();
+  const L = useVizLocale(ENS_LABELS);
 
   const allPreds = useMemo(() =>
     MODEL_OFFSETS.map((off, mi) => xs.map(x => modelPred(x, off, mi * 1.3))),
@@ -70,17 +103,14 @@ export default function EnsembleViz({ accentColor = "#f59e0b" }: { accentColor?:
   };
 
   return (
-    <div
-      className="rounded-2xl overflow-hidden border"
-      style={{ backgroundColor: "var(--bg-card)", borderColor: "var(--border)" }}
-    >
+    <VizCard>
       <div className="flex items-center justify-between px-5 py-3 border-b" style={{ borderColor: "var(--border)" }}>
         <div>
           <span className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
-            Ensemble — Variance Reduction
+            {L.title}
           </span>
           <span className="text-xs ml-2" style={{ color: "var(--text-muted)" }}>
-            toggle individual models to see effect on ensemble
+            {L.subtitle}
           </span>
         </div>
         <button
@@ -92,7 +122,7 @@ export default function EnsembleViz({ accentColor = "#f59e0b" }: { accentColor?:
             border: `1px solid ${showEnsemble ? accentColor + "50" : "var(--border)"}`,
           }}
         >
-          Ensemble
+          {L.ensembleBtn}
         </button>
       </div>
 
@@ -151,9 +181,9 @@ export default function EnsembleViz({ accentColor = "#f59e0b" }: { accentColor?:
 
         {/* Legend */}
         <line x1={PAD + 4} y1={PAD + 12} x2={PAD + 22} y2={PAD + 12} stroke={vt.gridStrong} strokeWidth={2} strokeDasharray="6,4" />
-        <text x={PAD + 26} y={PAD + 16} fontSize={9} fill={vt.textMuted}>True function</text>
+        <text x={PAD + 26} y={PAD + 16} fontSize={9} fill={vt.textMuted}>{L.trueFunc}</text>
         <line x1={PAD + 4} y1={PAD + 26} x2={PAD + 22} y2={PAD + 26} stroke={accentColor} strokeWidth={3} />
-        <text x={PAD + 26} y={PAD + 30} fontSize={9} fill={accentColor}>Ensemble mean</text>
+        <text x={PAD + 26} y={PAD + 30} fontSize={9} fill={accentColor}>{L.ensembleMean}</text>
       </svg>
 
       {/* Model toggles */}
@@ -170,17 +200,17 @@ export default function EnsembleViz({ accentColor = "#f59e0b" }: { accentColor?:
               opacity: activeModels[i] ? 1 : 0.5,
             }}
           >
-            Model {i + 1}
+            {L.modelLabel(i + 1)}
             <span className="font-mono text-xs opacity-70">MSE={msePerModel[i].toFixed(2)}</span>
           </button>
         ))}
         <div className="ml-auto flex items-center gap-2">
-          <span className="text-xs" style={{ color: "var(--text-muted)" }}>Ensemble MSE:</span>
+          <span className="text-xs" style={{ color: "var(--text-muted)" }}>{L.ensembleMSE}</span>
           <span className="text-sm font-bold font-mono" style={{ color: accentColor }}>
             {ensembleMSE.toFixed(3)}
           </span>
         </div>
       </div>
-    </div>
+    </VizCard>
   );
 }

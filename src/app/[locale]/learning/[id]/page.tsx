@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Clock, BarChart2, BookOpen, ChevronLeft, ChevronRight } from "lucide-react";
-import { getTranslations } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { learningTopics } from "@/lib/data";
 import { topicContents } from "@/lib/learningContent";
 import TopicDetailClient from "./TopicDetailClient";
@@ -49,6 +49,7 @@ export default async function TopicPage({
   params: Promise<{ locale: string; id: string }>;
 }) {
   const { locale, id } = await params;
+  setRequestLocale(locale);
   const t = await getTranslations({ locale, namespace: "learning" });
   const topic = learningTopics.find(t => t.id === id);
   if (!topic) notFound();

@@ -124,7 +124,7 @@ function GradientBoostingArch({ accent, vt }: { accent: string; vt: VT }) {
       </text>
 
       {/* Final output */}
-      <Arrow x1={430} y1={118} x2={430} y2={90} color={arrowColor} markerId="arr-gb" />
+      <Arrow x1={466} y1={68} x2={466} y2={118} color={arrowColor} markerId="arr-gb" />
       <Arrow x1={430} y1={152} x2={500} y2={152} color={arrowColor} markerId="arr-gb" />
       <Box x={502} y={133} w={32} h={32}
         label="ŷ" bg={vt.isDark ? "#059669" : "#34d399"} textColor={textOn("#059669")} rx={8} />

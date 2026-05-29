@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
-import { useTranslations, useLocale } from "next-intl";
-import { getTranslations } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import Link from "next/link";
 import { Download, MapPin, Globe, Cpu, ArrowRight, Award, Briefcase, GraduationCap } from "lucide-react";
 import { GithubIcon, LinkedInIcon, KaggleIcon } from "@/components/ui/SocialIcons";
@@ -53,6 +52,7 @@ export default async function AboutPage({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
+  setRequestLocale(locale);
   const t = await getTranslations({ locale, namespace: "about" });
 
   const description =

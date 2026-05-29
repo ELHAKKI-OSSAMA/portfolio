@@ -35,8 +35,8 @@
     --glow: rgba(108, 99, 255, 0.15);
     --nav-bg: rgba(240, 244, 255, 0.94);
     --scrollbar-track: #e8edf8;
-    --filter-btn-bg: #e8edf8;
-    --filter-btn-border: rgba(0, 0, 0, 0.12);
+    --filter-btn-bg: #ffffff;
+    --filter-btn-border: rgba(0, 0, 0, 0.18);
     --tag-bg: rgba(0, 0, 0, 0.06);
     --tag-color: #3d4557;
   }
@@ -44,8 +44,8 @@
   :root,
   [data-theme="dark"] {
     --border-strong: rgba(255, 255, 255, 0.15);
-    --filter-btn-bg: #0d0d1f;
-    --filter-btn-border: rgba(255, 255, 255, 0.08);
+    --filter-btn-bg: #13132a;
+    --filter-btn-border: rgba(255, 255, 255, 0.15);
     --tag-bg: rgba(255, 255, 255, 0.05);
     --tag-color: #adb7c5;
   }
@@ -57,14 +57,14 @@
   body {
     background-color: var(--bg-main);
     color: var(--text-primary);
-    font-family: "Inter", system-ui, sans-serif;
+    font-family: var(--font-inter), system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
     transition: background-color 0.3s ease, color 0.3s ease;
   }
 
   [lang="ar"],
   [dir="rtl"] {
-    font-family: "Cairo", "Noto Sans Arabic", system-ui, sans-serif;
+    font-family: var(--font-cairo), "Noto Sans Arabic", system-ui, sans-serif;
     direction: rtl;
   }
 

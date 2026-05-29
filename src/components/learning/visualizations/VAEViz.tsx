@@ -3,6 +3,62 @@
 import { useState, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useVizTheme } from "@/hooks/useVizTheme";
+import { useVizLocale } from "@/hooks/useVizLocale";
+import { VizCard, VizHeader, StatGrid, TabToggle } from "./shared";
+
+const VAE_LABELS = {
+  en: {
+    title: "VAE — Variational Autoencoder",
+    tabEncode: "Encode",
+    tabDecode: "Decode",
+    inputSamples: "Input samples",
+    classLabel: (name: string) => `Class ${name}`,
+    encodeHint: "Encoder q(z|x)",
+    decodeHint: "Click class to set z",
+    latentSpace: "Latent space z ∈ ℝ²",
+    reparamTitle: "Reparameterize",
+    recoTitle: "Reconstruction",
+    nearest: (name: string) => `Nearest: Class ${name}`,
+    confHigh: "High confidence",
+    confMed: "Medium confidence",
+    confLow: "Low confidence",
+    statClasses: "Classes",
+  },
+  fr: {
+    title: "VAE — Auto-encodeur Variationnel",
+    tabEncode: "Encoder",
+    tabDecode: "Décoder",
+    inputSamples: "Exemples d'entrée",
+    classLabel: (name: string) => `Classe ${name}`,
+    encodeHint: "Encodeur q(z|x)",
+    decodeHint: "Cliquer sur la classe pour définir z",
+    latentSpace: "Espace latent z ∈ ℝ²",
+    reparamTitle: "Reparamétrisation",
+    recoTitle: "Reconstruction",
+    nearest: (name: string) => `Plus proche : Classe ${name}`,
+    confHigh: "Confiance élevée",
+    confMed: "Confiance moyenne",
+    confLow: "Confiance faible",
+    statClasses: "Classes",
+  },
+  ar: {
+    title: "VAE — مشفّر تلقائي تغايري",
+    tabEncode: "ترميز",
+    tabDecode: "فك الترميز",
+    inputSamples: "عينات مدخلة",
+    classLabel: (name: string) => `صنف ${name}`,
+    encodeHint: "مشفّر q(z|x)",
+    decodeHint: "انقر على صنف لتعيين z",
+    latentSpace: "الفضاء الكامن z ∈ ℝ²",
+    reparamTitle: "إعادة المعلمة",
+    recoTitle: "إعادة البناء",
+    nearest: (name: string) => `الأقرب: صنف ${name}`,
+    confHigh: "ثقة عالية",
+    confMed: "ثقة متوسطة",
+    confLow: "ثقة منخفضة",
+    statClasses: "أصناف",
+  },
+} as const;
 
 // ── Class definitions in latent space ────────────────────────────────────────
 const CLASSES = [
@@ -105,6 +161,7 @@ export default function VAEViz({ accentColor = "#a855f7" }: { accentColor?: stri
   const [selectedClass, setSelectedClass] = useState(0);
   const svgRef = useRef<SVGSVGElement>(null);
   const vt = useVizTheme();
+  const L = useVizLocale(VAE_LABELS);
 
   const getSVGPos = useCallback((e: React.MouseEvent) => {
     const svg = svgRef.current!;
@@ -134,11 +191,11 @@ export default function VAEViz({ accentColor = "#a855f7" }: { accentColor?: stri
   const kl = CLASSES.map(c => klDivergence(c.mu as unknown as number[], c.sigma));
 
   return (
-    <div className="rounded-2xl overflow-hidden border" style={{ backgroundColor: "var(--bg-card)", borderColor: "var(--border)" }}>
+    <VizCard>
       {/* Header */}
       <div className="flex items-center justify-between px-5 py-3 border-b" style={{ borderColor: "var(--border)" }}>
         <div className="flex items-center gap-3">
-          <span className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>VAE — Variational Autoencoder</span>
+          <span className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>{L.title}</span>
           {(["encode", "decode"] as const).map(t => (
             <button
               key={t}
@@ -150,7 +207,7 @@ export default function VAEViz({ accentColor = "#a855f7" }: { accentColor?: stri
                 border: `1px solid ${tab === t ? accentColor + "50" : "var(--border)"}`,
               }}
             >
-              {t === "encode" ? "Encode" : "Decode"}
+              {t === "encode" ? L.tabEncode : L.tabDecode}
             </button>
           ))}
         </div>
@@ -159,7 +216,7 @@ export default function VAEViz({ accentColor = "#a855f7" }: { accentColor?: stri
       <div className="flex" style={{ minHeight: 240 }}>
         {/* ── Left panel: Input samples ── */}
         <div className="flex flex-col items-center justify-center gap-2 px-4 py-4 border-r" style={{ borderColor: "var(--border)", minWidth: 130 }}>
-          <span className="text-xs font-semibold mb-2" style={{ color: "var(--text-muted)" }}>Input samples</span>
+          <span className="text-xs font-semibold mb-2" style={{ color: "var(--text-muted)" }}>{L.inputSamples}</span>
           {CLASSES.map((cls, ci) => (
             <button
               key={ci}
@@ -176,19 +233,19 @@ export default function VAEViz({ accentColor = "#a855f7" }: { accentColor?: stri
               <svg width={18} height={18} viewBox="0 0 18 18">
                 <ShapeIcon shape={cls.shape} x={9} y={9} size={13} color={cls.color} />
               </svg>
-              <span className="text-xs font-semibold" style={{ color: cls.color }}>Class {cls.name}</span>
+              <span className="text-xs font-semibold" style={{ color: cls.color }}>{L.classLabel(cls.name)}</span>
             </button>
           ))}
           <div className="mt-2 text-center">
             <span className="text-xs" style={{ color: "var(--text-muted)" }}>
-              {tab === "encode" ? "Encoder q(z|x)" : "Click class to set z"}
+              {tab === "encode" ? L.encodeHint : L.decodeHint}
             </span>
           </div>
         </div>
 
         {/* ── Middle panel: Latent space ── */}
         <div className="flex flex-col items-center flex-1">
-          <span className="text-xs font-semibold pt-2" style={{ color: "var(--text-muted)" }}>Latent space z ∈ ℝ²</span>
+          <span className="text-xs font-semibold pt-2" style={{ color: "var(--text-muted)" }}>{L.latentSpace}</span>
           <svg
             ref={svgRef}
             viewBox={`0 0 ${PANEL_W} ${PANEL_H}`}
@@ -292,7 +349,7 @@ export default function VAEViz({ accentColor = "#a855f7" }: { accentColor?: stri
                 exit={{ opacity: 0 }}
                 className="flex flex-col items-center gap-2 w-full"
               >
-                <span className="text-xs font-semibold" style={{ color: "var(--text-muted)" }}>Reparameterize</span>
+                <span className="text-xs font-semibold" style={{ color: "var(--text-muted)" }}>{L.reparamTitle}</span>
                 <div className="w-full rounded-xl p-2 text-center" style={{ backgroundColor: encCls.color + "15", border: `1px solid ${encCls.color}40` }}>
                   <div className="text-xs font-mono" style={{ color: encCls.color }}>
                     μ = [{encCls.mu[0]}, {encCls.mu[1]}]
@@ -326,12 +383,12 @@ export default function VAEViz({ accentColor = "#a855f7" }: { accentColor?: stri
                 exit={{ opacity: 0 }}
                 className="flex flex-col items-center gap-2 w-full"
               >
-                <span className="text-xs font-semibold" style={{ color: "var(--text-muted)" }}>Reconstruction</span>
+                <span className="text-xs font-semibold" style={{ color: "var(--text-muted)" }}>{L.recoTitle}</span>
                 <div className="text-xs text-center" style={{ color: "var(--text-muted)" }}>
                   z = [{z[0].toFixed(2)}, {z[1].toFixed(2)}]
                 </div>
                 <div className="w-full rounded-xl p-2 text-center" style={{ backgroundColor: nearCls.color + "15", border: `1px solid ${nearCls.color}40` }}>
-                  <div className="text-xs font-semibold" style={{ color: nearCls.color }}>Nearest: Class {nearCls.name}</div>
+                  <div className="text-xs font-semibold" style={{ color: nearCls.color }}>{L.nearest(nearCls.name)}</div>
                   <div className="text-xs" style={{ color: "var(--text-muted)" }}>dist: {nearDist.toFixed(2)}</div>
                 </div>
                 <svg width={54} height={54} viewBox="0 0 54 54">
@@ -346,7 +403,7 @@ export default function VAEViz({ accentColor = "#a855f7" }: { accentColor?: stri
                   p(x|z) → Class {nearCls.name}
                 </span>
                 <span className="text-xs" style={{ color: "var(--text-muted)" }}>
-                  {nearDist < 0.8 ? "High confidence" : nearDist < 1.5 ? "Medium confidence" : "Low confidence"}
+                  {nearDist < 0.8 ? L.confHigh : nearDist < 1.5 ? L.confMed : L.confLow}
                 </span>
               </motion.div>
             )}
@@ -374,19 +431,12 @@ export default function VAEViz({ accentColor = "#a855f7" }: { accentColor?: stri
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-4 border-t text-center" style={{ borderColor: "var(--border)" }}>
-        {[
-          { label: "Classes", value: "3", color: accentColor },
+      <StatGrid py="py-3" items={[
+          { label: L.statClasses, value: "3", color: accentColor },
           { label: "KL(A)", value: kl[0].toFixed(2), color: CLASSES[0].color },
           { label: "KL(B)", value: kl[1].toFixed(2), color: CLASSES[1].color },
           { label: "KL(C)", value: kl[2].toFixed(2), color: CLASSES[2].color },
-        ].map(({ label, value, color }) => (
-          <div key={label} className="py-3">
-            <div className="text-xs" style={{ color: "var(--text-muted)" }}>{label}</div>
-            <div className="text-sm font-bold font-mono" style={{ color }}>{value}</div>
-          </div>
-        ))}
-      </div>
-    </div>
+      ]} />
+    </VizCard>
   );
 }

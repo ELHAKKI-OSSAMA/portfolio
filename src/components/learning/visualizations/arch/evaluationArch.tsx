@@ -133,41 +133,42 @@ function BiasVarianceArch({ accent, vt }: { accent: string; vt: VT }) {
 // 15. Multiclass — two-row layout (OvA top, OvO bottom), all text inside boxes
 
 function MulticlassArch({ accent, vt }: { accent: string; vt: VT }) {
-  const W = 540, H = 250;
+  const W = 540, H = 300;
   const ac = vt.isDark ? "rgba(255,255,255,0.4)" : "rgba(0,0,0,0.35)";
   const purple = vt.isDark ? "#7c3aed" : "#8b5cf6";
   const green  = vt.isDark ? "#059669" : "#34d399";
   const nb     = vt.isDark ? "#334155" : "#e2e8f0";
 
-  // Common classifier box dimensions (wide enough for all labels)
-  const BX = 14, BW = 230, BH = 24;
+  // Common classifier box dimensions — narrower to give arrows room
+  const BX = 10, BW = 182, BH = 32;
 
-  // OvA row: y range 8..118 (h=110)
-  const OVA_BG_Y = 8, OVA_H = 110;
-  const ovaYs = [26, 54, 82];
+  // OvA row — boxes pushed down 16px so section title (y=22) sits above box 1 (y=38)
+  const OVA_BG_Y = 8, OVA_H = 128;   // section: 8 → 136
+  const ovaYs = [38, 70, 102];         // was [22,54,86]; box3 bottom=134 ✓
 
-  // OvO row: y range 126..236 (h=110)
-  const OVO_BG_Y = 126, OVO_H = 110;
-  const ovoYs = [144, 172, 200];
+  // OvO row — same treatment; OVO_BG_Y pushed down to follow OVA bottom + gap
+  const OVO_BG_Y = 144, OVO_H = 128;  // section: 144 → 272
+  const ovoYs = [174, 206, 238];       // was [140,172,204]; title at 158, box1 at 174 ✓
 
-  // Aggregation boxes on the right
-  const AGG_X = 258, AGG_W = 92, AGG_H = 52;
+  // Aggregation boxes — pushed right to make room for ~34px arrow gap
+  const AGG_X = 226, AGG_W = 88, AGG_H = 56;
   // Output boxes
-  const OUT_X = 360, OUT_W = 76;
+  const OUT_X = 330, OUT_W = 80;
 
   return (
     <svg viewBox={`0 0 ${W} ${H}`} className="w-full">
       {ARROW_DEFS("arr-mc", ac)}
 
       {/* ── OvA section (top row) ── */}
-      <rect x={6} y={OVA_BG_Y} width={246} height={OVA_H} rx={8}
+      <rect x={4} y={OVA_BG_Y} width={198} height={OVA_H} rx={8}
         fill={`${accent}07`} stroke={`${accent}25`} strokeWidth={1} strokeDasharray="4,3" />
-      <text x={129} y={OVA_BG_Y + 14} textAnchor="middle" fontSize={9} fontWeight="bold" fill={accent}>
+      <text x={103} y={OVA_BG_Y + 14} textAnchor="middle" fontSize={9} fontWeight="bold" fill={accent}>
         One-vs-All (OvA) — 3 classifiers
       </text>
       {["A","B","C"].map((c, i) => (
         <Box key={`ova-${c}`} x={BX} y={ovaYs[i]} w={BW} h={BH}
-          label={`Class ${c}  vs  All Others  →  P(y=${c}|x)`}
+          label={`Class ${c}  vs  All Others`}
+          sublabel={`→ P(y=${c} | x)`}
           bg={accent} textColor={textOn(accent)} rx={5} />
       ))}
       {/* Arrows from each OvA box to argmax */}
@@ -187,14 +188,15 @@ function MulticlassArch({ accent, vt }: { accent: string; vt: VT }) {
         bg={nb} textColor={vt.text} rx={8} />
 
       {/* ── OvO section (bottom row) ── */}
-      <rect x={6} y={OVO_BG_Y} width={246} height={OVO_H} rx={8}
+      <rect x={4} y={OVO_BG_Y} width={198} height={OVO_H} rx={8}
         fill={`${purple}08`} stroke={`${purple}25`} strokeWidth={1} strokeDasharray="4,3" />
-      <text x={129} y={OVO_BG_Y + 14} textAnchor="middle" fontSize={9} fontWeight="bold" fill={purple}>
+      <text x={103} y={OVO_BG_Y + 14} textAnchor="middle" fontSize={9} fontWeight="bold" fill={purple}>
         One-vs-One (OvO) — C(C−1)/2 = 3 classifiers
       </text>
       {[["A","B"],["A","C"],["B","C"]].map(([c1,c2], i) => (
         <Box key={`ovo-${c1}${c2}`} x={BX} y={ovoYs[i]} w={BW} h={BH}
-          label={`${c1}  vs  ${c2}  →  binary decision`}
+          label={`Class ${c1}  vs  Class ${c2}`}
+          sublabel="binary classifier → vote"
           bg={purple} textColor="white" rx={5} />
       ))}
       {ovoYs.map((y, i) => (

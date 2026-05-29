@@ -6,6 +6,8 @@
  */
 
 import { useVizTheme }                                         from "@/hooks/useVizTheme";
+import { VizCard, VizHeader, StatGrid, TabToggle } from "./shared";
+import { useVizLocale } from "@/hooks/useVizLocale";
 import { LinearRegressionArch, SVMArch, KNNArch, SVRArch, MLPArch } from "./arch/classicMLArch";
 import { DecisionTreeArch, GradientBoostingArch, BaggingArch } from "./arch/treesClassicArch";
 import { RandomForestArch, XGBoostArch, LightGBMArch, CatBoostArch } from "./arch/treesEnsembleArch";
@@ -25,33 +27,98 @@ export type ArchType =
   | "gan" | "vae"
   | "evaluation" | "bias-variance" | "multiclass";
 
-const LABELS: Record<ArchType, string> = {
-  "linear-regression": "Linear & Logistic Regression Architecture",
-  "decision-tree":     "Decision Tree Architecture",
-  "random-forest":     "Random Forest Architecture",
-  "gradient-boosting": "Gradient Boosting Architecture",
-  "xgboost":           "XGBoost Architecture",
-  "lightgbm":          "LightGBM — Leaf-wise Growth",
-  "catboost":          "CatBoost — Ordered Boosting + Symmetric Trees",
-  "bagging":           "Bagging (Bootstrap Aggregating) Architecture",
-  "svm":               "Support Vector Machine Geometry",
-  "knn":               "K-Nearest Neighbors Algorithm",
-  "svr":               "Support Vector Regression",
-  "mlp":               "Multi-Layer Perceptron (MLP) Architecture",
-  "cnn":               "Convolutional Neural Network Architecture",
-  "resnet":            "ResNet — Residual Connections",
-  "vit":               "Vision Transformer (ViT)",
-  "transformer":       "Transformer Encoder Architecture",
-  "bert":              "BERT — Bidirectional Encoder Representations",
-  "rnn":               "RNN — Recurrent Neural Network",
-  "lstm":              "LSTM Cell Architecture",
-  "gru":               "GRU — Gated Recurrent Unit",
-  "gan":               "GAN Training Loop",
-  "vae":               "Variational Autoencoder (VAE)",
-  "evaluation":        "Model Evaluation Pipeline",
-  "bias-variance":     "Bias–Variance Decomposition",
-  "multiclass":        "Multi-Class Classification Strategies",
-};
+const ARCH_DIAGRAM_LABELS = {
+  en: {
+    architectureChip: "Architecture",
+    titles: {
+      "linear-regression": "Linear & Logistic Regression Architecture",
+      "decision-tree":     "Decision Tree Architecture",
+      "random-forest":     "Random Forest Architecture",
+      "gradient-boosting": "Gradient Boosting Architecture",
+      "xgboost":           "XGBoost Architecture",
+      "lightgbm":          "LightGBM — Leaf-wise Growth",
+      "catboost":          "CatBoost — Ordered Boosting + Symmetric Trees",
+      "bagging":           "Bagging (Bootstrap Aggregating) Architecture",
+      "svm":               "Support Vector Machine Geometry",
+      "knn":               "K-Nearest Neighbors Algorithm",
+      "svr":               "Support Vector Regression",
+      "mlp":               "Multi-Layer Perceptron (MLP) Architecture",
+      "cnn":               "Convolutional Neural Network Architecture",
+      "resnet":            "ResNet — Residual Connections",
+      "vit":               "Vision Transformer (ViT)",
+      "transformer":       "Transformer Encoder Architecture",
+      "bert":              "BERT — Bidirectional Encoder Representations",
+      "rnn":               "RNN — Recurrent Neural Network",
+      "lstm":              "LSTM Cell Architecture",
+      "gru":               "GRU — Gated Recurrent Unit",
+      "gan":               "GAN Training Loop",
+      "vae":               "Variational Autoencoder (VAE)",
+      "evaluation":        "Model Evaluation Pipeline",
+      "bias-variance":     "Bias–Variance Decomposition",
+      "multiclass":        "Multi-Class Classification Strategies",
+    } as Record<ArchType, string>,
+  },
+  fr: {
+    architectureChip: "Architecture",
+    titles: {
+      "linear-regression": "Architecture Régression Linéaire & Logistique",
+      "decision-tree":     "Architecture Arbre de Décision",
+      "random-forest":     "Architecture Forêt Aléatoire",
+      "gradient-boosting": "Architecture Gradient Boosting",
+      "xgboost":           "Architecture XGBoost",
+      "lightgbm":          "LightGBM — Croissance feuille par feuille",
+      "catboost":          "CatBoost — Boosting ordonné + arbres symétriques",
+      "bagging":           "Architecture Bagging (agrégation bootstrap)",
+      "svm":               "Géométrie des Machines à Vecteurs de Support",
+      "knn":               "Algorithme K Plus Proches Voisins",
+      "svr":               "Régression à Vecteurs de Support",
+      "mlp":               "Architecture Perceptron Multicouche (MLP)",
+      "cnn":               "Architecture Réseau Neuronal Convolutif",
+      "resnet":            "ResNet — Connexions résiduelles",
+      "vit":               "Transformeur de vision (ViT)",
+      "transformer":       "Architecture Encodeur Transformer",
+      "bert":              "BERT — Représentations encodeur bidirectionnel",
+      "rnn":               "RNN — Réseau Neuronal Récurrent",
+      "lstm":              "Architecture cellule LSTM",
+      "gru":               "GRU — Unité récurrente à porte",
+      "gan":               "Boucle d'entraînement GAN",
+      "vae":               "Autoencodeur variationnel (VAE)",
+      "evaluation":        "Pipeline d'évaluation de modèle",
+      "bias-variance":     "Décomposition Biais–Variance",
+      "multiclass":        "Stratégies de classification multiclasse",
+    } as Record<ArchType, string>,
+  },
+  ar: {
+    architectureChip: "البنية",
+    titles: {
+      "linear-regression": "بنية الانحدار الخطي واللوجستي",
+      "decision-tree":     "بنية شجرة القرار",
+      "random-forest":     "بنية الغابة العشوائية",
+      "gradient-boosting": "بنية التعزيز التدريجي",
+      "xgboost":           "بنية XGBoost",
+      "lightgbm":          "LightGBM — نمو ورقة بورقة",
+      "catboost":          "CatBoost — التعزيز المرتب + الأشجار المتماثلة",
+      "bagging":           "بنية Bagging (التجميع بالتمهيد)",
+      "svm":               "هندسة آلة متجهات الدعم",
+      "knn":               "خوارزمية K من أقرب الجيران",
+      "svr":               "انحدار متجهات الدعم",
+      "mlp":               "بنية الشبكة الكاملة الاتصال (MLP)",
+      "cnn":               "بنية الشبكة العصبية الالتفافية",
+      "resnet":            "ResNet — الاتصالات المتبقية",
+      "vit":               "محول الرؤية (ViT)",
+      "transformer":       "بنية مشفر المحول",
+      "bert":              "BERT — تمثيلات المشفر ثنائي الاتجاه",
+      "rnn":               "RNN — الشبكة العصبية المتكررة",
+      "lstm":              "بنية خلية LSTM",
+      "gru":               "GRU — وحدة التكرار البوابية",
+      "gan":               "حلقة تدريب GAN",
+      "vae":               "المشفر الذاتي التنويعي (VAE)",
+      "evaluation":        "خط أنابيب تقييم النموذج",
+      "bias-variance":     "تحليل التحيز–التباين",
+      "multiclass":        "استراتيجيات التصنيف متعدد الأصناف",
+    } as Record<ArchType, string>,
+  },
+} as const;
 
 export default function ArchDiagram({
   type,
@@ -61,6 +128,7 @@ export default function ArchDiagram({
   accentColor?: string;
 }) {
   const vt = useVizTheme();
+  const L = useVizLocale(ARCH_DIAGRAM_LABELS);
   const props = { accent: accentColor, vt };
 
   const renderArch = () => {
@@ -100,9 +168,9 @@ export default function ArchDiagram({
       <div className="px-5 py-2.5 border-b flex items-center gap-2"
         style={{ borderColor: "var(--border)" }}>
         <span className="text-xs font-bold tracking-wide uppercase"
-          style={{ color: accentColor }}>Architecture</span>
+          style={{ color: accentColor }}>{L.architectureChip}</span>
         <span className="text-xs font-semibold" style={{ color: "var(--text-primary)" }}>
-          {LABELS[type]}
+          {L.titles[type]}
         </span>
       </div>
       <div className="p-4 overflow-x-auto">

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
+import { Inter, Cairo } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
-import { getMessages } from "next-intl/server";
+import { getMessages, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
 import Navbar from "@/components/layout/Navbar";
@@ -8,6 +9,21 @@ import Footer from "@/components/layout/Footer";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { PersonSchema, WebsiteSchema } from "@/components/seo/JsonLd";
 import "../globals.css";
+
+// ── Fonts loaded at build-time (no external request, no render-blocking) ──
+const inter = Inter({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700", "800"],
+  variable: "--font-inter",
+  display: "swap",
+});
+
+const cairo = Cairo({
+  subsets: ["arabic"],
+  weight: ["300", "400", "500", "600", "700", "800"],
+  variable: "--font-cairo",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://ismmax.com"),
@@ -97,18 +113,19 @@ export default async function LocaleLayout({
     notFound();
   }
 
+  // Enable static rendering — must be called before any next-intl API
+  setRequestLocale(locale);
+
   const messages = await getMessages();
   const isRtl = locale === "ar";
 
   return (
-    <html lang={locale} dir={isRtl ? "rtl" : "ltr"} className="h-full">
+    <html
+      lang={locale}
+      dir={isRtl ? "rtl" : "ltr"}
+      className={`h-full ${inter.variable} ${cairo.variable}`}
+    >
       <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Cairo:wght@300;400;500;600;700;800&display=swap"
-          rel="stylesheet"
-        />
         <link rel="alternate" type="application/rss+xml" title="Ossama Elhakki Blog" href="/feed.xml" />
         <PersonSchema />
         <WebsiteSchema />

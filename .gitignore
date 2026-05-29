@@ -39,3 +39,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Manim animation workspace (render cache, frames, temp files — 1 GB+)
+# Compiled videos are in public/manim/ instead
+/manim_videos/

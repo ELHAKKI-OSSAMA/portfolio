@@ -3,6 +3,44 @@
 import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useVizTheme } from "@/hooks/useVizTheme";
+import { useVizLocale } from "@/hooks/useVizLocale";
+import { VizCard, VizHeader, StatGrid, TabToggle } from "./shared";
+
+const RNN_LABELS = {
+  en: {
+    title: "RNN — Recurrent Neural Network",
+    subtitle: (step: number, token: string) => `step ${step}/4 · token: "${token}"`,
+    prev: "← Prev",
+    next: "Next token →",
+    vanishingGrad: (scale: string) => `⚠ Vanishing gradient: signal at t=1 is ${scale}× original — long-range memory lost`,
+    statToken: "Token",
+    statMean: "h̄ (mean)",
+    statOutput: "Output",
+    statGradScale: "Grad scale",
+  },
+  fr: {
+    title: "RNN — Réseau Neuronal Récurrent",
+    subtitle: (step: number, token: string) => `étape ${step}/4 · token : « ${token} »`,
+    prev: "← Préc",
+    next: "Token suivant →",
+    vanishingGrad: (scale: string) => `⚠ Gradient évanescent : le signal à t=1 est ${scale}× l'original — mémoire long terme perdue`,
+    statToken: "Token",
+    statMean: "h̄ (moy.)",
+    statOutput: "Sortie",
+    statGradScale: "Éch. gradient",
+  },
+  ar: {
+    title: "RNN — شبكة عصبية متكررة",
+    subtitle: (step: number, token: string) => `خطوة ${step}/4 · رمز: "${token}"`,
+    prev: "→ السابق",
+    next: "الرمز التالي ←",
+    vanishingGrad: (scale: string) => `⚠ تلاشي التدرج: الإشارة عند t=1 تساوي ${scale}× الأصل — فُقدت الذاكرة بعيدة المدى`,
+    statToken: "رمز",
+    statMean: "h̄ (متوسط)",
+    statOutput: "مخرج",
+    statGradScale: "مقياس التدرج",
+  },
+} as const;
 
 const W = 520, H = 300;
 const TOKENS = ["The", "cat", "sat", "mat"];
@@ -97,6 +135,7 @@ function cellX(t: number) {
 export default function RNNViz({ accentColor = "#06b6d4" }: { accentColor?: string }) {
   const [activeStep, setActiveStep] = useState(0);
   const vt = useVizTheme();
+  const L = useVizLocale(RNN_LABELS);
 
   const steps = useMemo(() => computeRNN(), []);
 
@@ -112,13 +151,13 @@ export default function RNNViz({ accentColor = "#06b6d4" }: { accentColor?: stri
   const gradientWarning = activeStep > 2;
 
   return (
-    <div className="rounded-2xl overflow-hidden border" style={{ backgroundColor: "var(--bg-card)", borderColor: "var(--border)" }}>
+    <VizCard>
       {/* Header */}
       <div className="flex items-center justify-between px-5 py-3 border-b" style={{ borderColor: "var(--border)" }}>
         <div>
-          <span className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>RNN — Recurrent Neural Network</span>
+          <span className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>{L.title}</span>
           <span className="text-xs ml-2" style={{ color: "var(--text-muted)" }}>
-            step {activeStep + 1}/4 · token: "{TOKENS[activeStep]}"
+            {L.subtitle(activeStep + 1, TOKENS[activeStep])}
           </span>
         </div>
         <div className="flex items-center gap-2">
@@ -132,7 +171,7 @@ export default function RNNViz({ accentColor = "#06b6d4" }: { accentColor?: stri
               border: `1px solid ${activeStep > 0 ? accentColor + "50" : "var(--border)"}`,
             }}
           >
-            ← Prev
+            {L.prev}
           </button>
           <button
             disabled={activeStep === 3}
@@ -144,7 +183,7 @@ export default function RNNViz({ accentColor = "#06b6d4" }: { accentColor?: stri
               border: `1px solid ${activeStep < 3 ? accentColor + "50" : "var(--border)"}`,
             }}
           >
-            Next token →
+            {L.next}
           </button>
         </div>
       </div>
@@ -160,8 +199,13 @@ export default function RNNViz({ accentColor = "#06b6d4" }: { accentColor?: stri
           const active = t <= activeStep;
           const cx = cellX(t);
           return (
-            <g key={`x-${t}`}>
-              <motion.rect
+            <motion.g
+              key={`x-${t}`}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: t === activeStep ? 0.05 : 0 }}
+            >
+              <rect
                 x={cx}
                 y={ROW_Y[0]}
                 width={CELL_W}
@@ -170,9 +214,6 @@ export default function RNNViz({ accentColor = "#06b6d4" }: { accentColor?: stri
                 fill={active ? TOKEN_COLORS[t] + "25" : vt.surface}
                 stroke={active ? TOKEN_COLORS[t] : vt.border}
                 strokeWidth={active ? 1.5 : 1}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: t === activeStep ? 0.05 : 0 }}
               />
               <text
                 x={cx + CELL_W / 2}
@@ -193,7 +234,7 @@ export default function RNNViz({ accentColor = "#06b6d4" }: { accentColor?: stri
               >
                 x_{t + 1}
               </text>
-            </g>
+            </motion.g>
           );
         })}
 
@@ -232,25 +273,28 @@ export default function RNNViz({ accentColor = "#06b6d4" }: { accentColor?: stri
                 animate={{ opacity: 1, scaleY: active ? 1 : 0.5 }}
                 transition={{ delay: t === activeStep ? 0.2 : 0 }}
               />
-              {/* Bar chart inside hidden cell */}
+              {/* Bar chart inside hidden cell — motion.g owns opacity, plain rect owns geometry */}
               {active && step.h.map((hv, di) => {
                 const barMaxH = CELL_H - 16;
                 const barH = Math.abs(hv) * barMaxH * 0.9;
                 const barW = (CELL_W - 12) / 4 - 2;
                 const bx = cx + 6 + di * (barW + 2);
                 return (
-                  <motion.rect
+                  <motion.g
                     key={di}
-                    x={bx}
-                    y={ROW_Y[1] + CELL_H - 8 - barH}
-                    width={barW}
-                    height={barH}
-                    rx={2}
-                    fill={barColor(hv)}
-                    initial={{ height: 0, y: ROW_Y[1] + CELL_H - 8 }}
-                    animate={{ height: barH, y: ROW_Y[1] + CELL_H - 8 - barH }}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
                     transition={{ delay: t === activeStep ? 0.3 + di * 0.05 : 0 }}
-                  />
+                  >
+                    <rect
+                      x={bx}
+                      y={ROW_Y[1] + CELL_H - 8 - barH}
+                      width={barW}
+                      height={barH}
+                      rx={2}
+                      fill={barColor(hv)}
+                    />
+                  </motion.g>
                 );
               })}
               <text
@@ -374,7 +418,7 @@ export default function RNNViz({ accentColor = "#06b6d4" }: { accentColor?: stri
                 rx={6} fill="#ff6b6b22" stroke="#ff6b6b60" strokeWidth={1}
               />
               <text x={52} y={ROW_Y[2] + CELL_H + 20} fontSize={9} fill="#ff6b6b">
-                ⚠ Vanishing gradient: signal at t=1 is {(0.15 ** (activeStep - 1)).toFixed(4)}× original — long-range memory lost
+                {L.vanishingGrad((0.15 ** (activeStep - 1)).toFixed(4))}
               </text>
             </motion.g>
           )}
@@ -413,19 +457,12 @@ export default function RNNViz({ accentColor = "#06b6d4" }: { accentColor?: stri
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-4 border-t text-center" style={{ borderColor: "var(--border)" }}>
-        {[
-          { label: "Token", value: `"${TOKENS[activeStep]}"`, color: TOKEN_COLORS[activeStep] },
-          { label: "h̄ (mean)", value: (steps[activeStep].h.reduce((a, b) => a + Math.abs(b), 0) / 4).toFixed(3), color: accentColor },
-          { label: "Output", value: steps[activeStep].y.toFixed(4), color: "var(--text-primary)" },
-          { label: "Grad scale", value: activeStep > 0 ? (0.15 ** activeStep).toExponential(1) : "1.0", color: activeStep > 2 ? "#ff6b6b" : "#22c55e" },
-        ].map(({ label, value, color }) => (
-          <div key={label} className="py-3">
-            <div className="text-xs" style={{ color: "var(--text-muted)" }}>{label}</div>
-            <div className="text-sm font-bold font-mono" style={{ color }}>{value}</div>
-          </div>
-        ))}
-      </div>
-    </div>
+      <StatGrid py="py-3" items={[
+          { label: L.statToken, value: `"${TOKENS[activeStep]}"`, color: TOKEN_COLORS[activeStep] },
+          { label: L.statMean, value: (steps[activeStep].h.reduce((a, b) => a + Math.abs(b), 0) / 4).toFixed(3), color: accentColor },
+          { label: L.statOutput, value: steps[activeStep].y.toFixed(4), color: "var(--text-primary)" },
+          { label: L.statGradScale, value: activeStep > 0 ? (0.15 ** activeStep).toExponential(1) : "1.0", color: activeStep > 2 ? "#ff6b6b" : "#22c55e" },
+      ]} />
+    </VizCard>
   );
 }

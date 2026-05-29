@@ -1,5 +1,6 @@
 "use client";
 import { motion } from "framer-motion";
+import { useLocale } from "next-intl";
 import {
   Arrow, Block,
   BLOCK_H, BLOCK_W, PATCH_COLORS,
@@ -7,9 +8,38 @@ import {
   type VT,
 } from './helpers';
 
+const VIT_LABELS = {
+  en: {
+    imageLabel: "8×8 image",
+    patchEmbeddings: "patch embeddings",
+    patchTokens: "16 patch tokens",
+    posEncoding: "+ E_pos added to each token",
+    classLabel: "🐱 cat",
+    formula: "z = [x_cls; x_p1·E; … + E_pos] → Transformer L layers → MLP head → class",
+  },
+  fr: {
+    imageLabel: "image 8×8",
+    patchEmbeddings: "embeddings de patches",
+    patchTokens: "16 tokens de patches",
+    posEncoding: "+ E_pos ajouté à chaque token",
+    classLabel: "🐱 chat",
+    formula: "z = [x_cls; x_p1·E; … + E_pos] → Transformer L couches → tête MLP → classe",
+  },
+  ar: {
+    imageLabel: "صورة 8×8",
+    patchEmbeddings: "تضمينات الرقع",
+    patchTokens: "16 رمز رقعة",
+    posEncoding: "+ E_pos يُضاف لكل رمز",
+    classLabel: "🐱 قطة",
+    formula: "z = [x_cls; x_p1·E; … + E_pos] → Transformer L طبقات → رأس MLP → صنف",
+  },
+} as const;
+
 export default function ViTTab({ step, accentColor, vt }: {
   step: number; accentColor: string; vt: VT;
 }) {
+  const locale = useLocale();
+  const L = VIT_LABELS[(locale as keyof typeof VIT_LABELS) in VIT_LABELS ? (locale as keyof typeof VIT_LABELS) : "en"];
   const W = 520, H = 240;
   const imgCellSize = 10;
   const imgSize = 8 * imgCellSize; // 80
@@ -31,7 +61,7 @@ export default function ViTTab({ step, accentColor, vt }: {
     <svg viewBox={`0 0 ${W} ${H}`} className="w-full">
       {/* ── Image ── */}
       <text x={imgX + imgSize / 2} y={imgY - 8} textAnchor="middle" fontSize={9} fill={vt.textMuted}>
-        8×8 image
+        {L.imageLabel}
       </text>
       {VIT_IMAGE.map((row, r) => row.map((v, c) => {
         const patchR = Math.floor(r / 2), patchC = Math.floor(c / 2);
@@ -79,7 +109,7 @@ export default function ViTTab({ step, accentColor, vt }: {
         <g>
           <text x={patchTokenX + (7 * tokenGap + tokenW) / 2} y={patchTokenY - 8}
             textAnchor="middle" fontSize={8.5} fill={vt.textMuted}>
-            patch embeddings
+            {L.patchEmbeddings}
           </text>
           {Array.from({ length: numPatches }, (_, pi) => {
             const row = Math.floor(pi / 8);
@@ -101,7 +131,7 @@ export default function ViTTab({ step, accentColor, vt }: {
           <text x={patchTokenX + (7 * tokenGap + tokenW) / 2}
             y={patchTokenY + 2 * tokenH + 6 + 13}
             textAnchor="middle" fontSize={7.5} fill={vt.textMuted}>
-            16 patch tokens
+            {L.patchTokens}
           </text>
         </g>
       )}
@@ -123,7 +153,7 @@ export default function ViTTab({ step, accentColor, vt }: {
           <text x={patchTokenX + (clsX + tokenW - patchTokenX) / 2}
             y={patchTokenY + 2 * tokenH + 6 + 26}
             textAnchor="middle" fontSize={7} fill={accentColor} opacity={0.85}>
-            + E_pos added to each token
+            {L.posEncoding}
           </text>
         </g>
       )}
@@ -144,14 +174,14 @@ export default function ViTTab({ step, accentColor, vt }: {
           <Block x={mlpX} y={transY} label="MLP→cls" color="#22c55e" active vt={vt} />
           <text x={mlpX + BLOCK_W / 2} y={transY + BLOCK_H + 16}
             textAnchor="middle" fontSize={9} fill="#22c55e">
-            🐱 cat
+            {L.classLabel}
           </text>
         </>
       )}
 
       {/* Formula */}
       <text x={W / 2} y={H - 12} textAnchor="middle" fontSize={8} fill={vt.textMuted}>
-        z = [x_cls; x_p1·E; … + E_pos] → Transformer L layers → MLP head → class
+        {L.formula}
       </text>
     </svg>
   );

@@ -4,6 +4,47 @@ import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Plus, RotateCcw } from "lucide-react";
 import { useVizTheme } from "@/hooks/useVizTheme";
+import { useVizLocale } from "@/hooks/useVizLocale";
+import { VizCard, VizHeader, StatGrid, TabToggle } from "./shared";
+
+const GB_LABELS = {
+  en: {
+    title: "Gradient Boosting — Sequential Correction",
+    subtitle: "each tree targets residuals from previous",
+    addTreeBtn: "Add Tree",
+    trueFuncLegend: "── True function (hidden)",
+    ensembleLegend: "── Ensemble prediction",
+    treeChip: (i: number) => `Tree ${i + 1}`,
+    hint: 'Click "Add Tree" to start boosting',
+    treesLabel: "Trees",
+    mseLabel: "MSE",
+    improvementLabel: "Improvement",
+  },
+  fr: {
+    title: "Gradient Boosting — Correction Séquentielle",
+    subtitle: "chaque arbre cible les résidus du précédent",
+    addTreeBtn: "Ajouter Arbre",
+    trueFuncLegend: "── Fonction vraie (cachée)",
+    ensembleLegend: "── Prédiction d'ensemble",
+    treeChip: (i: number) => `Arbre ${i + 1}`,
+    hint: 'Cliquez "Ajouter Arbre" pour commencer le boosting',
+    treesLabel: "Arbres",
+    mseLabel: "ECM",
+    improvementLabel: "Amélioration",
+  },
+  ar: {
+    title: "Gradient Boosting — تصحيح تسلسلي",
+    subtitle: "كل شجرة تستهدف بواقي الشجرة السابقة",
+    addTreeBtn: "إضافة شجرة",
+    trueFuncLegend: "── الدالة الحقيقية (مخفية)",
+    ensembleLegend: "── تنبؤ المجموعة",
+    treeChip: (i: number) => `شجرة ${i + 1}`,
+    hint: 'انقر "إضافة شجرة" لبدء التعزيز',
+    treesLabel: "الأشجار",
+    mseLabel: "MSE",
+    improvementLabel: "التحسين",
+  },
+} as const;
 
 const W = 520, H = 260, PAD = 40;
 const N_POINTS = 25;
@@ -44,6 +85,7 @@ const COLORS = ["#6c63ff", "#00d4aa", "#f59e0b", "#ff6b6b", "#ec4899", "#06b6d4"
 export default function GradientBoostingViz({ accentColor = "#f59e0b" }: { accentColor?: string }) {
   const [numTrees, setNumTrees] = useState(0);
   const vt = useVizTheme();
+  const L = useVizLocale(GB_LABELS);
   const xs = SEED_POINTS.map(p => p.x);
   const ys = SEED_POINTS.map(p => p.y);
 
@@ -82,17 +124,14 @@ export default function GradientBoostingViz({ accentColor = "#f59e0b" }: { accen
     pts.map((p, i) => `${i === 0 ? "M" : "L"}${toCanvasX(p.x)},${toCanvasY(p.y, yMin, yMax)}`).join(" ");
 
   return (
-    <div
-      className="rounded-2xl overflow-hidden border"
-      style={{ backgroundColor: "var(--bg-card)", borderColor: "var(--border)" }}
-    >
+    <VizCard>
       <div className="flex items-center justify-between px-5 py-3 border-b" style={{ borderColor: "var(--border)" }}>
         <div>
           <span className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
-            Gradient Boosting — Sequential Correction
+            {L.title}
           </span>
           <span className="text-xs ml-2" style={{ color: "var(--text-muted)" }}>
-            each tree targets residuals from previous
+            {L.subtitle}
           </span>
         </div>
         <div className="flex items-center gap-2">
@@ -107,7 +146,7 @@ export default function GradientBoostingViz({ accentColor = "#f59e0b" }: { accen
             }}
           >
             <Plus size={11} />
-            Add Tree
+            {L.addTreeBtn}
           </button>
           <button
             onClick={() => setNumTrees(0)}
@@ -175,8 +214,8 @@ export default function GradientBoostingViz({ accentColor = "#f59e0b" }: { accen
         })}
 
         {/* Legend */}
-        <text x={PAD + 4} y={PAD + 14} fontSize={10} fill={vt.textMuted}>── True function (hidden)</text>
-        <text x={PAD + 4} y={PAD + 26} fontSize={10} fill={accentColor}>── Ensemble prediction</text>
+        <text x={PAD + 4} y={PAD + 14} fontSize={10} fill={vt.textMuted}>{L.trueFuncLegend}</text>
+        <text x={PAD + 4} y={PAD + 26} fontSize={10} fill={accentColor}>{L.ensembleLegend}</text>
       </svg>
 
       {/* Tree chips */}
@@ -189,12 +228,12 @@ export default function GradientBoostingViz({ accentColor = "#f59e0b" }: { accen
             className="px-2.5 py-1 rounded-lg text-xs font-semibold"
             style={{ backgroundColor: `${COLORS[i]}20`, color: COLORS[i], border: `1px solid ${COLORS[i]}40` }}
           >
-            Tree {i + 1}
+            {L.treeChip(i)}
           </motion.span>
         ))}
         {numTrees === 0 && (
           <span className="text-xs" style={{ color: "var(--text-muted)" }}>
-            Click "Add Tree" to start boosting
+            {L.hint}
           </span>
         )}
       </div>
@@ -202,9 +241,9 @@ export default function GradientBoostingViz({ accentColor = "#f59e0b" }: { accen
       {/* Stats */}
       <div className="grid grid-cols-3 border-t text-center" style={{ borderColor: "var(--border)" }}>
         {[
-          { label: "Trees", value: numTrees.toString() },
-          { label: "MSE", value: mse.toFixed(3) },
-          { label: "Improvement", value: `${((1 - mse / baseMse) * 100).toFixed(1)}%` },
+          { label: L.treesLabel, value: numTrees.toString() },
+          { label: L.mseLabel, value: mse.toFixed(3) },
+          { label: L.improvementLabel, value: `${((1 - mse / baseMse) * 100).toFixed(1)}%` },
         ].map(({ label, value }) => (
           <div key={label} className="py-3">
             <div className="text-xs" style={{ color: "var(--text-muted)" }}>{label}</div>
@@ -212,6 +251,6 @@ export default function GradientBoostingViz({ accentColor = "#f59e0b" }: { accen
           </div>
         ))}
       </div>
-    </div>
+    </VizCard>
   );
 }

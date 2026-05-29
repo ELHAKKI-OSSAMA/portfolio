@@ -4,6 +4,65 @@ import { useState, useMemo, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { Play, Pause, RotateCcw } from "lucide-react";
 import { useVizTheme } from "@/hooks/useVizTheme";
+import { useVizLocale } from "@/hooks/useVizLocale";
+import { VizCard, VizHeader, StatGrid, TabToggle } from "./shared";
+
+const GAN_LABELS = {
+  en: {
+    title: "GAN — Adversarial Training",
+    epochOf: (ep: number, total: number, stage: string) => `epoch ${ep}/${total} · ${stage}`,
+    stageFar: "Generator far from real",
+    stageConverging: "Generator converging…",
+    stageEquilibrium: "Near Nash equilibrium",
+    pause: "Pause",
+    replay: "↺ Replay",
+    train: "Train",
+    legendReal: "Real p(x)",
+    legendGen: "Generator G(z)",
+    legendDisc: "Discriminator D(x) →",
+    nashLabel: "D(x) ≈ 0.5 everywhere",
+    statEpoch: "Epoch",
+    statGenMu: "Gen μ",
+    statKL: "KL Div",
+    statDiscAcc: "Disc Acc",
+  },
+  fr: {
+    title: "GAN — Entraînement Adversarial",
+    epochOf: (ep: number, total: number, stage: string) => `époque ${ep}/${total} · ${stage}`,
+    stageFar: "Générateur loin du réel",
+    stageConverging: "Générateur convergeant…",
+    stageEquilibrium: "Proche de l'équilibre de Nash",
+    pause: "Pause",
+    replay: "↺ Rejouer",
+    train: "Entraîner",
+    legendReal: "Réel p(x)",
+    legendGen: "Générateur G(z)",
+    legendDisc: "Discriminateur D(x) →",
+    nashLabel: "D(x) ≈ 0.5 partout",
+    statEpoch: "Époque",
+    statGenMu: "Gen μ",
+    statKL: "Div. KL",
+    statDiscAcc: "Préc. disc.",
+  },
+  ar: {
+    title: "GAN — التدريب التنافسي",
+    epochOf: (ep: number, total: number, stage: string) => `حقبة ${ep}/${total} · ${stage}`,
+    stageFar: "المولّد بعيد عن الحقيقي",
+    stageConverging: "المولّد يتقارب…",
+    stageEquilibrium: "قريب من توازن ناش",
+    pause: "إيقاف مؤقت",
+    replay: "↺ إعادة",
+    train: "تدريب",
+    legendReal: "حقيقي p(x)",
+    legendGen: "المولّد G(z)",
+    legendDisc: "المميّز D(x) →",
+    nashLabel: "D(x) ≈ 0.5 في كل مكان",
+    statEpoch: "حقبة",
+    statGenMu: "Gen μ",
+    statKL: "انحراف KL",
+    statDiscAcc: "دقة المميّز",
+  },
+} as const;
 
 const W = 520, H = 240, PAD = 42;
 const MAX_EPOCH = 40;
@@ -68,6 +127,7 @@ export default function GANViz({ accentColor = "#a855f7" }: { accentColor?: stri
   const [isPlaying, setIsPlaying] = useState(false);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const vt = useVizTheme();
+  const L = useVizLocale(GAN_LABELS);
 
   // Auto-advance timer
   useEffect(() => {
@@ -128,25 +188,22 @@ export default function GANViz({ accentColor = "#a855f7" }: { accentColor?: stri
   }, [epoch, genMu, genSigma]);
 
   const stage =
-    epoch < 8  ? { label: "Generator far from real", color: "#ff6b6b" }
-    : epoch < 24 ? { label: "Generator converging…",   color: "#f59e0b" }
-    :              { label: "Near Nash equilibrium",    color: accentColor };
+    epoch < 8  ? { label: L.stageFar,         color: "#ff6b6b" }
+    : epoch < 24 ? { label: L.stageConverging, color: "#f59e0b" }
+    :              { label: L.stageEquilibrium, color: accentColor };
 
   const totalEpochs = MAX_EPOCH;
 
   return (
-    <div
-      className="rounded-2xl overflow-hidden border"
-      style={{ backgroundColor: "var(--bg-card)", borderColor: "var(--border)" }}
-    >
+    <VizCard>
       {/* Header */}
       <div className="flex items-center justify-between px-5 py-3 border-b" style={{ borderColor: "var(--border)" }}>
         <div>
           <span className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
-            GAN — Adversarial Training
+            {L.title}
           </span>
           <span className="text-xs ml-2" style={{ color: "var(--text-muted)" }}>
-            epoch {epoch}/{totalEpochs} · {stage.label}
+            {L.epochOf(epoch, totalEpochs, stage.label)}
           </span>
         </div>
         <div className="flex items-center gap-2">
@@ -163,10 +220,10 @@ export default function GANViz({ accentColor = "#a855f7" }: { accentColor?: stri
             }}
           >
             {isPlaying
-              ? <><Pause size={11} /> Pause</>
+              ? <><Pause size={11} /> {L.pause}</>
               : epoch >= MAX_EPOCH
-              ? "↺ Replay"
-              : <><Play size={11} /> Train</>}
+              ? L.replay
+              : <><Play size={11} /> {L.train}</>}
           </button>
           <button
             onClick={() => { setEpoch(0); setIsPlaying(false); }}
@@ -238,7 +295,7 @@ export default function GANViz({ accentColor = "#a855f7" }: { accentColor?: stri
               fill={`${accentColor}25`} stroke={`${accentColor}50`} strokeWidth={1} />
             <text x={toSX(REAL_MU)} y={PAD + 14} textAnchor="middle" fontSize={8}
               fill={accentColor} fontWeight="bold">
-              D(x) ≈ 0.5 everywhere
+              {L.nashLabel}
             </text>
           </motion.g>
         )}
@@ -254,13 +311,13 @@ export default function GANViz({ accentColor = "#a855f7" }: { accentColor?: stri
         {/* ── Legend ── */}
         <line x1={PAD + 4} y1={PAD + 12} x2={PAD + 22} y2={PAD + 12}
           stroke="#00d4aa" strokeWidth={2.5} />
-        <text x={PAD + 26} y={PAD + 16} fontSize={8} fill="#00d4aa">Real p(x)</text>
+        <text x={PAD + 26} y={PAD + 16} fontSize={8} fill="#00d4aa">{L.legendReal}</text>
         <line x1={PAD + 4} y1={PAD + 26} x2={PAD + 22} y2={PAD + 26}
           stroke={accentColor} strokeWidth={2.5} />
-        <text x={PAD + 26} y={PAD + 30} fontSize={8} fill={accentColor}>Generator G(z)</text>
+        <text x={PAD + 26} y={PAD + 30} fontSize={8} fill={accentColor}>{L.legendGen}</text>
         <line x1={PAD + 4} y1={PAD + 40} x2={PAD + 22} y2={PAD + 40}
           stroke="#f59e0b" strokeWidth={1.5} strokeDasharray="5,4" />
-        <text x={PAD + 26} y={PAD + 44} fontSize={8} fill="#f59e0b">Discriminator D(x) →</text>
+        <text x={PAD + 26} y={PAD + 44} fontSize={8} fill="#f59e0b">{L.legendDisc}</text>
       </svg>
 
       {/* Progress bar */}
@@ -276,19 +333,12 @@ export default function GANViz({ accentColor = "#a855f7" }: { accentColor?: stri
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-4 border-t text-center" style={{ borderColor: "var(--border)" }}>
-        {[
-          { label: "Epoch",      value: epoch.toString(),         color: accentColor },
-          { label: "Gen μ",      value: genMu.toFixed(2),         color: accentColor },
-          { label: "KL Div",     value: kl.toFixed(3),            color: "#ff6b6b" },
-          { label: "Disc Acc",   value: `${(discAcc * 100).toFixed(0)}%`, color: "#f59e0b" },
-        ].map(({ label, value, color }) => (
-          <div key={label} className="py-2.5">
-            <div className="text-xs" style={{ color: "var(--text-muted)" }}>{label}</div>
-            <div className="text-sm font-bold font-mono" style={{ color }}>{value}</div>
-          </div>
-        ))}
-      </div>
-    </div>
+      <StatGrid py="py-2.5" items={[
+          { label: L.statEpoch,   value: epoch.toString(),                    color: accentColor },
+          { label: L.statGenMu,  value: genMu.toFixed(2),                    color: accentColor },
+          { label: L.statKL,     value: kl.toFixed(3),                       color: "#ff6b6b" },
+          { label: L.statDiscAcc, value: `${(discAcc * 100).toFixed(0)}%`,   color: "#f59e0b" },
+      ]} />
+    </VizCard>
   );
 }
