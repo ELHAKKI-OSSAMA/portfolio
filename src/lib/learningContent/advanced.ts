@@ -273,27 +273,53 @@ def stack_oof(models, X_train, y_train, X_test, n_folds=5):
         heading: "Softmax Multi-class Classification",
         code: `import torch
 import torch.nn as nn
+from sklearn.datasets import make_classification
+from sklearn.model_selection import train_test_split
+from sklearn.multiclass import OneVsRestClassifier, OneVsOneClassifier
+from sklearn.svm import SVC
+
+# ── Sample data ────────────────────────────────────────────────────────
+X_np, y_np = make_classification(n_samples=300, n_features=8,
+                                  n_classes=3, n_informative=6, random_state=42)
+X_train_np, X_test_np, y_train_np, _ = train_test_split(
+    X_np, y_np, test_size=0.2, random_state=42)
+
+# ── PyTorch multiclass setup ───────────────────────────────────────────
+K = 3                                       # number of classes
+batch = 16
+
+# Tiny 2-layer net for the demo
+class SimpleNet(nn.Module):
+    def __init__(self): super().__init__(); self.fc = nn.Linear(8, K)
+    def forward(self, x): return self.fc(x)
+
+model = SimpleNet()
+x = torch.randn(batch, 8)                   # one mini-batch
+y = torch.randint(0, K, (batch,))           # class indices
+
+# Class weights (handle imbalance)
+class_weights = torch.tensor([1.0, 2.0, 1.5])   # weight rarer classes higher
 
 # Softmax + Cross-Entropy (combined for numerical stability)
 criterion = nn.CrossEntropyLoss(
     weight=class_weights,    # For imbalanced classes
-    label_smoothing=0.1       # Prevents overconfident predictions
+    label_smoothing=0.1      # Prevents overconfident predictions
 )
 
 # Model outputs raw logits (no softmax in forward pass)
 logits = model(x)            # Shape: (batch, K)
 loss = criterion(logits, y)  # y contains class indices
+print(f"Multiclass CE loss: {loss.item():.4f}")
 
 # Predictions
 probs = torch.softmax(logits, dim=-1)
 preds = probs.argmax(dim=-1)
 
 # Sklearn: OvR (OvA) strategy
-from sklearn.multiclass import OneVsRestClassifier, OneVsOneClassifier
-from sklearn.svm import SVC
-
 ovr = OneVsRestClassifier(SVC(kernel='rbf', probability=True))
-ovo = OneVsOneClassifier(SVC(kernel='rbf'))`,
+ovo = OneVsOneClassifier(SVC(kernel='rbf'))
+ovr.fit(X_train_np, y_train_np)
+print(f"OvR accuracy: {ovr.score(X_test_np, _):.3f}")`,
         language: "python",
       },
     ],

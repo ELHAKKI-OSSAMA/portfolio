@@ -62,6 +62,12 @@ export const supervisedContent: Record<string, TopicContent> = {
         heading: "From Scratch in NumPy",
         text: "The full gradient descent implementation in 12 lines:",
         code: `import numpy as np
+from sklearn.datasets import make_regression
+
+# ── Sample data ────────────────────────────────────────────────────────
+X_raw, y = make_regression(n_samples=200, n_features=5, noise=10, random_state=42)
+X = np.c_[np.ones(len(X_raw)), X_raw]   # prepend bias column
+lam = 0.1                                 # Ridge regularisation strength
 
 class LinearRegression:
     def __init__(self, lr=0.01, n_iter=1000):
@@ -80,10 +86,17 @@ class LinearRegression:
     def predict(self, X):
         return X @ self.beta
 
+# Demo
+model = LinearRegression(lr=0.01, n_iter=1000).fit(X, y)
+print("GD beta:", model.beta[:3].round(2))
+
 # Closed-form (Normal Equation):
 beta_ols = np.linalg.solve(X.T @ X, X.T @ y)
 # Ridge (L2 regularization):
-beta_ridge = np.linalg.solve(X.T @ X + lam*np.eye(p), X.T @ y)`,
+p = X.shape[1]
+beta_ridge = np.linalg.solve(X.T @ X + lam * np.eye(p), X.T @ y)
+print("OLS beta:  ", beta_ols[:3].round(2))
+print("Ridge beta:", beta_ridge[:3].round(2))`,
         language: "python",
       },
       {
@@ -157,8 +170,17 @@ beta_ridge = np.linalg.solve(X.T @ X + lam*np.eye(p), X.T @ y)`,
         type: "code",
         heading: "Production Pattern",
         code: `from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import cross_val_score
+from sklearn.model_selection import cross_val_score, train_test_split
+from sklearn.datasets import make_classification
+import pandas as pd
 import shap
+
+# ── Sample data ────────────────────────────────────────────────────────
+X_raw, y = make_classification(n_samples=500, n_features=10,
+                                n_informative=5, random_state=42)
+feature_names = [f"feature_{i}" for i in range(X_raw.shape[1])]
+X_train, X_test, y_train, y_test = train_test_split(
+    X_raw, y, test_size=0.2, random_state=42)
 
 # Train
 rf = RandomForestClassifier(
@@ -175,7 +197,7 @@ print(f"OOB Score: {rf.oob_score_:.4f}")
 
 # Feature importance (Mean Decrease in Impurity)
 importances = pd.Series(rf.feature_importances_, index=feature_names)
-importances.nlargest(20).plot(kind='barh')
+importances.nlargest(20).sort_values().plot(kind='barh')
 
 # SHAP for correct feature importance
 explainer = shap.TreeExplainer(rf)
@@ -264,6 +286,16 @@ shap_values = explainer.shap_values(X_test)`,
         heading: "Production LightGBM with Optuna",
         code: `import lightgbm as lgb
 import optuna
+import numpy as np
+from sklearn.datasets import make_classification
+from sklearn.model_selection import train_test_split
+
+# ── Sample data ────────────────────────────────────────────────────────
+X, y = make_classification(n_samples=1000, n_features=20,
+                            n_informative=10, random_state=42)
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42)
+dtrain = lgb.Dataset(X_train, label=y_train)
 
 def objective(trial):
     params = {
@@ -332,7 +364,13 @@ study.optimize(objective, n_trials=100)`,
         code: `from sklearn.svm import SVC, SVR
 from sklearn.preprocessing import StandardScaler
 from sklearn.pipeline import Pipeline
-from sklearn.model_selection import GridSearchCV
+from sklearn.model_selection import GridSearchCV, train_test_split
+from sklearn.datasets import make_classification
+
+# ── Sample data ────────────────────────────────────────────────────────
+X, y = make_classification(n_samples=300, n_features=10, random_state=42)
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42)
 
 # CRITICAL: SVM requires feature scaling
 svm_pipeline = Pipeline([

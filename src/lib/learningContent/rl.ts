@@ -77,13 +77,18 @@ for episode in range(2000):
 
     epsilon = max(0.01, epsilon * 0.999)   # decay exploration
 
-# Evaluate
-wins = sum(
-    (lambda: [env.step(np.argmax(Q[s])) for s,_,_,_ in
-              [(s:=env.reset()[0], None, None, None)] + [env.step(np.argmax(Q[s]))] * 20])()
-    for _ in range(100)
-)
-print(f"Win rate: {wins/100:.0%}")
+# Evaluate greedy policy
+n_wins = 0
+for _ in range(100):
+    s, _ = env.reset()
+    done = False
+    while not done:
+        a = np.argmax(Q[s])
+        s, r, terminated, truncated, _ = env.step(a)
+        done = terminated or truncated
+    if r == 1.0:      # reached the goal
+        n_wins += 1
+print(f"Win rate: {n_wins/100:.0%}")
 
 # ── 2. Deep Q-Network (CartPole) ─────────────────────────────────────────────
 class DQN(nn.Module):

@@ -58,6 +58,12 @@ export const neuralContent: Record<string, TopicContent> = {
         code: `import torch
 import torch.nn as nn
 import torch.optim as optim
+from torch.utils.data import TensorDataset, DataLoader
+
+# ── Sample dataloader ──────────────────────────────────────────────────
+X_data = torch.randn(1000, 128)
+y_data = torch.randint(0, 2, (1000,)).float()
+dataloader = DataLoader(TensorDataset(X_data, y_data), batch_size=64, shuffle=True)
 
 class MLP(nn.Module):
     def __init__(self, input_dim, hidden_dims, output_dim, dropout=0.3):
@@ -161,6 +167,10 @@ for x_batch, y_batch in dataloader:
         heading: "Fine-tuning EfficientNet for Custom Classification",
         code: `import timm
 import torch.nn as nn
+import torch.optim as optim
+
+# ── Config ─────────────────────────────────────────────────────────────
+num_classes = 10   # e.g. 10-class image dataset
 
 # Load pretrained EfficientNet-B4
 model = timm.create_model(
@@ -236,6 +246,13 @@ optimizer = optim.AdamW([
         heading: "LSTM for Time Series Forecasting",
         code: `import torch
 import torch.nn as nn
+from torch.utils.data import TensorDataset, DataLoader
+
+# ── Sample sequential dataloader ───────────────────────────────────────
+# Shape: (n_samples, seq_len, features) → predict next value
+X_seq = torch.randn(500, 20, 10)          # 500 samples, seq_len=20, 10 features
+y_seq = torch.randn(500)                   # 500 scalar targets
+dataloader = DataLoader(TensorDataset(X_seq, y_seq), batch_size=32, shuffle=True)
 
 class LSTMForecaster(nn.Module):
     def __init__(self, input_dim, hidden_dim, num_layers, output_dim, dropout=0.2):

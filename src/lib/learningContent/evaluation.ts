@@ -48,12 +48,20 @@ export const evaluationContent: Record<string, TopicContent> = {
         type: "code",
         heading: "Complete Evaluation Pipeline",
         code: `from sklearn.metrics import (
-    classification_report, roc_auc_score,
+    classification_report, roc_auc_score, f1_score,
     average_precision_score, matthews_corrcoef,
     confusion_matrix
 )
-from sklearn.model_selection import StratifiedKFold
+from sklearn.model_selection import StratifiedKFold, train_test_split
+from sklearn.datasets import make_classification
+from sklearn.ensemble import GradientBoostingClassifier
 import numpy as np
+
+# ── Sample data + model ────────────────────────────────────────────────
+X, y = make_classification(n_samples=1000, n_features=10, random_state=42)
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42)
+model = GradientBoostingClassifier(n_estimators=100, random_state=42)
 
 skf = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
 oof_probs = np.zeros(len(y_train))
@@ -161,9 +169,17 @@ print(f"Optimal threshold: {best_threshold:.3f}, F1: {max(f1s):.4f}")`,
       {
         type: "code",
         heading: "Learning Curve Diagnostic",
-        code: `from sklearn.model_selection import learning_curve
+        code: `from sklearn.model_selection import learning_curve, train_test_split
+from sklearn.datasets import make_classification
+from sklearn.ensemble import GradientBoostingClassifier
 import matplotlib.pyplot as plt
 import numpy as np
+
+# ── Sample data + model ────────────────────────────────────────────────
+X, y = make_classification(n_samples=800, n_features=10, random_state=42)
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42)
+model = GradientBoostingClassifier(n_estimators=100, random_state=42)
 
 train_sizes, train_scores, val_scores = learning_curve(
     estimator=model,

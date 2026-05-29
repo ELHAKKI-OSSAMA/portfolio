@@ -47,6 +47,18 @@ export const deeplearningContent: Record<string, TopicContent> = {
 import torch.nn as nn
 import torch.optim as optim
 from torch.cuda.amp import GradScaler, autocast
+from torch.utils.data import TensorDataset, DataLoader
+
+# ── Minimal model + dataloader for the demo ────────────────────────────
+class MyModel(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.net = nn.Sequential(nn.Linear(16, 64), nn.ReLU(), nn.Linear(64, 10))
+    def forward(self, x): return self.net(x)
+
+X_data = torch.randn(512, 16)
+y_data = torch.randint(0, 10, (512,))
+train_loader = DataLoader(TensorDataset(X_data, y_data), batch_size=32, shuffle=True)
 
 def train_one_epoch(model, loader, optimizer, scaler, scheduler, device, clip_norm=1.0):
     model.train()
