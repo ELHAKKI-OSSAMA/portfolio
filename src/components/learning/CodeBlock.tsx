@@ -149,10 +149,10 @@ export default function CodeBlock({ code, language = "python", accentColor = "#6
         </div>
       )}
 
-      {/* Code */}
-      <div className="overflow-x-auto">
+      {/* Code — always LTR regardless of page language */}
+      <div className="overflow-x-auto" dir="ltr">
         <pre className="p-5 text-xs leading-relaxed font-mono"
-          style={{ color: vt.codeText, margin: 0 }}
+          style={{ color: vt.codeText, margin: 0, direction: "ltr", textAlign: "left" }}
           dangerouslySetInnerHTML={{ __html: highlighted }} />
       </div>
 
