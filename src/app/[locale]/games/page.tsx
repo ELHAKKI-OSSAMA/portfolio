@@ -207,7 +207,6 @@ export default async function GamesPage({
               desc={getDesc(game)}
               tags={game.tags}
               accent={game.accent}
-              locale={locale}
               playLabel={locale === "fr" ? "JOUER ↗" : locale === "ar" ? "العب ↗" : "PLAY ↗"}
             />
           ))}

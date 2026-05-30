@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { useGame } from "@/contexts/GameContext";
 
 interface GameCardProps {
   id: string;
@@ -10,15 +10,16 @@ interface GameCardProps {
   desc: string;
   tags: string[];
   accent: string;
-  locale: string;
   playLabel: string;
 }
 
-export default function GameCard({ id, num, icon, title, desc, tags, accent, locale, playLabel }: GameCardProps) {
+export default function GameCard({ id, num, icon, title, desc, tags, accent, playLabel }: GameCardProps) {
+  const { launchGame } = useGame();
+
   return (
-    <Link
-      href={`/${locale}/games/${id}`}
-      className="group flex flex-col gap-3 rounded-2xl border p-5 transition-all duration-200 hover:-translate-y-1 relative overflow-hidden"
+    <button
+      onClick={() => launchGame(id)}
+      className="group flex flex-col gap-3 rounded-2xl border p-5 transition-all duration-200 hover:-translate-y-1 relative overflow-hidden text-left"
       style={{ backgroundColor: "var(--bg-card)", borderColor: "var(--border)" }}
       onMouseEnter={(e) => {
         (e.currentTarget as HTMLElement).style.borderColor = accent + "60";
@@ -66,6 +67,6 @@ export default function GameCard({ id, num, icon, title, desc, tags, accent, loc
       >
         {playLabel}
       </div>
-    </Link>
+    </button>
   );
 }

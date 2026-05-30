@@ -7,6 +7,8 @@ import { routing } from "@/i18n/routing";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import { ThemeProvider } from "@/contexts/ThemeContext";
+import { GameProvider } from "@/contexts/GameContext";
+import PersistentGameOverlay from "@/components/games/PersistentGameOverlay";
 import { PersonSchema, WebsiteSchema } from "@/components/seo/JsonLd";
 import "../globals.css";
 
@@ -133,9 +135,12 @@ export default async function LocaleLayout({
       <body className="min-h-screen flex flex-col antialiased" style={{ backgroundColor: "var(--bg-main)", color: "var(--text-primary)" }}>
         <NextIntlClientProvider messages={messages}>
           <ThemeProvider>
-            <Navbar />
-            <main className="flex-1">{children}</main>
-            <Footer />
+            <GameProvider>
+              <Navbar />
+              <main className="flex-1">{children}</main>
+              <Footer />
+              <PersistentGameOverlay />
+            </GameProvider>
           </ThemeProvider>
         </NextIntlClientProvider>
       </body>
