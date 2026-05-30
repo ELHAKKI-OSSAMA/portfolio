@@ -20,8 +20,8 @@ class Plant{constructor(){this.x=rnd()*GW;this.y=rnd()*GH;this.alive=true;}}
 
 let generation=1,eaten=0,preyHist=[],predHist=[];
 let plants=Array.from({length:N_PLANT},()=>new Plant());
-let prey=Array.from({length:N_PREY},()=>new Agent(rnd()*GW,rnd()*GH,new Brain(8,8,2),'prey'));
-let preds=Array.from({length:N_PRED},()=>new Agent(rnd()*GW,rnd()*GH,new Brain(8,10,2),'pred'));
+let prey=Array.from({length:N_PREY},()=>new Agent(rnd()*GW,rnd()*GH,new Brain(8,12,2),'prey'));
+let preds=Array.from({length:N_PRED},()=>new Agent(rnd()*GW,rnd()*GH,new Brain(8,14,2),'pred'));
 let frameCount=0;
 
 function evolve(){// prey evolve — top survivors breed
@@ -33,6 +33,7 @@ const topPrey=sortedPrey.slice(0,Math.max(5,Math.floor(sortedPrey.length*0.3)));
 const topPred=sortedPred.slice(0,Math.max(3,Math.floor(sortedPred.length*0.4)));
 prey=Array.from({length:N_PREY},()=>{const p1=topPrey[Math.floor(rnd()*topPrey.length)];const p2=topPrey[Math.floor(rnd()*topPrey.length)];const child=p1.brain.crossover(p2.brain);child.mutate();const a=new Agent(rnd()*GW,rnd()*GH,child,'prey');return a;});
 preds=Array.from({length:N_PRED},()=>{const p1=topPred[Math.floor(rnd()*topPred.length)];const p2=topPred[Math.floor(rnd()*topPred.length)];const child=p1.brain.crossover(p2.brain);child.mutate();return new Agent(rnd()*GW,rnd()*GH,child,'pred');});
+// fitness bonuses applied in simStep — reset handled by new Agent construction
 plants=Array.from({length:N_PLANT},()=>new Plant());
 eaten=0;generation++;frameCount=0;}
 
@@ -41,6 +42,12 @@ function simStep(){frameCount++;
 prey.forEach(p=>{if(!p.alive)return;for(const pl of plants){if(pl.alive&&Math.hypot(p.x-pl.x,p.y-pl.y)<PREY_R+PLANT_R){pl.alive=false;p.energy=Math.min(200,p.energy+30);p.fitness+=5;}}});
 // pred eat prey
 preds.forEach(pr=>{if(!pr.alive)return;for(const p of prey){if(p.alive&&Math.hypot(pr.x-p.x,pr.y-p.y)<PRED_R+PREY_R){p.alive=false;pr.energy=Math.min(200,pr.energy+50);pr.fitness+=10;eaten++;}}});
+// per-frame fitness bonuses
+const alivePreds=preds.filter(p=>p.alive);const alivePrey=prey.filter(p=>p.alive);
+// prey: bonus proportional to distance from all predators (normalized, added every 4 frames)
+if(frameCount%4===0){prey.forEach(p=>{if(!p.alive)return;if(alivePreds.length===0){p.fitness+=0.05;return;}let sumD=0;for(const pr of alivePreds)sumD+=Math.hypot(p.x-pr.x,p.y-pr.y);p.fitness+=sumD/alivePreds.length/500;});}
+// predators: bonus for closeness to nearest prey each frame
+preds.forEach(pr=>{if(!pr.alive)return;if(alivePrey.length===0)return;let minD=Infinity;for(const p of alivePrey){const d=Math.hypot(pr.x-p.x,pr.y-p.y);if(d<minD)minD=d;}pr.fitness+=Math.max(0,(200-minD)/200)*0.02;});
 // respawn plants
 if(rnd()<0.02)plants.push(new Plant());
 prey.forEach(p=>p.step(prey.filter(x=>x.alive&&x!==p),preds.filter(x=>x.alive),plants.filter(x=>x.alive)));

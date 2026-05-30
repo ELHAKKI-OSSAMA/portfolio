@@ -1,21 +1,23 @@
-// DQN Agent for Snake — FIXED
-// - Bigger network (128 hidden)
-// - Higher LR and more training steps per game step
-// - Experience replay with proper random sampling
-// - Epsilon decays slower so it has time to explore
+// DQN Agent for Snake — OPTIMISED
+// - Smaller network (64 hidden) trains faster with sparse 11-dim state
+// - Lower LR (0.001) for stable long-run convergence
+// - Higher GAMMA (0.99) so distant food rewards propagate back
+// - Slower epsilon decay (0.9995) gives more exploration time
+// - Min replay buffer raised to 500 before first training step
 
 const DQN_CFG = {
   STATE_SIZE: 11, ACTION_SIZE: 4,
-  HIDDEN: 128, LR: 0.003,
-  GAMMA: 0.95,
-  EPSILON_START: 1.0, EPSILON_MIN: 0.05, EPSILON_DECAY: 0.998,
+  HIDDEN: 64, LR: 0.001,
+  GAMMA: 0.99,
+  EPSILON_START: 1.0, EPSILON_MIN: 0.02, EPSILON_DECAY: 0.9995,
   MEMORY_SIZE: 20000, BATCH_SIZE: 32,
-  TARGET_UPDATE: 200,
-  TRAIN_PER_STEP: 4
+  TARGET_UPDATE: 100,
+  TRAIN_PER_STEP: 4,
+  MIN_REPLAY: 500
 };
 
 function rnd(){return Math.random();}
-function randn(){return (Math.random()*2-1)*Math.sqrt(2/128);} // He init
+function randn(){return (Math.random()*2-1)*Math.sqrt(2/64);} // He init
 function relu(x){return Math.max(0,x);}
 function argmax(arr){let m=-Infinity,i=0;arr.forEach((v,j)=>{if(v>m){m=v;i=j;}});return i;}
 
@@ -107,8 +109,8 @@ class DQNAgent {
     this.memory.push({s,a,r,ns,done});
   }
   train() {
-    const {BATCH_SIZE,GAMMA,EPSILON_MIN,EPSILON_DECAY,TARGET_UPDATE,TRAIN_PER_STEP}=DQN_CFG;
-    if(this.memory.length<BATCH_SIZE*2) return;
+    const {BATCH_SIZE,GAMMA,EPSILON_MIN,EPSILON_DECAY,TARGET_UPDATE,TRAIN_PER_STEP,MIN_REPLAY}=DQN_CFG;
+    if(this.memory.length<MIN_REPLAY) return;
     let totalLoss=0;
     for(let k=0;k<TRAIN_PER_STEP;k++) {
       // Random sample

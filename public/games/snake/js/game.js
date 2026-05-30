@@ -47,6 +47,9 @@ class SnakeGame {
     const [hx,hy]=this.snake[0];
     const [dx,dy]=this.dir;
     const nx=hx+dx, ny=hy+dy;
+    // Distance-based reward shaping: moving closer to food is rewarded
+    const prevDist=Math.abs(hx-this.food[0])+Math.abs(hy-this.food[1]);
+    const newDist=Math.abs(nx-this.food[0])+Math.abs(ny-this.food[1]);
     if(nx<0||nx>=GRID||ny<0||ny>=GRID||this.snake.slice(1).some(s=>s[0]===nx&&s[1]===ny)) {
       this.alive=false; return {reward:-10,done:true};
     }
@@ -58,7 +61,8 @@ class SnakeGame {
       this.food=this._placeFood(); reward=10;
     } else {
       this.snake.pop();
-      reward=0.1;
+      // Small distance reward: closer = positive, farther = negative
+      reward=(prevDist-newDist)*0.1;
     }
     if(this.stepsSinceFood>GRID*GRID) { this.alive=false; return {reward:-5,done:true}; }
     return {reward,done:false};

@@ -81,7 +81,7 @@ function drawTree() {
 }
 
 function gameStep() {
-  const dec = mcts(board, 80);
+  const dec = mcts(board, 120);
   lastDecision = dec;
   if (!dec.best) { board = newBoard(); score = 0; games++; return; }
   const { board: nb, score: sc, moved } = move(board, dec.best);
@@ -117,3 +117,4 @@ function loop(ts) {
     updateUI();
   }
 }
+requestAnimationFrame(loop);

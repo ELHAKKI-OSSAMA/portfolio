@@ -1,23 +1,70 @@
-// Car Racing — NEAT AI  (FIXED)
-// Problems fixed:
-//  - Wall detection was checking distance to wall SEGMENTS, not point-to-segment properly.
-//    Replaced with simple point-in-track check using inner/outer polygon winding.
-//  - Cars now get strong forward-progress reward so they actually learn to move.
-//  - Minimum speed enforced so cars can't idle forever.
-//  - Kill timer reduced so dead-end strategies die fast.
+// Car Racing — NEAT AI  (Hard Circuit)
+// Upgraded track: F1-style circuit with hairpins, chicane, sweepers
+// 10 sensor rays, 11 inputs (10 rays + speed), tighter track width
 
 const TWO_PI = Math.PI * 2;
-const NUM_RAYS = 8;
-const TRACK_WIDTH = 55;
+const NUM_RAYS = 10;
+const TRACK_WIDTH = 42;
 
 // ── Track ────────────────────────────────────
+
+// Handcrafted F1-style circuit waypoints (in a 800×580 canvas space)
+// Layout: start straight → right hairpin → back straight →
+//         left hairpin → chicane (S-curve) → bottom sweeper →
+//         fast right-hander → back to start
+const CIRCUIT_WAYPOINTS = [
+  // Start/finish straight (going right)
+  {x:110,y:290}, {x:175,y:290}, {x:240,y:290}, {x:305,y:290},
+  {x:370,y:290}, {x:435,y:290}, {x:490,y:290},
+  // Right hairpin entry
+  {x:535,y:285}, {x:568,y:270}, {x:592,y:245}, {x:605,y:212},
+  {x:608,y:178}, {x:598,y:148}, {x:576,y:127}, {x:547,y:116},
+  {x:515,y:112},
+  // Back straight (going left)
+  {x:478,y:112}, {x:435,y:110}, {x:388,y:110}, {x:338,y:110},
+  {x:288,y:110}, {x:238,y:112}, {x:195,y:116},
+  // Left hairpin
+  {x:162,y:128}, {x:138,y:150}, {x:124,y:178}, {x:122,y:208},
+  {x:130,y:235}, {x:148,y:254}, {x:170,y:265},
+  // Chicane entry (S-curve left)
+  {x:188,y:272}, {x:200,y:292}, {x:205,y:316}, {x:198,y:340},
+  {x:185,y:360},
+  // Chicane apex right
+  {x:175,y:378}, {x:172,y:398}, {x:178,y:418}, {x:193,y:434},
+  {x:215,y:445}, {x:240,y:450},
+  // Bottom sweeper (going right)
+  {x:280,y:453}, {x:325,y:456}, {x:372,y:457}, {x:420,y:455},
+  {x:464,y:450}, {x:503,y:440}, {x:534,y:424}, {x:556,y:403},
+  {x:568,y:378}, {x:572,y:350},
+  // Fast right-hander back to start
+  {x:568,y:324}, {x:554,y:308}, {x:534,y:296}, {x:510,y:290},
+  {x:485,y:289},
+];
+
+// Catmull-Rom spline interpolation to produce smooth track
+function catmullRom(p0, p1, p2, p3, t) {
+  const t2 = t * t, t3 = t2 * t;
+  return {
+    x: 0.5 * ((2*p1.x) + (-p0.x+p2.x)*t + (2*p0.x-5*p1.x+4*p2.x-p3.x)*t2 + (-p0.x+3*p1.x-3*p2.x+p3.x)*t3),
+    y: 0.5 * ((2*p1.y) + (-p0.y+p2.y)*t + (2*p0.y-5*p1.y+4*p2.y-p3.y)*t2 + (-p0.y+3*p1.y-3*p2.y+p3.y)*t3)
+  };
+}
+
 function buildTrack() {
-  const cx = 400, cy = 290, rx = 290, ry = 185;
-  const pts = [], n = 80;
+  const wps = CIRCUIT_WAYPOINTS;
+  const n = wps.length;
+  // How many interpolated points to generate per segment
+  const stepsPerSeg = Math.ceil(130 / n) + 1; // ~130+ total points
+  const pts = [];
   for (let i = 0; i < n; i++) {
-    const a = (i / n) * TWO_PI;
-    const r = 1 + 0.08 * Math.sin(a * 3) + 0.05 * Math.cos(a * 7);
-    pts.push({ x: cx + rx * r * Math.cos(a), y: cy + ry * r * Math.sin(a) });
+    const p0 = wps[(i - 1 + n) % n];
+    const p1 = wps[i];
+    const p2 = wps[(i + 1) % n];
+    const p3 = wps[(i + 2) % n];
+    for (let s = 0; s < stepsPerSeg; s++) {
+      const t = s / stepsPerSeg;
+      pts.push(catmullRom(p0, p1, p2, p3, t));
+    }
   }
   return pts;
 }
@@ -81,7 +128,7 @@ function segIsect(ax,ay,bx,by,cx,cy,dx,dy) {
 }
 
 function raycast(ox, oy, angle) {
-  const maxD = 220;
+  const maxD = 200;
   const ex = ox + Math.cos(angle)*maxD, ey = oy + Math.sin(angle)*maxD;
   let minT = 1;
   for (const wpts of [walls.inner, walls.outer]) {
@@ -125,7 +172,7 @@ class Car {
     const tang = trackTangent(0);
     this.x = start.x; this.y = start.y;
     this.angle = Math.atan2(tang.ty, tang.tx);
-    this.speed = 1.5; // start with some speed
+    this.speed = 2.0; // start with slightly more speed on harder track
     this.alive = true; this.fitness = 0;
     this.progress = 0; this.laps = 0;
     this.frames = 0; this.framesSinceProgress = 0;
@@ -134,15 +181,26 @@ class Car {
     this.lastActs = {h: new Array(NEAT_CFG.HIDDEN).fill(0), o: [0,0,0]};
   }
   getRays() {
-    // Spread rays in front hemisphere more densely
-    const offsets = [-TWO_PI*3/8, -TWO_PI/4, -TWO_PI/8, -TWO_PI/16, 0, TWO_PI/16, TWO_PI/8, TWO_PI/4];
+    // 10 rays: wider spread for tight corners — front hemisphere + 2 side rays
+    const offsets = [
+      -TWO_PI*3/8,   // far left
+      -TWO_PI/4,     // left
+      -TWO_PI/6,     // front-left wide
+      -TWO_PI/10,    // front-left narrow
+      -TWO_PI/20,    // slight left
+      TWO_PI/20,     // slight right
+      TWO_PI/10,     // front-right narrow
+      TWO_PI/6,      // front-right wide
+      TWO_PI/4,      // right
+      TWO_PI*3/8     // far right
+    ];
     return offsets.map(o => raycast(this.x, this.y, this.angle + o));
   }
   step() {
     if (!this.alive) return;
     const rays = this.getRays();
-    // Normalize progress to nearest wall distances
-    const inp = [...rays, this.speed / 6];
+    // 10 rays + normalized speed = 11 inputs (matches NEAT_CFG.INPUTS:11)
+    const inp = [...rays, this.speed / 7];
     const acts = this.genome.forward(inp);
     this.lastInputs = inp;
     this.lastActs = acts;
@@ -178,12 +236,16 @@ class Car {
       this.lastProgress = newT;
     } else {
       this.framesSinceProgress++;
+      // Harder penalty for going backwards
+      if (delta < -0.001) this.fitness -= 10;
     }
 
-    // Kill if stuck for too long
-    if (this.framesSinceProgress > 180) { this.alive = false; return; }
+    // Kill faster when stuck (120 frames vs old 180)
+    if (this.framesSinceProgress > 120) { this.alive = false; return; }
 
-    this.fitness = this.laps * 1000 + this.progress * 500 + this.frames * 0.01;
+    // Speed bonus on straights (high speed = good)
+    const speedBonus = this.speed > 4.5 ? (this.speed - 4.5) * 0.02 : 0;
+    this.fitness = this.laps * 1000 + this.progress * 500 + this.frames * 0.01 + speedBonus;
   }
 }
 
@@ -231,6 +293,16 @@ function drawTrack(W, H, scale, ox, oy) {
   gx.beginPath();
   trackCenter.forEach((p,i)=>{ const s=toS(p); i===0?gx.moveTo(s.x,s.y):gx.lineTo(s.x,s.y); });
   gx.closePath(); gx.stroke(); gx.setLineDash([]);
+
+  // Start/finish line indicator
+  const sf = ptOnTrack(0);
+  const sfT = trackTangent(0);
+  const sfS = toS(sf);
+  gx.strokeStyle = '#ffffff44'; gx.lineWidth = 2;
+  gx.beginPath();
+  gx.moveTo(sfS.x + sfT.nx * TRACK_WIDTH * scale, sfS.y + sfT.ny * TRACK_WIDTH * scale);
+  gx.lineTo(sfS.x - sfT.nx * TRACK_WIDTH * scale, sfS.y - sfT.ny * TRACK_WIDTH * scale);
+  gx.stroke();
 }
 
 function drawCars(cars, scale, ox, oy) {
@@ -247,13 +319,16 @@ function drawCars(cars, scale, ox, oy) {
 function drawBestCar(car, scale, ox, oy) {
   if (!car || !car.alive) return;
   const sx = ox + car.x*scale, sy = oy + car.y*scale;
-  // rays
+  // rays — 10 rays
+  const offsets = [
+    -TWO_PI*3/8, -TWO_PI/4, -TWO_PI/6, -TWO_PI/10, -TWO_PI/20,
+     TWO_PI/20,   TWO_PI/10,  TWO_PI/6,  TWO_PI/4,   TWO_PI*3/8
+  ];
   car.getRays().forEach((t,i) => {
-    const offsets = [-TWO_PI*3/8,-TWO_PI/4,-TWO_PI/8,-TWO_PI/16,0,TWO_PI/16,TWO_PI/8,TWO_PI/4];
     const a = car.angle + offsets[i];
     gx.strokeStyle = `rgba(255,204,0,${0.12 + (1-t)*0.25})`; gx.lineWidth = 0.8;
     gx.beginPath(); gx.moveTo(sx,sy);
-    gx.lineTo(sx+Math.cos(a)*220*t*scale, sy+Math.sin(a)*220*t*scale);
+    gx.lineTo(sx+Math.cos(a)*200*t*scale, sy+Math.sin(a)*200*t*scale);
     gx.stroke();
   });
   gx.save(); gx.translate(sx,sy); gx.rotate(car.angle);

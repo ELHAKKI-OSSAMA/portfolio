@@ -28,13 +28,20 @@ this.x+=this.vx;this.y+=this.vy;
 this.particles.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.life--;p.vy+=0.1;});
 this.particles=this.particles.filter(p=>p.life>0);
 this.frames++;
+// angular velocity penalty — unstable landers accumulate negative score
+this.score-=Math.abs(this.va)*0.5;
+// per-frame hover bonus when horizontally close to pad
+if(Math.abs(this.x-PAD_X)<PAD_W*1.5)this.score+=0.05;
 const col=collidesGround(this.x,this.y);
 if(col.hit||this.x<5||this.x>GW-5||this.y<5){
 if(col.onPad&&Math.abs(this.angle)<0.3&&Math.abs(this.vx)<1.5&&Math.abs(this.vy)<2){
-this.score=200-Math.floor(this.frames*0.1)+Math.floor((1-Math.abs(this.angle)/0.3)*50);}
-else this.score=Math.max(0,50-Math.abs(this.x-PAD_X)/5);
+// soft landing: larger bonus for slower speed and better alignment
+const speedBonus=Math.floor((1-Math.min(1,(Math.abs(this.vx)+Math.abs(this.vy))/3))*80);
+const angleBonus=Math.floor((1-Math.abs(this.angle)/0.3)*50);
+this.score+=200-Math.floor(this.frames*0.1)+speedBonus+angleBonus;}
+else this.score=Math.max(this.score,Math.max(0,50-Math.abs(this.x-PAD_X)/5));
 this.alive=false;}
-// reward for being closer
+// continuous proximity reward
 this.score=Math.max(this.score,(GH-Math.hypot(this.x-PAD_X,this.y-PAD_Y))/GH*80);}}
 
 const neat=new LunarNEAT();

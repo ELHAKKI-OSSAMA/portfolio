@@ -5,18 +5,19 @@ let simSpeed=2;
 document.getElementById('speed').addEventListener('input',e=>{simSpeed=parseInt(e.target.value);document.getElementById('speed-val').textContent=simSpeed+'x';});
 
 class Asteroid{constructor(){this.reset(true);}
-reset(init=false){this.x=init?rnd()*GW:GW+30;this.y=rnd()*GH;this.r=15+rnd()*25;this.vx=-(1.5+rnd()*2.5);this.vy=(rnd()-0.5)*1.5;this.angle=0;this.spin=rndRange(-0.03,0.03);this.sides=Math.floor(5+rnd()*4);this.pts=Array.from({length:this.sides},(_,i)=>{const a=(i/this.sides)*TWO_PI;const nr=this.r*(0.8+rnd()*0.4);return{x:Math.cos(a)*nr,y:Math.sin(a)*nr};});}
+reset(init=false){this.x=init?rnd()*GW:GW+30;this.y=rnd()*GH;this.r=15+rnd()*25;this.vx=-(1.5+rnd()*2.5);this.vy=(rnd()-0.5)*1.5;this.angle=0;this.spin=rndRange(-0.03,0.03);this.sides=Math.floor(5+rnd()*4);this.pts=Array.from({length:this.sides},(_,i)=>{const a=(i/this.sides)*TWO_PI;const nr=this.r*(0.8+rnd()*0.4);return{x:Math.cos(a)*nr,y:Math.sin(a)*nr};});this._passed=false;}
 update(){this.x+=this.vx;this.y+=this.vy;this.angle+=this.spin;if(this.x<-60)this.reset();}
 draw(ctx){ctx.save();ctx.translate(this.x,this.y);ctx.rotate(this.angle);ctx.strokeStyle='#2a1a4a';ctx.fillStyle='#12082a';ctx.lineWidth=1.5;ctx.beginPath();this.pts.forEach((p,i)=>i===0?ctx.moveTo(p.x,p.y):ctx.lineTo(p.x,p.y));ctx.closePath();ctx.fill();ctx.stroke();ctx.restore();}}
 
 function getRays(ship,asts){const rays=[];for(let i=0;i<10;i++){const angle=(i/10)*TWO_PI+ship.angle;const ex=ship.x+Math.cos(angle)*250;const ey=ship.y+Math.sin(angle)*250;let minD=1;for(const a of asts){const dx=a.x-ship.x,dy=a.y-ship.y;const t=Math.max(0,Math.min(1,(dx*Math.cos(angle)+dy*Math.sin(angle))/250));const px=ship.x+Math.cos(angle)*250*t;const py=ship.y+Math.sin(angle)*250*t;const dist=Math.hypot(px-a.x,py-a.y);if(dist<a.r){const hitT=Math.max(0,(Math.hypot(dx,dy)-a.r)/250);minD=Math.min(minD,hitT);}}rays.push(minD);}return rays;}
 
 class Ship{constructor(genome,idx){this.genome=genome;this.idx=idx;this.color=SPECIES_COLORS[genome.speciesId%SPECIES_COLORS.length];this.reset();}
-reset(){this.x=120+rnd()*60;this.y=GH/2+(rnd()-0.5)*100;this.angle=0;this.vx=1;this.vy=0;this.alive=true;this.frames=0;this.out=[0,0,0];this.lastActs={h:Array(CFG.HIDDEN).fill(0),o:Array(CFG.OUTPUTS).fill(0)};this.lastInputs=Array(CFG.INPUTS).fill(0);}
+reset(){this.x=120+rnd()*60;this.y=GH/2+(rnd()-0.5)*100;this.angle=0;this.vx=1;this.vy=0;this.alive=true;this.frames=0;this.asteroidsAvoided=0;this.out=[0,0,0];this.lastActs={h:Array(CFG.HIDDEN).fill(0),o:Array(CFG.OUTPUTS).fill(0)};this.lastInputs=Array(CFG.INPUTS).fill(0);}
 step(asts){if(!this.alive)return;const rays=getRays(this,asts);const inp=[...rays];const out=this.genome.forward(inp);this.lastActs=out;this.lastInputs=inp;this.out=out.o;const turnL=out.o[0],turnR=out.o[1],thrust=out.o[2];this.angle+=(turnR-turnL)*0.07;const spd=1+thrust*3;this.vx=Math.cos(this.angle)*spd;this.vy=Math.sin(this.angle)*spd;this.x+=this.vx;this.y+=this.vy;// wrap Y
 if(this.y<0)this.y=GH;if(this.y>GH)this.y=0;// left/right wall kill
 if(this.x<10||this.x>GW-10){this.alive=false;return;}
-this.frames++;for(const a of asts){if(Math.hypot(this.x-a.x,this.y-a.y)<a.r+8){this.alive=false;return;}}}
+this.frames++;for(const a of asts){if(Math.hypot(this.x-a.x,this.y-a.y)<a.r+8){this.alive=false;return;}// count asteroid passing behind the ship (moved past ship.x)
+if(!a._passed&&a.x<this.x-a.r){a._passed=true;this.asteroidsAvoided++;}}}}
 draw(ctx){if(!this.alive)return;ctx.save();ctx.translate(this.x,this.y);ctx.rotate(this.angle);const g=ctx.createRadialGradient(0,0,1,0,0,14);g.addColorStop(0,this.color+'44');g.addColorStop(1,'transparent');ctx.fillStyle=g;ctx.beginPath();ctx.arc(0,0,14,0,TWO_PI);ctx.fill();ctx.fillStyle=this.color;ctx.beginPath();ctx.moveTo(12,0);ctx.lineTo(-8,6);ctx.lineTo(-8,-6);ctx.closePath();ctx.fill();ctx.restore();}}
 
 const neat=new NEAT();let asteroids=Array.from({length:18},()=>new Asteroid());let ships=neat.genomes.map((g,i)=>new Ship(g,i));let bestFrames=0;

@@ -34,6 +34,9 @@ function gameStep(){
   if(ball.y-BALL_R<0){ball.y=BALL_R;ball.vy*=-1;}
   if(ball.y+BALL_R>GH){ball.y=GH-BALL_R;ball.vy*=-1;}
   let rewL=0,rewR=0,done=false;
+  // Tracking reward: small bonus each frame for being near ball y
+  rewL+=(1-Math.abs(lPadY-ball.y)/GH)*0.01;
+  rewR+=(1-Math.abs(rPadY-ball.y)/GH)*0.01;
   // left paddle
   if(ball.x-BALL_R<=PW+20&&ball.x-BALL_R>=PW&&Math.abs(ball.y-lPadY)<PH/2+BALL_R){ball.vx=Math.abs(ball.vx)*1.04;ball.vy+=(ball.y-lPadY)*0.05;const sp=Math.sqrt(ball.vx*ball.vx+ball.vy*ball.vy);ball.vx=ball.vx/sp*BALL_SPD;ball.vy=ball.vy/sp*BALL_SPD;rewL=1;rally++;}
   // right paddle

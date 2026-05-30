@@ -27,12 +27,13 @@ ballX+=bvx;ballY+=bvy;
 if(ballX-BALL_R<0){ballX=BALL_R;bvx=Math.abs(bvx);}
 if(ballX+BALL_R>GW){ballX=GW-BALL_R;bvx=-Math.abs(bvx);}
 if(ballY-BALL_R<0){ballY=BALL_R;bvy=Math.abs(bvy);}
-let reward=0.02,done=false;
-// paddle
+// Base: small survival reward + paddle proximity shaping
+let reward=0.001+0.005*(1-Math.abs(padX-ballX)/GW),done=false;
+// paddle hit
 if(ballY+BALL_R>=GH-20&&ballY+BALL_R<=GH-10&&Math.abs(ballX-padX)<PAD_W/2+BALL_R){bvy=-Math.abs(bvy);bvx+=(ballX-padX)/PAD_W*2;const sp=Math.sqrt(bvx*bvx+bvy*bvy);bvx=bvx/sp*3.5;bvy=bvy/sp*3.5;reward=0.5;}
 // miss
 if(ballY>GH){reward=-1;done=true;}
-// bricks
+// bricks — reward +1 per brick (row bonus kept for signal clarity)
 for(const br of bricks){if(!br.alive)continue;if(ballX>br.x&&ballX<br.x+br.w&&ballY-BALL_R<br.y+br.h&&ballY+BALL_R>br.y){br.alive=false;bvy*=-1;reward=1+(ROWS-br.row)*0.5;epScore+=10*(br.row+1);break;}}
 const noMore=bricks.every(b=>!b.alive);if(noMore){reward=5;done=true;}
 const ns=getState();agent.push(s,a,reward,ns,done);agent.train();
