@@ -1,36 +1,48 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslations, useLocale } from "next-intl";
 import { getTopicVideos, AUDIENCE_CONFIG } from "@/lib/learningContent/manim-videos";
 import type { ManimVideoMeta, Audience } from "@/lib/learningContent/manim-videos";
 import { manimI18n } from "@/lib/learningContent/manim-i18n";
 
-// ─────────────────────────────────────────────────────────────────────────────
-// ManimVideoPanel — horizontal scrollable gallery of animated video cards
-// Shown on every topic page that has registered Manim video metadata.
-// ─────────────────────────────────────────────────────────────────────────────
-
 interface Props {
   topicId: string;
   accentColor: string;
 }
 
-// ── Single video card ─────────────────────────────────────────────────────────
+const SPEEDS = [0.75, 1, 1.25, 1.5, 2];
+
+// ── Watched progress bar ───────────────────────────────────────────────────────
+function WatchedBar({ watched, total, accentColor }: { watched: number; total: number; accentColor: string }) {
+  const pct = total > 0 ? Math.round((watched / total) * 100) : 0;
+  return (
+    <div className="flex items-center gap-2">
+      <div className="flex-1 h-1.5 rounded-full" style={{ backgroundColor: `${accentColor}20` }}>
+        <motion.div
+          className="h-full rounded-full"
+          style={{ backgroundColor: accentColor }}
+          initial={{ width: 0 }}
+          animate={{ width: `${pct}%` }}
+          transition={{ duration: 0.5 }}
+        />
+      </div>
+      <span className="text-xs font-mono flex-shrink-0" style={{ color: "var(--text-muted)" }}>
+        {watched}/{total}
+      </span>
+    </div>
+  );
+}
+
+// ── Single video card ──────────────────────────────────────────────────────────
 function VideoCard({
-  video,
-  isActive,
-  onClick,
-  accentColor,
-  tPlaying,
-  tWatch,
-  audienceLabel,
-  localTitle,
-  localDescription,
+  video, isActive, isWatched, onClick,
+  accentColor, tPlaying, tWatch, audienceLabel, localTitle, localDescription,
 }: {
   video: ManimVideoMeta;
   isActive: boolean;
+  isWatched: boolean;
   onClick: () => void;
   accentColor: string;
   tPlaying: string;
@@ -46,13 +58,23 @@ function VideoCard({
       onClick={onClick}
       whileHover={{ scale: 1.025, y: -2 }}
       whileTap={{ scale: 0.97 }}
-      className="relative flex-shrink-0 w-60 text-left rounded-2xl border p-4 cursor-pointer transition-all"
+      className="relative flex-shrink-0 w-56 sm:w-60 text-left rounded-2xl border p-4 cursor-pointer transition-all"
       style={{
         backgroundColor: isActive ? `${accentColor}10` : "var(--bg-card)",
         borderColor:     isActive ? `${accentColor}60` : "var(--border)",
         boxShadow:       isActive ? `0 0 0 2px ${accentColor}30` : "none",
       }}
     >
+      {/* Watched checkmark */}
+      {isWatched && !isActive && (
+        <div
+          className="absolute top-2 right-2 w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold"
+          style={{ backgroundColor: `${accentColor}25`, color: accentColor }}
+        >
+          ✓
+        </div>
+      )}
+
       {/* Audience badge */}
       <div
         className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold mb-3"
@@ -78,15 +100,11 @@ function VideoCard({
         <span className="text-xs font-mono" style={{ color: "var(--text-muted)" }}>
           {video.duration}
         </span>
-        <span
-          className="text-xs font-medium"
-          style={{ color: isActive ? accentColor : "var(--text-muted)" }}
-        >
+        <span className="text-xs font-medium" style={{ color: isActive ? accentColor : "var(--text-muted)" }}>
           {isActive ? `▶ ${tPlaying}` : `▷ ${tWatch}`}
         </span>
       </div>
 
-      {/* Active indicator */}
       {isActive && (
         <motion.div
           layoutId="active-card-border"
@@ -98,14 +116,10 @@ function VideoCard({
   );
 }
 
-// ── Video player area ─────────────────────────────────────────────────────────
+// ── Video player ───────────────────────────────────────────────────────────────
 function VideoPlayer({
-  video,
-  accentColor,
-  audienceLabel,
-  localTitle,
-  localDescription,
-  videoSrc,
+  video, accentColor, audienceLabel,
+  localTitle, localDescription, videoSrc, onWatched,
 }: {
   video: ManimVideoMeta;
   accentColor: string;
@@ -113,8 +127,17 @@ function VideoPlayer({
   localTitle: string;
   localDescription: string;
   videoSrc: string;
+  onWatched: () => void;
 }) {
   const [videoLoaded, setVideoLoaded] = useState(false);
+  const [speed, setSpeed]             = useState(1);
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    if (videoRef.current) videoRef.current.playbackRate = speed;
+  }, [speed]);
+
+  useEffect(() => { setSpeed(1); setVideoLoaded(false); }, [videoSrc]);
 
   return (
     <AnimatePresence mode="wait">
@@ -127,30 +150,25 @@ function VideoPlayer({
         className="rounded-2xl overflow-hidden border"
         style={{ borderColor: "var(--border)", backgroundColor: "var(--bg-card)" }}
       >
-        {/* Video element */}
-        <div
-          className="relative w-full bg-black"
-          style={{ aspectRatio: "16/9" }}
-        >
+        {/* Video */}
+        <div className="relative w-full bg-black" style={{ aspectRatio: "16/9" }}>
           <video
+            ref={videoRef}
             key={videoSrc}
             src={videoSrc}
             controls
             playsInline
-            preload="metadata"
+            preload="auto"
             className="w-full h-full object-contain"
             style={{ display: "block" }}
             onLoadedMetadata={() => setVideoLoaded(true)}
-            onError={(e) => {
-              (e.currentTarget as HTMLVideoElement).style.display = "none";
-            }}
+            onPlay={onWatched}
+            onError={(e) => { (e.currentTarget as HTMLVideoElement).style.display = "none"; }}
           />
 
-          {/* Placeholder overlay — hidden once the video loads */}
+          {/* Placeholder */}
           {!videoLoaded && (
-            <div
-              className="absolute inset-0 flex flex-col items-center justify-center gap-3 pointer-events-none"
-            >
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
               <div
                 className="w-14 h-14 rounded-full flex items-center justify-center text-2xl"
                 style={{ backgroundColor: `${accentColor}20`, border: `2px dashed ${accentColor}60` }}
@@ -159,11 +177,31 @@ function VideoPlayer({
               </div>
             </div>
           )}
+
+          {/* Speed controls */}
+          {videoLoaded && (
+            <div className="absolute top-2 right-2 flex gap-1">
+              {SPEEDS.map(s => (
+                <button
+                  key={s}
+                  onClick={() => setSpeed(s)}
+                  className="px-1.5 py-0.5 rounded text-xs font-mono font-bold transition-all"
+                  style={{
+                    backgroundColor: speed === s ? accentColor : "rgba(0,0,0,0.55)",
+                    color: speed === s ? "#fff" : "rgba(255,255,255,0.75)",
+                    backdropFilter: "blur(4px)",
+                  }}
+                >
+                  {s}×
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Info bar */}
         <div className="px-4 py-3 border-t" style={{ borderColor: "var(--border)" }}>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <p className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
               {localTitle}
             </p>
@@ -183,7 +221,7 @@ function VideoPlayer({
   );
 }
 
-// ── Audience badge ────────────────────────────────────────────────────────────
+// ── Audience badge ─────────────────────────────────────────────────────────────
 function AudienceBadge({ audience, label }: { audience: Audience; label: string }) {
   const cfg = AUDIENCE_CONFIG[audience];
   return (
@@ -196,16 +234,11 @@ function AudienceBadge({ audience, label }: { audience: Audience; label: string 
   );
 }
 
-// ── Filter bar ────────────────────────────────────────────────────────────────
+// ── Filter bar ─────────────────────────────────────────────────────────────────
 const ALL_AUDIENCES: (Audience | "all")[] = ["all", "beginner", "intermediate", "advanced"];
 
 function FilterBar({
-  selected,
-  onChange,
-  accentColor,
-  counts,
-  tAll,
-  audienceLabel,
+  selected, onChange, accentColor, counts, tAll, audienceLabel,
 }: {
   selected: Audience | "all";
   onChange: (a: Audience | "all") => void;
@@ -239,50 +272,79 @@ function FilterBar({
   );
 }
 
-// ── Main panel ────────────────────────────────────────────────────────────────
+// ── Main panel ─────────────────────────────────────────────────────────────────
 export default function ManimVideoPanel({ topicId, accentColor }: Props) {
   const t      = useTranslations("learning");
   const locale = useLocale();
 
   const videos = getTopicVideos(topicId);
-  const [activeId, setActiveId]           = useState<string>(videos[0]?.id ?? "");
+  const [activeId, setActiveId]             = useState<string>(videos[0]?.id ?? "");
   const [audienceFilter, setAudienceFilter] = useState<Audience | "all">("all");
 
-  // Reset selection when topicId changes
+  // ── Watched tracking ────────────────────────────────────────────────────────
+  const [watchedIds, setWatchedIds] = useState<Set<string>>(() => {
+    try {
+      const saved = localStorage.getItem(`manim_watched_${topicId}`);
+      return new Set<string>(saved ? JSON.parse(saved) : []);
+    } catch { return new Set<string>(); }
+  });
+
+  const markWatched = useCallback((id: string) => {
+    setWatchedIds(prev => {
+      if (prev.has(id)) return prev;
+      const next = new Set(prev);
+      next.add(id);
+      try { localStorage.setItem(`manim_watched_${topicId}`, JSON.stringify([...next])); } catch {}
+      return next;
+    });
+  }, [topicId]);
+
+  // Reset on topic change
   useEffect(() => {
     setActiveId(videos[0]?.id ?? "");
     setAudienceFilter("all");
+    try {
+      const saved = localStorage.getItem(`manim_watched_${topicId}`);
+      setWatchedIds(new Set<string>(saved ? JSON.parse(saved) : []));
+    } catch { setWatchedIds(new Set<string>()); }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [topicId]);
 
+  const filtered = audienceFilter === "all"
+    ? videos
+    : videos.filter(v => v.audience === audienceFilter);
+
+  // ── Keyboard navigation ─────────────────────────────────────────────────────
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      const tag = (document.activeElement as HTMLElement)?.tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA") return;
+      const idx = filtered.findIndex(v => v.id === activeId);
+      if (e.key === "ArrowRight" && idx < filtered.length - 1) setActiveId(filtered[idx + 1].id);
+      if (e.key === "ArrowLeft"  && idx > 0)                   setActiveId(filtered[idx - 1].id);
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [activeId, filtered]);
+
   if (videos.length === 0) return null;
 
-  // Locale-aware audience label using existing difficulty_* i18n keys
   const audienceLabel = (a: Audience): string =>
     t(`difficulty_${a}` as Parameters<typeof t>[0]);
 
-  // Build subtitle: "{n} animated video(s) · ..."
-  const plural = videos.length !== 1 ? t("manim_subtitle_plural" as Parameters<typeof t>[0]) : "";
+  const plural   = videos.length !== 1 ? t("manim_subtitle_plural" as Parameters<typeof t>[0]) : "";
   const subtitle = `${videos.length} ${t("manim_subtitle_prefix" as Parameters<typeof t>[0])}${plural} ${t("manim_subtitle_suffix" as Parameters<typeof t>[0])}`;
 
-  // Counts for filter badges
   const counts = ALL_AUDIENCES.reduce((acc, aud) => {
-    acc[aud] = aud === "all"
-      ? videos.length
-      : videos.filter((v) => v.audience === aud).length;
+    acc[aud] = aud === "all" ? videos.length : videos.filter(v => v.audience === aud).length;
     return acc;
   }, {} as Record<Audience | "all", number>);
 
-  const filtered  = audienceFilter === "all"
-    ? videos
-    : videos.filter((v) => v.audience === audienceFilter);
-
-  const activeVideo = videos.find((v) => v.id === activeId) ?? videos[0];
-  const displayList = filtered;
-
-  const tPlaying = t("manim_playing" as Parameters<typeof t>[0]);
-  const tWatch   = t("manim_watch"   as Parameters<typeof t>[0]);
-  const tAll     = t("manim_filter_all" as Parameters<typeof t>[0]);
+  const activeVideo    = videos.find(v => v.id === activeId) ?? videos[0];
+  const tPlaying       = t("manim_playing"    as Parameters<typeof t>[0]);
+  const tWatch         = t("manim_watch"      as Parameters<typeof t>[0]);
+  const tAll           = t("manim_filter_all" as Parameters<typeof t>[0]);
+  const watchedCount   = videos.filter(v => watchedIds.has(v.id)).length;
 
   const localTitle = (video: ManimVideoMeta): string => {
     if (locale === "fr") return manimI18n[video.id]?.titleFr ?? video.title;
@@ -300,24 +362,29 @@ export default function ManimVideoPanel({ topicId, accentColor }: Props) {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
-      className="space-y-5"
+      className="space-y-4"
     >
       {/* ── Header ─────────────────────────────────────────────────────────── */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+        <div className="flex items-center gap-2 min-w-0">
           <div
-            className="w-8 h-8 rounded-lg flex items-center justify-center text-base"
+            className="w-8 h-8 rounded-lg flex items-center justify-center text-base flex-shrink-0"
             style={{ backgroundColor: `${accentColor}20`, color: accentColor }}
           >
             🎥
           </div>
-          <div>
+          <div className="min-w-0 flex-1">
             <h2 className="text-xl font-bold" style={{ color: "var(--text-primary)" }}>
               {t("manim_title" as Parameters<typeof t>[0])}
             </h2>
             <p className="text-xs" dir="ltr" style={{ color: "var(--text-muted)" }}>
               {subtitle}
             </p>
+            {videos.length > 1 && (
+              <div className="mt-1.5 max-w-[180px]">
+                <WatchedBar watched={watchedCount} total={videos.length} accentColor={accentColor} />
+              </div>
+            )}
           </div>
         </div>
 
@@ -332,22 +399,45 @@ export default function ManimVideoPanel({ topicId, accentColor }: Props) {
       </div>
 
       {/* ── Horizontal card scroll ──────────────────────────────────────────── */}
-      <div className="flex gap-3 overflow-x-auto pb-2" style={{ scrollbarWidth: "thin" }}>
-        {displayList.map((video) => (
-          <VideoCard
-            key={video.id}
-            video={video}
-            isActive={video.id === activeId}
-            onClick={() => setActiveId(video.id)}
-            accentColor={accentColor}
-            tPlaying={tPlaying}
-            tWatch={tWatch}
-            audienceLabel={audienceLabel}
-            localTitle={localTitle(video)}
-            localDescription={localDescription(video)}
-          />
-        ))}
+      <div className="relative">
+        {/* Fade edges for mobile scroll hint */}
+        <div
+          className="absolute left-0 top-0 bottom-2 w-4 z-10 pointer-events-none"
+          style={{ background: "linear-gradient(to right, var(--background, #0a0a0a), transparent)" }}
+        />
+        <div
+          className="absolute right-0 top-0 bottom-2 w-10 z-10 pointer-events-none"
+          style={{ background: "linear-gradient(to left, var(--background, #0a0a0a), transparent)" }}
+        />
+        <div
+          className="flex gap-3 overflow-x-auto pb-2 px-1 snap-x snap-mandatory"
+          style={{ scrollbarWidth: "thin", WebkitOverflowScrolling: "touch" } as React.CSSProperties}
+        >
+          {filtered.map((video) => (
+            <div key={video.id} className="snap-start flex-shrink-0">
+              <VideoCard
+                video={video}
+                isActive={video.id === activeId}
+                isWatched={watchedIds.has(video.id)}
+                onClick={() => setActiveId(video.id)}
+                accentColor={accentColor}
+                tPlaying={tPlaying}
+                tWatch={tWatch}
+                audienceLabel={audienceLabel}
+                localTitle={localTitle(video)}
+                localDescription={localDescription(video)}
+              />
+            </div>
+          ))}
+        </div>
       </div>
+
+      {/* Keyboard hint — desktop only */}
+      {filtered.length > 1 && (
+        <p className="hidden sm:block text-xs text-center" style={{ color: "var(--text-faint, var(--text-muted))" }}>
+          ← → {locale === "ar" ? "للتنقل بين الفيديوهات" : locale === "fr" ? "pour naviguer entre les vidéos" : "to switch videos"}
+        </p>
+      )}
 
       {/* ── Player ──────────────────────────────────────────────────────────── */}
       {activeVideo && (
@@ -358,9 +448,9 @@ export default function ManimVideoPanel({ topicId, accentColor }: Props) {
           localTitle={localTitle(activeVideo)}
           localDescription={localDescription(activeVideo)}
           videoSrc={locale === "fr" && activeVideo.srcFr ? activeVideo.srcFr : activeVideo.src}
+          onWatched={() => markWatched(activeVideo.id)}
         />
       )}
-
     </motion.div>
   );
 }
