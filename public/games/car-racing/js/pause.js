@@ -49,11 +49,6 @@ let _workerCallbacks = [];
 _worker.onmessage = () => { if (!_paused) _workerCallbacks.forEach(fn=>fn()); };
 _worker.postMessage('start');
 
-// Also handle visibility change — auto-pause when tab hidden, auto-resume when shown
-document.addEventListener('visibilitychange', () => {
-  if (document.hidden) _setPaused(true);
-  // Do NOT auto-resume — let user press P/Space intentionally
-});
 
 // Helper: register a callback that runs every worker tick (even when tab hidden)
 function onWorkerTick(fn) { _workerCallbacks.push(fn); }
