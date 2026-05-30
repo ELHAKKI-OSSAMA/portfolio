@@ -9,7 +9,7 @@ body{background:#06060e;font-family:'Courier New',monospace;overflow:hidden;widt
 #speed-wrap label{font-size:9px;color:#2a2a1a;letter-spacing:1px}
 #speed-wrap input{width:80px}
 #speed-val{font-size:11px;color:#ffcc00;min-width:20px}
-#main{flex:1;display:flex;overflow:hidden;min-height:0}
+#main{flex:1;display:flex;overflow-x:auto;overflow-y:hidden;min-height:0}
 #board-wrap{flex:1;display:flex;align-items:center;justify-content:center}
 #tree-wrap{width:320px;border-left:1px solid #111}
 #board-canvas,#tree-canvas{display:block}
