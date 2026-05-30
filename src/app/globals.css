@@ -81,6 +81,7 @@
 
   ::-webkit-scrollbar {
     width: 6px;
+    height: 6px;        /* horizontal scrollbars */
   }
   ::-webkit-scrollbar-track {
     background: var(--scrollbar-track);
@@ -88,6 +89,9 @@
   ::-webkit-scrollbar-thumb {
     background: var(--primary);
     border-radius: 3px;
+  }
+  ::-webkit-scrollbar-corner {
+    background: var(--scrollbar-track);
   }
 }
 
