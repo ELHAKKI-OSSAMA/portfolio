@@ -1,5 +1,7 @@
-// ── PAUSE + ALWAYS-ACTIVE (injected) ──────────────────────────────────────────
-// P or SPACE = toggle pause | Tab hidden = auto-pause, resume on return
+// ── PAUSE + ALWAYS-ACTIVE ──────────────────────────────────────────────────────
+// P or SPACE = toggle pause
+// Game keeps running when you switch apps, minimize, or change tabs
+// ─────────────────────────────────────────────────────────────────────────────
 let _paused = false;
 let _pauseOverlay = null;
 
@@ -29,14 +31,49 @@ function _setPaused(val) {
 
 document.addEventListener('keydown', e => {
   if (e.code === 'KeyP' || e.code === 'Space') {
-    // Don't intercept space if a range input is focused
     if (document.activeElement && document.activeElement.tagName === 'INPUT') return;
     e.preventDefault();
     _setPaused(!_paused);
   }
 });
 
-// Keep running when tab is hidden using Web Workers trick
+// ── Override requestAnimationFrame ───────────────────────────────────────────
+// The browser freezes rAF when the tab/window is not visible.
+// Replace it with setTimeout so the simulation keeps running regardless.
+(function() {
+  const _nativeRAF = window.requestAnimationFrame.bind(window);
+  const _handles = new Map();
+  let _nextId = 1;
+
+  window.requestAnimationFrame = function(callback) {
+    const id = _nextId++;
+    let handle;
+    if (document.hidden) {
+      // Tab/window not visible — use setTimeout to bypass browser throttle
+      handle = setTimeout(() => {
+        _handles.delete(id);
+        callback(performance.now());
+      }, 1000 / 60);
+    } else {
+      handle = _nativeRAF((ts) => {
+        _handles.delete(id);
+        callback(ts);
+      });
+    }
+    _handles.set(id, { type: document.hidden ? 'timeout' : 'raf', handle });
+    return id;
+  };
+
+  window.cancelAnimationFrame = function(id) {
+    const entry = _handles.get(id);
+    if (!entry) return;
+    if (entry.type === 'timeout') clearTimeout(entry.handle);
+    else _nativeRAF.cancel ? _nativeRAF.cancel(entry.handle) : cancelAnimationFrame(entry.handle);
+    _handles.delete(id);
+  };
+})();
+
+// ── Web Worker heartbeat (legacy — keeps existing onWorkerTick code happy) ───
 let _workerBlob = new Blob([`
   let t = null;
   self.onmessage = e => {
@@ -49,6 +86,4 @@ let _workerCallbacks = [];
 _worker.onmessage = () => { if (!_paused) _workerCallbacks.forEach(fn=>fn()); };
 _worker.postMessage('start');
 
-
-// Helper: register a callback that runs every worker tick (even when tab hidden)
 function onWorkerTick(fn) { _workerCallbacks.push(fn); }
