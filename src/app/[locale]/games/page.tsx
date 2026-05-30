@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { setRequestLocale } from "next-intl/server";
+import GameCard from "./GameCard";
 
 export const metadata: Metadata = {
   title: "AI Game Lab | Ossama Elhakki",
@@ -198,67 +198,18 @@ export default async function GamesPage({
         {/* ── Game grid ── */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {GAMES.map((game) => (
-            <Link
+            <GameCard
               key={game.id}
-              href={`/${locale}/games/${game.id}`}
-              className="group flex flex-col gap-3 rounded-2xl border p-5 transition-all duration-200 hover:-translate-y-1 relative overflow-hidden"
-              style={{
-                backgroundColor: "var(--bg-card)",
-                borderColor: "var(--border)",
-              }}
-              onMouseEnter={(e) => {
-                (e.currentTarget as HTMLElement).style.borderColor = game.accent + "60";
-                (e.currentTarget as HTMLElement).style.boxShadow = `0 8px 32px ${game.accent}18`;
-              }}
-              onMouseLeave={(e) => {
-                (e.currentTarget as HTMLElement).style.borderColor = "var(--border)";
-                (e.currentTarget as HTMLElement).style.boxShadow = "none";
-              }}
-            >
-              {/* Number */}
-              <span className="absolute top-3 right-3 text-xs font-mono opacity-30" style={{ color: game.accent }}>
-                {game.num}
-              </span>
-
-              {/* Icon */}
-              <div
-                className="w-11 h-11 rounded-xl flex items-center justify-center text-2xl"
-                style={{ backgroundColor: game.accent + "18", border: `1px solid ${game.accent}30` }}
-              >
-                {game.icon}
-              </div>
-
-              {/* Title */}
-              <div className="font-bold text-sm tracking-wide" style={{ color: game.accent }}>
-                {getTitle(game)}
-              </div>
-
-              {/* Desc */}
-              <p className="text-xs leading-relaxed flex-1" style={{ color: "var(--text-muted)" }}>
-                {getDesc(game)}
-              </p>
-
-              {/* Tags */}
-              <div className="flex flex-wrap gap-1.5">
-                {game.tags.map(tag => (
-                  <span
-                    key={tag}
-                    className="text-xs px-2 py-0.5 rounded-md font-mono"
-                    style={{ backgroundColor: game.accent + "12", color: game.accent + "cc", border: `0.5px solid ${game.accent}25` }}
-                  >
-                    {tag}
-                  </span>
-                ))}
-              </div>
-
-              {/* CTA */}
-              <div
-                className="text-xs font-mono tracking-widest px-3 py-1.5 rounded-lg w-fit transition-all"
-                style={{ backgroundColor: game.accent + "10", color: game.accent, border: `0.5px solid ${game.accent}30` }}
-              >
-                {locale === "fr" ? "JOUER ↗" : locale === "ar" ? "العب ↗" : "PLAY ↗"}
-              </div>
-            </Link>
+              id={game.id}
+              num={game.num}
+              icon={game.icon}
+              title={getTitle(game)}
+              desc={getDesc(game)}
+              tags={game.tags}
+              accent={game.accent}
+              locale={locale}
+              playLabel={locale === "fr" ? "JOUER ↗" : locale === "ar" ? "العب ↗" : "PLAY ↗"}
+            />
           ))}
         </div>
       </div>
