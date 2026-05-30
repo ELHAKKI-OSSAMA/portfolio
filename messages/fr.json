@@ -1,6 +1,7 @@
 {
   "nav": {
-    "home": "Accueil",
+    "games": "Jeux IA",
+    "home":"Accueil",
     "projects": "Projets",
     "services": "Services",
     "learning": "Apprentissage",
@@ -117,6 +118,8 @@
     "topic_completed": "Sujet terminé !",
     "mark_unread": "Marquer comme non lu",
     "progress_note": "La progression est sauvegardée dans votre navigateur — aucun compte requis.",
+    "progress_summary": "{completed} / {total} sujets terminés",
+    "progress_keep_going": "Continuez — vous faites du bon travail !",
     "what_to_study_next": "Quoi étudier ensuite",
     "search_placeholder": "Rechercher des sujets, concepts…",
     "search_navigate": "naviguer",

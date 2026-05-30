@@ -27,6 +27,7 @@ export default function Navbar() {
     { href: `/${locale}/projects`, label: t("projects") },
     { href: `/${locale}/services`, label: t("services") },
     { href: `/${locale}/learning`, label: t("learning") },
+    { href: `/${locale}/games`, label: t("games") },
     { href: `/${locale}/blog`, label: t("blog") },
     { href: `/${locale}/about`, label: t("about") },
     { href: `/${locale}/contact`, label: t("contact") },

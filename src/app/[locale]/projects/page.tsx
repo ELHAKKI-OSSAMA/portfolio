@@ -70,7 +70,7 @@ export default function ProjectsPage() {
                   : {
                       backgroundColor: "var(--filter-btn-bg)",
                       border: "1px solid var(--filter-btn-border)",
-                      color: "var(--text-secondary)",
+                      color: "var(--filter-btn-text, var(--text-secondary))",
                     }
               }
             >

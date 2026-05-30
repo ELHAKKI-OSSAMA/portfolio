@@ -83,7 +83,7 @@ export default function TopicDetailClient({ topicId, accentColor, visualization 
   const params = useParams();
   const locale = (params?.locale as string) ?? "en";
   const content = topicContents[topicId];
-  const { getStatus, markReading, markComplete } = useTopicProgress();
+  const { getStatus, markReading, markComplete, markUnread } = useTopicProgress();
   const status = getStatus(topicId);
 
   // Mark as "reading" the first time the user opens the topic
@@ -315,7 +315,7 @@ export default function TopicDetailClient({ topicId, accentColor, visualization 
               {t("topic_completed")}
             </span>
             <button
-              onClick={() => markReading(topicId)}
+              onClick={() => markUnread(topicId)}
               className="text-xs underline"
               style={{ color: "var(--text-muted)" }}
             >

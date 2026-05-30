@@ -92,7 +92,7 @@ export default function LearningClient() {
           <h1 className="text-4xl sm:text-5xl font-bold mb-4" style={{ color:"var(--text-primary)" }}>
             {t("title")}
           </h1>
-          <p className="max-w-2xl mx-auto mb-6 text-base" style={{ color:"var(--text-secondary)" }}>
+          <p className="max-w-2xl mx-auto mb-6 text-base" style={{ color:"var(--filter-btn-text, var(--text-secondary))" }}>
             {t("subtitle")}
           </p>
 
@@ -103,10 +103,10 @@ export default function LearningClient() {
               <ProgressRing pct={overallPct} color="#22c55e" />
               <div className="text-left">
                 <div className="text-sm font-semibold" style={{ color:"var(--text-primary)" }}>
-                  {completedCount} / {totalTopics} topics completed
+                  {t("progress_summary", { completed: completedCount, total: totalTopics })}
                 </div>
                 <div className="text-xs" style={{ color:"var(--text-muted)" }}>
-                  Keep going — you&apos;re doing great!
+                  {t("progress_keep_going")}
                 </div>
               </div>
             </div>
@@ -190,7 +190,7 @@ export default function LearningClient() {
             className="px-3 py-1.5 rounded-xl text-sm font-medium transition-all"
             style={activeCategory === "all"
               ? { backgroundColor:"var(--primary)", color:"#fff" }
-              : { backgroundColor:"var(--filter-btn-bg)", border:"1px solid var(--filter-btn-border)", color:"var(--text-secondary)" }}
+              : { backgroundColor:"var(--filter-btn-bg)", border:"1px solid var(--filter-btn-border)", color:"var(--filter-btn-text, var(--text-secondary))" }}
           >
             All ({totalTopics})
           </button>
@@ -203,7 +203,7 @@ export default function LearningClient() {
                 className="px-3 py-1.5 rounded-xl text-sm font-medium transition-all"
                 style={activeCategory === cat
                   ? { backgroundColor: meta.color, color:"#fff" }
-                  : { backgroundColor:"var(--filter-btn-bg)", border:"1px solid var(--filter-btn-border)", color:"var(--text-secondary)" }}
+                  : { backgroundColor:"var(--filter-btn-bg)", border:"1px solid var(--filter-btn-border)", color:"var(--filter-btn-text, var(--text-secondary))" }}
               >
                 <span className="mr-1">{meta.emoji}</span>
                 {locale === "fr" ? meta.labelFr : meta.labelEn}
@@ -301,7 +301,7 @@ export default function LearningClient() {
           style={{ borderColor:"var(--border-strong)" }}>
           <div className="text-3xl mb-3">🚀</div>
           <p style={{ color:"var(--text-muted)" }}>{t("coming_soon")}</p>
-          <p className="text-sm mt-1" style={{ color:"var(--text-secondary)" }}>
+          <p className="text-sm mt-1" style={{ color:"var(--filter-btn-text, var(--text-secondary))" }}>
             Diffusion Models · Graph Neural Networks · MLOps · LLM Fine-tuning · Causal ML
           </p>
         </div>

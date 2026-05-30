@@ -1,6 +1,7 @@
 {
   "nav": {
-    "home": "الرئيسية",
+    "games": "ألعاب الذكاء الاصطناعي",
+    "home":"الرئيسية",
     "projects": "المشاريع",
     "services": "الخدمات",
     "learning": "التعلم",
@@ -117,6 +118,8 @@
     "topic_completed": "اكتمل الموضوع!",
     "mark_unread": "وضع علامة غير مقروء",
     "progress_note": "يتم حفظ التقدم في متصفحك — لا حاجة لحساب.",
+    "progress_summary": "{completed} / {total} موضوع مكتمل",
+    "progress_keep_going": "استمر — أنت تقوم بعمل رائع!",
     "what_to_study_next": "ماذا تدرس بعد ذلك",
     "search_placeholder": "ابحث عن مواضيع، مفاهيم…",
     "search_navigate": "التنقل",

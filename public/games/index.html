@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>AI Game Lab — Menu</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
+  *{margin:0;padding:0;box-sizing:border-box;}
+  :root{
+    --bg:#06060e;
+    --card:#0c0c1a;
+    --border:#141428;
+    --green:#00ff88;
+    --orange:#cc7722;
+    --blue:#4488ff;
+    --purple:#9966cc;
+    --pink:#ff44cc;
+    --yellow:#ffcc00;
+    --red:#ff4444;
+    --cyan:#44ccff;
+  }
+  html,body{width:100%;min-height:100vh;background:var(--bg);font-family:'Share Tech Mono',monospace;color:#ccc;overflow-x:hidden;}
+
+  /* ── STARFIELD ── */
+  #stars{position:fixed;inset:0;pointer-events:none;z-index:0;}
+
+  /* ── HEADER ── */
+  header{position:relative;z-index:1;text-align:center;padding:48px 16px 32px;}
+  header .eyebrow{font-size:10px;letter-spacing:6px;color:#1a3a2a;text-transform:uppercase;margin-bottom:12px;}
+  header h1{font-size:clamp(28px,5vw,52px);color:var(--green);letter-spacing:4px;text-shadow:0 0 40px rgba(0,255,136,0.3);}
+  header .sub{margin-top:10px;font-size:12px;color:#1a3a2a;letter-spacing:2px;}
+  .scan-line{width:100%;height:1px;background:linear-gradient(90deg,transparent,var(--green),transparent);margin:28px auto 0;max-width:600px;animation:scan 3s ease-in-out infinite;}
+  @keyframes scan{0%,100%{opacity:0.2;}50%{opacity:0.7;}}
+
+  /* ── LEGEND ── */
+  .legend{position:relative;z-index:1;display:flex;justify-content:center;gap:20px;flex-wrap:wrap;padding:0 16px 32px;font-size:9px;letter-spacing:1px;}
+  .leg{display:flex;align-items:center;gap:6px;color:#1a2a1a;}
+  .leg-dot{width:8px;height:8px;border-radius:2px;}
+
+  /* ── GRID ── */
+  .grid{position:relative;z-index:1;display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;padding:0 24px 60px;max-width:1200px;margin:0 auto;}
+
+  /* ── CARD ── */
+  .card{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:20px 18px 18px;
+    cursor:pointer;
+    text-decoration:none;
+    color:inherit;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    position:relative;
+    overflow:hidden;
+    transition:border-color .2s, background .2s, transform .15s, box-shadow .2s;
+  }
+  .card::before{
+    content:'';
+    position:absolute;
+    inset:0;
+    background:radial-gradient(circle at 50% 0%,rgba(255,255,255,0.03),transparent 70%);
+    pointer-events:none;
+  }
+  .card:hover{
+    border-color:var(--accent);
+    background:#0f0f20;
+    transform:translateY(-3px);
+    box-shadow:0 8px 32px rgba(0,0,0,0.5), 0 0 20px color-mix(in srgb,var(--accent) 15%,transparent);
+  }
+  .card:active{transform:translateY(0px);}
+
+  .card-num{
+    position:absolute;top:14px;right:14px;
+    font-size:10px;color:#0f1f0f;letter-spacing:1px;
+  }
+  .card-icon{
+    width:44px;height:44px;border-radius:10px;
+    display:flex;align-items:center;justify-content:center;
+    font-size:22px;
+    background:color-mix(in srgb,var(--accent) 12%,transparent);
+    border:1px solid color-mix(in srgb,var(--accent) 20%,transparent);
+  }
+  .card-title{
+    font-size:15px;font-weight:bold;letter-spacing:1px;
+    color:color-mix(in srgb,var(--accent) 90%,#fff);
+  }
+  .card-desc{font-size:10px;line-height:1.7;color:#223322;}
+  .card-tags{display:flex;gap:6px;flex-wrap:wrap;}
+  .tag{
+    font-size:9px;padding:3px 8px;border-radius:4px;letter-spacing:.5px;
+    background:color-mix(in srgb,var(--accent) 10%,transparent);
+    color:color-mix(in srgb,var(--accent) 70%,#fff);
+    border:0.5px solid color-mix(in srgb,var(--accent) 25%,transparent);
+  }
+  .card-btn{
+    margin-top:auto;
+    display:inline-flex;align-items:center;gap:6px;
+    font-size:10px;letter-spacing:1.5px;
+    color:var(--accent);
+    border:0.5px solid color-mix(in srgb,var(--accent) 30%,transparent);
+    padding:6px 12px;border-radius:6px;
+    background:color-mix(in srgb,var(--accent) 5%,transparent);
+    transition:background .15s;
+    width:fit-content;
+  }
+  .card:hover .card-btn{background:color-mix(in srgb,var(--accent) 12%,transparent);}
+  .card-btn::after{content:'↗';}
+
+  /* ── FOOTER ── */
+  footer{position:relative;z-index:1;text-align:center;padding:16px;border-top:1px solid #0d1a0d;font-size:9px;color:#0f1f0f;letter-spacing:2px;}
+</style>
+</head>
+<body>
+
+<canvas id="stars"></canvas>
+
+<header>
+  <div class="eyebrow">browser · no install · open source</div>
+  <h1>AI GAME LAB</h1>
+  <div class="sub">10 games · each powered by a real AI algorithm · click to play</div>
+  <div class="scan-line"></div>
+</header>
+
+<div class="legend">
+  <div class="leg"><div class="leg-dot" style="background:#00ff88"></div>NEAT — neuro-evolution</div>
+  <div class="leg"><div class="leg-dot" style="background:#4488ff"></div>DQN — deep Q-network</div>
+  <div class="leg"><div class="leg-dot" style="background:#9966cc"></div>GA — genetic algorithm</div>
+  <div class="leg"><div class="leg-dot" style="background:#ffcc00"></div>MCTS — tree search</div>
+  <div class="leg"><div class="leg-dot" style="background:#ff44cc"></div>SELF-PLAY</div>
+</div>
+
+<div class="grid">
+
+  <!-- 01 Flappy Bird -->
+  <a class="card" href="flappy-bird/index.html" style="--accent:var(--green)">
+    <span class="card-num">01</span>
+    <div class="card-icon">🐦</div>
+    <div class="card-title">Flappy Bird</div>
+    <div class="card-desc">50 birds evolve simultaneously. Live neural network fires on the left panel as they learn to thread pipes.</div>
+    <div class="card-tags"><span class="tag">NEAT</span><span class="tag">50 agents</span><span class="tag">live NN</span></div>
+    <div class="card-btn">PLAY</div>
+  </a>
+
+  <!-- 02 Snake -->
+  <a class="card" href="snake/index.html" style="--accent:var(--blue)">
+    <span class="card-num">02</span>
+    <div class="card-icon">🐍</div>
+    <div class="card-title">Snake</div>
+    <div class="card-desc">DQN agent navigates the grid learning to eat food without hitting walls. Q-value chart updates in real time.</div>
+    <div class="card-tags"><span class="tag">DQN</span><span class="tag">Q-values</span><span class="tag">replay buffer</span></div>
+    <div class="card-btn">PLAY</div>
+  </a>
+
+  <!-- 03 Car Racing -->
+  <a class="card" href="car-racing/index.html" style="--accent:var(--yellow)">
+    <span class="card-num">03</span>
+    <div class="card-icon">🏎️</div>
+    <div class="card-title">Car Racing</div>
+    <div class="card-desc">30 cars evolve to drive a procedural oval track. Radar sweep shows the 8 raycast sensors in real time.</div>
+    <div class="card-tags"><span class="tag">NEAT</span><span class="tag">30 agents</span><span class="tag">raycasts</span></div>
+    <div class="card-btn">PLAY</div>
+  </a>
+
+  <!-- 04 Pong -->
+  <a class="card" href="pong/index.html" style="--accent:var(--blue)">
+    <span class="card-num">04</span>
+    <div class="card-icon">🏓</div>
+    <div class="card-title">Pong</div>
+    <div class="card-desc">Two DQN agents in self-play. Each trains against the other's last checkpoint. Q-value bars shown per paddle.</div>
+    <div class="card-tags"><span class="tag">DQN</span><span class="tag">self-play</span><span class="tag">2 agents</span></div>
+    <div class="card-btn">PLAY</div>
+  </a>
+
+  <!-- 05 Asteroid Dodge -->
+  <a class="card" href="asteroid-dodge/index.html" style="--accent:var(--purple)">
+    <span class="card-num">05</span>
+    <div class="card-icon">🚀</div>
+    <div class="card-title">Asteroid Dodge</div>
+    <div class="card-desc">30 ships evolve to dodge infinite asteroids using 10 raycast inputs. Sensor lines glow on the best ship.</div>
+    <div class="card-tags"><span class="tag">NEAT</span><span class="tag">30 agents</span><span class="tag">speciation</span></div>
+    <div class="card-btn">PLAY</div>
+  </a>
+
+  <!-- 06 2048 -->
+  <a class="card" href="game-2048/index.html" style="--accent:var(--yellow)">
+    <span class="card-num">06</span>
+    <div class="card-icon">🔢</div>
+    <div class="card-title">2048</div>
+    <div class="card-desc">Monte Carlo Tree Search plays 2048 with 80 simulations per move. Live bar chart shows move scores.</div>
+    <div class="card-tags"><span class="tag">MCTS</span><span class="tag">heuristics</span><span class="tag">search tree</span></div>
+    <div class="card-btn">PLAY</div>
+  </a>
+
+  <!-- 07 Breakout -->
+  <a class="card" href="breakout/index.html" style="--accent:var(--pink)">
+    <span class="card-num">07</span>
+    <div class="card-icon">🧱</div>
+    <div class="card-title">Breakout</div>
+    <div class="card-desc">DQN agent learns to break all bricks. Epsilon decay curve and Q-value bars update every frame.</div>
+    <div class="card-tags"><span class="tag">DQN</span><span class="tag">ε-greedy</span><span class="tag">replay</span></div>
+    <div class="card-btn">PLAY</div>
+  </a>
+
+  <!-- 08 Predator Prey -->
+  <a class="card" href="predator-prey/index.html" style="--accent:var(--green)">
+    <span class="card-num">08</span>
+    <div class="card-icon">🌿</div>
+    <div class="card-title">Predator Prey</div>
+    <div class="card-desc">100 prey and 20 predators evolve independent neural brains. Emergent hunting tactics appear by gen 30.</div>
+    <div class="card-tags"><span class="tag">GA</span><span class="tag">NEAT</span><span class="tag">120 agents</span></div>
+    <div class="card-btn">PLAY</div>
+  </a>
+
+  <!-- 09 Lunar Lander -->
+  <a class="card" href="lunar-lander/index.html" style="--accent:var(--cyan)">
+    <span class="card-num">09</span>
+    <div class="card-icon">🌙</div>
+    <div class="card-title">Lunar Lander</div>
+    <div class="card-desc">20 landers evolve to touch down on the platform. Thrust particles fire in real time. Value heatmap shows safe zones.</div>
+    <div class="card-tags"><span class="tag">NEAT</span><span class="tag">20 agents</span><span class="tag">physics</span></div>
+    <div class="card-btn">PLAY</div>
+  </a>
+
+  <!-- 10 Maze Solver -->
+  <a class="card" href="maze-solver/index.html" style="--accent:var(--orange)">
+    <span class="card-num">10</span>
+    <div class="card-icon">🌀</div>
+    <div class="card-title">Maze Solver</div>
+    <div class="card-desc">200 walkers evolve move sequences through a random maze. Pheromone trails glow on cells. Best path replays automatically.</div>
+    <div class="card-tags"><span class="tag">GA</span><span class="tag">200 agents</span><span class="tag">pheromones</span></div>
+    <div class="card-btn">PLAY</div>
+  </a>
+
+</div>
+
+<footer>AI GAME LAB · OPEN IN BROWSER · NO INSTALL · 2025</footer>
+
+<script>
+// Animated starfield
+const canvas = document.getElementById('stars');
+const ctx = canvas.getContext('2d');
+let stars = [];
+
+function resize() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+window.addEventListener('resize', resize);
+resize();
+
+for (let i = 0; i < 120; i++) {
+  stars.push({
+    x: Math.random() * window.innerWidth,
+    y: Math.random() * window.innerHeight,
+    r: Math.random() * 1.2,
+    speed: 0.02 + Math.random() * 0.06,
+    phase: Math.random() * Math.PI * 2
+  });
+}
+
+let t = 0;
+function animStars() {
+  requestAnimationFrame(animStars);
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  t += 0.01;
+  stars.forEach(s => {
+    const alpha = 0.1 + 0.15 * Math.sin(t * s.speed * 10 + s.phase);
+    ctx.fillStyle = `rgba(255,255,255,${alpha})`;
+    ctx.beginPath();
+    ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+    ctx.fill();
+  });
+}
+animStars();
+</script>
+</body>
+</html>

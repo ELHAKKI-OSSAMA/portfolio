@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<title>Flappy Bird — NEAT AI</title>
+<link rel="stylesheet" href="css/style.css"/>
+</head>
+<body>
+<div id="top-bar">
+  <div class="stat"><span class="stat-label">GEN</span><span class="stat-val" id="s-gen">1</span></div>
+  <div class="sep"></div>
+  <div class="stat"><span class="stat-label">ALIVE</span><span class="stat-val" id="s-alive">50</span></div>
+  <div class="sep"></div>
+  <div class="stat"><span class="stat-label">SCORE</span><span class="stat-val" id="s-score">0</span></div>
+  <div class="sep"></div>
+  <div class="stat"><span class="stat-label">BEST EVER</span><span class="stat-val" id="s-best">0</span></div>
+  <div class="sep"></div>
+  <div class="stat"><span class="stat-label">SPECIES</span><span class="stat-val" id="s-species">1</span></div>
+  <div id="speed-wrap">
+    <label>SPEED</label>
+    <input type="range" id="speed" min="1" max="10" value="1" step="1"/>
+    <span id="speed-val">1x</span>
+  </div>
+</div>
+<div id="main">
+  <div id="nn-wrap"><canvas id="nn-canvas"></canvas><div id="species-bar"></div></div>
+  <div id="game-wrap"><canvas id="game-canvas"></canvas></div>
+</div>
+<script src="js/pause.js"></script>
+<script src="js/neat.js"></script>
+<script src="js/game.js"></script>
+<script src="js/nn-draw.js"></script>
+<script src="js/main.js"></script>
+<div style="position:fixed;bottom:10px;right:14px;font-family:Courier New,monospace;font-size:9px;color:#0f2010;letter-spacing:2px;z-index:100;pointer-events:none">[P] / [SPACE] PAUSE</div>
+</body>
+</html>

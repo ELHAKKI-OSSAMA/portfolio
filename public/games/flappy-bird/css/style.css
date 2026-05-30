@@ -1,0 +1,16 @@
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#06060e;font-family:'Courier New',monospace;overflow:hidden;width:100vw;height:100vh;display:flex;flex-direction:column}
+#top-bar{display:flex;gap:16px;padding:8px 14px;border-bottom:1px solid #111;flex-shrink:0;align-items:center;flex-wrap:wrap}
+.stat{display:flex;flex-direction:column;min-width:52px}
+.stat-label{font-size:9px;color:#2a3a2a;letter-spacing:1.5px;text-transform:uppercase}
+.stat-val{font-size:15px;color:#00ff88;font-weight:bold;line-height:1.2}
+.sep{width:1px;background:#111;align-self:stretch}
+#speed-wrap{display:flex;align-items:center;gap:8px;margin-left:auto}
+#speed-wrap label{font-size:9px;color:#2a3a2a;letter-spacing:1px}
+#speed-wrap input{width:70px;accent-color:#00ff88}
+#speed-val{font-size:11px;color:#00ff88;min-width:20px}
+#main{display:flex;flex:1;overflow:hidden;min-height:0}
+#nn-wrap{width:38%;height:100%;position:relative;border-right:1px solid #0a1a0a}
+#game-wrap{flex:1;height:100%;position:relative}
+#nn-canvas,#game-canvas{width:100%;height:100%;display:block}
+#species-bar{position:absolute;bottom:8px;left:8px;right:8px;height:6px;border-radius:3px;overflow:hidden;display:flex}

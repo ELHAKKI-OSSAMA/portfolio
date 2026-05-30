@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"/><title>Maze Solver — GA + Pheromones</title><link rel="stylesheet" href="css/style.css"/></head>
+<body>
+<div id="top-bar">
+  <div class="stat"><span class="stat-label">GEN</span><span class="stat-val" id="s-gen">1</span></div>
+  <div class="sep"></div>
+  <div class="stat"><span class="stat-label">ALIVE</span><span class="stat-val" id="s-alive">200</span></div>
+  <div class="sep"></div>
+  <div class="stat"><span class="stat-label">BEST DIST</span><span class="stat-val" id="s-best">0</span></div>
+  <div class="sep"></div>
+  <div class="stat"><span class="stat-label">SOLVED</span><span class="stat-val" id="s-solved">0</span></div>
+  <div class="sep"></div>
+  <div class="stat"><span class="stat-label">REPLAY</span><span class="stat-val" id="s-replay">-</span></div>
+  <div id="speed-wrap">
+    <label>SPEED</label>
+    <input type="range" id="speed" min="1" max="12" value="3" step="1"/>
+    <span id="speed-val">3x</span>
+  </div>
+</div>
+<div id="main"><canvas id="game-canvas"></canvas></div>
+<script src="js/pause.js"></script>
+<script src="js/main.js"></script>
+<div style="position:fixed;bottom:10px;right:14px;font-family:Courier New,monospace;font-size:9px;color:#0f2010;letter-spacing:2px;z-index:100;pointer-events:none">[P] / [SPACE] PAUSE</div>
+</body>
+</html>
