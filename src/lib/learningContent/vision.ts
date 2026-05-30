@@ -5,6 +5,8 @@ export const visionContent: Record<string, TopicContent> = {
   "object-detection": {
     id: "object-detection",
     tagline: "From image classification to locating and labelling every object in the scene",
+    taglineFr: "De la classification d'images à la localisation et l'étiquetage de chaque objet dans la scène",
+    taglineAr: "من تصنيف الصور إلى تحديد وتسمية كل كائن في المشهد",
     accentColor: "#ec4899",
     visualization: "object-detection",
     keyFormulas: [
@@ -127,6 +129,8 @@ print(f"Kept boxes: {kept}")  # [0, 2] — box 1 suppressed (overlaps with 0)`,
   "image-segmentation": {
     id: "image-segmentation",
     tagline: "Classify every single pixel — semantic masks, instance boundaries, and panoptic understanding",
+    taglineFr: "Classer chaque pixel — masques sémantiques, contours d'instances et compréhension panoptique",
+    taglineAr: "تصنيف كل بكسل — أقنعة دلالية وحدود المثيلات والفهم الشامل",
     accentColor: "#ec4899",
     visualization: "segmentation",
     keyFormulas: [

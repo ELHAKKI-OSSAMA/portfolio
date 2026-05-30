@@ -4,6 +4,8 @@ export const advancedContent: Record<string, TopicContent> = {
   "transformers-attention": {
     id: "transformers-attention",
     tagline: "Every word speaks directly to every other word — attending to the whole sentence at once",
+    taglineFr: "Chaque mot s'adresse directement à chaque autre mot — attention portée à toute la phrase à la fois",
+    taglineAr: "كل كلمة تتحدث مباشرة إلى كل كلمة أخرى — الاهتمام بالجملة بأكملها دفعةً واحدة",
     accentColor: "#06b6d4",
     visualization: "attention",
     keyFormulas: [
@@ -104,6 +106,8 @@ class MultiHeadAttention(torch.nn.Module):
   "generative-models": {
     id: "generative-models",
     tagline: "Learning the shape of data — then sampling new reality from the learned distribution",
+    taglineFr: "Apprendre la forme des données — puis échantillonner une nouvelle réalité à partir de la distribution apprise",
+    taglineAr: "تعلّم شكل البيانات — ثم أخذ عينات من واقع جديد من التوزيع المتعلَّم",
     accentColor: "#ec4899",
     visualization: "gan-vae",
     keyFormulas: [
@@ -179,6 +183,8 @@ def gradient_penalty(D, real, fake, device):
   "bagging-stacking": {
     id: "bagging-stacking",
     tagline: "The wisdom of diverse crowds — combining imperfect models into something stronger than any individual",
+    taglineFr: "La sagesse des foules diverses — combiner des modèles imparfaits en quelque chose de plus fort qu'aucun individu",
+    taglineAr: "حكمة الحشود المتنوعة — دمج نماذج غير مثالية في شيء أقوى من أي نموذج منفرد",
     accentColor: "#06b6d4",
     visualization: "bagging-stacking",
     keyFormulas: [
@@ -245,6 +251,8 @@ def stack_oof(models, X_train, y_train, X_test, n_folds=5):
   "ova-ovo": {
     id: "ova-ovo",
     tagline: "Extending binary classifiers to multi-class — tournament brackets for algorithms",
+    taglineFr: "Étendre les classifieurs binaires au multi-classes — tableaux de tournoi pour les algorithmes",
+    taglineAr: "توسيع المصنّفات الثنائية إلى متعددة الفئات — أقواس بطولة للخوارزميات",
     accentColor: "#64748b",
     visualization: "multiclass",
     keyFormulas: [

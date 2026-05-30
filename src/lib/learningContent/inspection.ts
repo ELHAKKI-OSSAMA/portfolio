@@ -5,6 +5,8 @@ export const inspectionContent: Record<string, TopicContent> = {
   "feature-importance": {
     id: "feature-importance",
     tagline: "Know which features your model actually relies on — then trust it more (or less)",
+    taglineFr: "Savoir sur quelles caractéristiques votre modèle s'appuie réellement — puis lui faire plus (ou moins) confiance",
+    taglineAr: "اعرف الميزات التي يعتمد عليها نموذجك فعلاً — ثم ثق به أكثر (أو أقل)",
     accentColor: "#6c63ff",
     visualization: "feature-importance",
     keyFormulas: [
@@ -144,6 +146,8 @@ print(f"\\nSelected features ({len(selected)}): {selected}")`,
   "partial-dependence": {
     id: "partial-dependence",
     tagline: "See exactly how a model's prediction changes as you vary one feature — marginalizing everything else",
+    taglineFr: "Voir exactement comment la prédiction d'un modèle change quand on fait varier une caractéristique — en marginalisant tout le reste",
+    taglineAr: "انظر بدقة كيف تتغير تنبؤات النموذج عند تغيير ميزة واحدة — مع تهميش كل شيء آخر",
     accentColor: "#8b5cf6",
     visualization: "partial-dependence",
     keyFormulas: [

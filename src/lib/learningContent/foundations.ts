@@ -5,6 +5,8 @@ export const foundationsContent: Record<string, TopicContent> = {
   "python-ml-stack": {
     id: "python-ml-stack",
     tagline: "Your data science toolkit — NumPy, Pandas, Matplotlib and the Jupyter workflow",
+    taglineFr: "Votre boîte à outils data science — NumPy, Pandas, Matplotlib et le flux de travail Jupyter",
+    taglineAr: "مجموعة أدوات علوم البيانات — NumPy وPandas وMatplotlib وسير عمل Jupyter",
     accentColor: "#06b6d4",
     visualization: "numpy",
     keyFormulas: [
@@ -119,6 +121,8 @@ plt.show()
   "linear-algebra": {
     id: "linear-algebra",
     tagline: "The geometry behind every model — dot products, matrix transforms, and eigendecomposition",
+    taglineFr: "La géométrie derrière chaque modèle — produits scalaires, transformations matricielles et décomposition propre",
+    taglineAr: "الهندسة وراء كل نموذج — الضرب النقطي وتحويلات المصفوفات والتحليل الطيفي",
     accentColor: "#06b6d4",
     visualization: "linear-algebra",
     keyFormulas: [
@@ -234,6 +238,8 @@ print(f"Explained variance: {eigenvalues[idx[:2]] / eigenvalues.sum() * 100}")`,
   "calculus-optimization": {
     id: "calculus-optimization",
     tagline: "From derivatives to gradient descent — the engine that trains every neural network",
+    taglineFr: "Des dérivées à la descente de gradient — le moteur qui entraîne chaque réseau de neurones",
+    taglineAr: "من المشتقات إلى الانحدار التدريجي — المحرك الذي يدرّب كل شبكة عصبية",
     accentColor: "#06b6d4",
     visualization: "gradient-descent",
     keyFormulas: [
@@ -365,6 +371,8 @@ plt.show()  # lr=0.01: slow, lr=0.1: perfect, lr=0.9: oscillates`,
   "probability-statistics": {
     id: "probability-statistics",
     tagline: "The language of uncertainty — probability distributions, MLE, and Bayesian reasoning",
+    taglineFr: "Le langage de l'incertitude — distributions de probabilité, MLE et raisonnement bayésien",
+    taglineAr: "لغة عدم اليقين — توزيعات الاحتمالية والتقدير الأعظمي والاستدلال البايزي",
     accentColor: "#06b6d4",
     visualization: "probability",
     keyFormulas: [
@@ -479,6 +487,8 @@ print(f"95% CI for group A mean: [{ci_low:.3f}, {ci_high:.3f}]")`,
   "information-theory": {
     id: "information-theory",
     tagline: "Entropy, cross-entropy, KL divergence — the math behind why loss functions work",
+    taglineFr: "Entropie, entropie croisée, divergence KL — les maths derrière le fonctionnement des fonctions de coût",
+    taglineAr: "الإنتروبيا والإنتروبيا المتقاطعة وتباعد KL — الرياضيات وراء سبب عمل دوال الخسارة",
     accentColor: "#06b6d4",
     visualization: "entropy",
     keyFormulas: [

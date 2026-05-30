@@ -4,6 +4,8 @@ export const neuralContent: Record<string, TopicContent> = {
   "neural-networks": {
     id: "neural-networks",
     tagline: "Universal approximators built from threshold logic, optimized by calculus",
+    taglineFr: "Des approximateurs universels construits sur la logique à seuil, optimisés par le calcul",
+    taglineAr: "مقربات عالمية مبنية على منطق العتبة، محسّنة بالحساب التفاضلي",
     accentColor: "#ec4899",
     visualization: "neural-network-backprop",
     keyFormulas: [
@@ -117,6 +119,8 @@ for x_batch, y_batch in dataloader:
   "cnn-architectures": {
     id: "cnn-architectures",
     tagline: "Local pattern detectors that see edges, then textures, then faces — by stacking filters",
+    taglineFr: "Détecteurs de motifs locaux qui voient les contours, puis les textures, puis les visages — en empilant des filtres",
+    taglineAr: "كاشفات الأنماط المحلية التي ترى الحواف ثم الملمس ثم الوجوه — بتراكم المرشحات",
     accentColor: "#8b5cf6",
     visualization: "convolution-resnet-vit",
     keyFormulas: [
@@ -214,6 +218,8 @@ optimizer = optim.AdamW([
   "rnn-lstm-gru": {
     id: "rnn-lstm-gru",
     tagline: "Teaching networks to remember — from catastrophic forgetting to selective gated memory",
+    taglineFr: "Apprendre aux réseaux à se souvenir — de l'oubli catastrophique à la mémoire sélective à portes",
+    taglineAr: "تعليم الشبكات التذكر — من النسيان الكارثي إلى الذاكرة البوابية الانتقائية",
     accentColor: "#8b5cf6",
     visualization: "rnn-lstm",
     keyFormulas: [

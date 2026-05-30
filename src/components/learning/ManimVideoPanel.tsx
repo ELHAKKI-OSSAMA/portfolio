@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslations, useLocale } from "next-intl";
 import { getTopicVideos, AUDIENCE_CONFIG } from "@/lib/learningContent/manim-videos";
 import type { ManimVideoMeta, Audience } from "@/lib/learningContent/manim-videos";
+import { manimI18n } from "@/lib/learningContent/manim-i18n";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // ManimVideoPanel — horizontal scrollable gallery of animated video cards
@@ -25,6 +26,8 @@ function VideoCard({
   tPlaying,
   tWatch,
   audienceLabel,
+  localTitle,
+  localDescription,
 }: {
   video: ManimVideoMeta;
   isActive: boolean;
@@ -33,6 +36,8 @@ function VideoCard({
   tPlaying: string;
   tWatch: string;
   audienceLabel: (a: Audience) => string;
+  localTitle: string;
+  localDescription: string;
 }) {
   const aud = AUDIENCE_CONFIG[video.audience];
 
@@ -59,13 +64,13 @@ function VideoCard({
       {/* Title */}
       <p className="text-sm font-semibold leading-snug mb-2 line-clamp-2"
         style={{ color: "var(--text-primary)" }}>
-        {video.title}
+        {localTitle}
       </p>
 
       {/* Description */}
       <p className="text-xs leading-relaxed line-clamp-3 mb-3"
         style={{ color: "var(--text-muted)" }}>
-        {video.description}
+        {localDescription}
       </p>
 
       {/* Footer */}
@@ -98,10 +103,16 @@ function VideoPlayer({
   video,
   accentColor,
   audienceLabel,
+  localTitle,
+  localDescription,
+  videoSrc,
 }: {
   video: ManimVideoMeta;
   accentColor: string;
   audienceLabel: (a: Audience) => string;
+  localTitle: string;
+  localDescription: string;
+  videoSrc: string;
 }) {
   const [videoLoaded, setVideoLoaded] = useState(false);
 
@@ -122,8 +133,8 @@ function VideoPlayer({
           style={{ aspectRatio: "16/9" }}
         >
           <video
-            key={video.src}
-            src={video.src}
+            key={videoSrc}
+            src={videoSrc}
             controls
             playsInline
             preload="metadata"
@@ -154,13 +165,18 @@ function VideoPlayer({
         <div className="px-4 py-3 border-t" style={{ borderColor: "var(--border)" }}>
           <div className="flex items-center gap-2">
             <p className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
-              {video.title}
+              {localTitle}
             </p>
             <AudienceBadge audience={video.audience} label={audienceLabel(video.audience)} />
             <span className="text-xs font-mono ml-auto" style={{ color: "var(--text-muted)" }}>
               {video.duration}
             </span>
           </div>
+          {localDescription !== video.description && (
+            <p className="text-xs mt-1.5 leading-relaxed" style={{ color: "var(--text-muted)" }}>
+              {localDescription}
+            </p>
+          )}
         </div>
       </motion.div>
     </AnimatePresence>
@@ -232,6 +248,13 @@ export default function ManimVideoPanel({ topicId, accentColor }: Props) {
   const [activeId, setActiveId]           = useState<string>(videos[0]?.id ?? "");
   const [audienceFilter, setAudienceFilter] = useState<Audience | "all">("all");
 
+  // Reset selection when topicId changes
+  useEffect(() => {
+    setActiveId(videos[0]?.id ?? "");
+    setAudienceFilter("all");
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [topicId]);
+
   if (videos.length === 0) return null;
 
   // Locale-aware audience label using existing difficulty_* i18n keys
@@ -260,6 +283,17 @@ export default function ManimVideoPanel({ topicId, accentColor }: Props) {
   const tPlaying = t("manim_playing" as Parameters<typeof t>[0]);
   const tWatch   = t("manim_watch"   as Parameters<typeof t>[0]);
   const tAll     = t("manim_filter_all" as Parameters<typeof t>[0]);
+
+  const localTitle = (video: ManimVideoMeta): string => {
+    if (locale === "fr") return manimI18n[video.id]?.titleFr ?? video.title;
+    if (locale === "ar") return manimI18n[video.id]?.titleAr ?? video.title;
+    return video.title;
+  };
+  const localDescription = (video: ManimVideoMeta): string => {
+    if (locale === "fr") return manimI18n[video.id]?.descriptionFr ?? video.description;
+    if (locale === "ar") return manimI18n[video.id]?.descriptionAr ?? video.description;
+    return video.description;
+  };
 
   return (
     <motion.div
@@ -309,6 +343,8 @@ export default function ManimVideoPanel({ topicId, accentColor }: Props) {
             tPlaying={tPlaying}
             tWatch={tWatch}
             audienceLabel={audienceLabel}
+            localTitle={localTitle(video)}
+            localDescription={localDescription(video)}
           />
         ))}
       </div>
@@ -319,6 +355,9 @@ export default function ManimVideoPanel({ topicId, accentColor }: Props) {
           video={activeVideo}
           accentColor={accentColor}
           audienceLabel={audienceLabel}
+          localTitle={localTitle(activeVideo)}
+          localDescription={localDescription(activeVideo)}
+          videoSrc={locale === "fr" && activeVideo.srcFr ? activeVideo.srcFr : activeVideo.src}
         />
       )}
 

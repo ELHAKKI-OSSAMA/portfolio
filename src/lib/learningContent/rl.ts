@@ -5,6 +5,8 @@ export const rlContent: Record<string, TopicContent> = {
   "reinforcement-learning": {
     id: "reinforcement-learning",
     tagline: "An agent learns by doing — maximising cumulative reward through trial-and-error interaction",
+    taglineFr: "Un agent apprend en faisant — maximiser la récompense cumulée par interaction essai-erreur",
+    taglineAr: "وكيل يتعلم بالفعل — تعظيم المكافأة التراكمية من خلال التفاعل بالتجربة والخطأ",
     accentColor: "#f43f5e",
     visualization: "q-learning",
     keyFormulas: [

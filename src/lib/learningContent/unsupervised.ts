@@ -5,6 +5,8 @@ export const unsupervisedContent: Record<string, TopicContent> = {
   "clustering": {
     id: "clustering",
     tagline: "Finding hidden groups in unlabeled data — no teacher required",
+    taglineFr: "Trouver des groupes cachés dans des données non étiquetées — aucun enseignant requis",
+    taglineAr: "إيجاد مجموعات خفية في البيانات غير الموسومة — لا معلم مطلوب",
     accentColor: "#6c63ff",
     visualization: "clustering",
     keyFormulas: [
@@ -116,6 +118,8 @@ labels_agg = agg.fit_predict(X_scaled)`,
   "pca": {
     id: "pca",
     tagline: "Finding the directions of maximum variance — compressing information without losing it",
+    taglineFr: "Trouver les directions de variance maximale — compresser l'information sans la perdre",
+    taglineAr: "إيجاد اتجاهات التباين الأقصى — ضغط المعلومات دون فقدانها",
     accentColor: "#8b5cf6",
     visualization: "pca",
     keyFormulas: [
@@ -222,6 +226,8 @@ plt.ylabel(f"PC2 ({pca2.explained_variance_ratio_[1]:.1%})")`,
   "anomaly": {
     id: "anomaly",
     tagline: "Finding the one-in-a-thousand data point that doesn't belong",
+    taglineFr: "Trouver le point de données sur mille qui n'a pas sa place",
+    taglineAr: "إيجاد نقطة البيانات الواحدة في الألف التي لا تنتمي",
     accentColor: "#ef4444",
     visualization: "anomaly",
     keyFormulas: [

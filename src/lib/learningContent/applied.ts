@@ -5,6 +5,8 @@ export const appliedContent: Record<string, TopicContent> = {
   "feature-engineering": {
     id: "feature-engineering",
     tagline: "Garbage in, garbage out — the art of turning raw data into model-ready signals",
+    taglineFr: "Ordures à l'entrée, ordures à la sortie — l'art de transformer les données brutes en signaux prêts pour le modèle",
+    taglineAr: "قمامة داخل، قمامة خارج — فن تحويل البيانات الخام إلى إشارات جاهزة للنموذج",
     accentColor: "#22c55e",
     visualization: "feature-engineering",
     keyFormulas: [
@@ -130,6 +132,8 @@ print(f"CV AUC: {scores.mean():.3f} ± {scores.std():.3f}")`,
   "hyperparameter-tuning": {
     id: "hyperparameter-tuning",
     tagline: "Automating the art of finding the right knobs to turn",
+    taglineFr: "Automatiser l'art de trouver les bons réglages à ajuster",
+    taglineAr: "أتمتة فن إيجاد المعاملات الصحيحة للضبط",
     accentColor: "#f97316",
     visualization: "hyperparameter-tuning",
     keyFormulas: [
@@ -241,6 +245,8 @@ print(f"Optuna best: {study.best_value:.4f}  {study.best_params}")`,
   "naive-bayes": {
     id: "naive-bayes",
     tagline: "Bayes' theorem + one bold assumption = a surprisingly powerful classifier",
+    taglineFr: "Théorème de Bayes + une hypothèse audacieuse = un classifieur étonnamment puissant",
+    taglineAr: "نظرية بايز + افتراض جريء واحد = مصنّف قوي بشكل مدهش",
     accentColor: "#8b5cf6",
     visualization: "naive-bayes",
     keyFormulas: [
@@ -357,6 +363,8 @@ print("Feature means per class:", nb.theta_)   # shape (n_classes, n_features)`,
   "time-series": {
     id: "time-series",
     tagline: "When the order of observations matters — learning from the past to predict the future",
+    taglineFr: "Quand l'ordre des observations compte — apprendre du passé pour prédire l'avenir",
+    taglineAr: "عندما يهم ترتيب الملاحظات — التعلم من الماضي للتنبؤ بالمستقبل",
     accentColor: "#06b6d4",
     visualization: "time-series",
     keyFormulas: [
@@ -471,6 +479,8 @@ print(f"CV MAE: {np.mean(maes):.2f} ± {np.std(maes):.2f}")`,
   "nlp-text": {
     id: "nlp-text",
     tagline: "Teaching machines to read — from bag-of-words to transformers",
+    taglineFr: "Apprendre aux machines à lire — du sac de mots aux transformers",
+    taglineAr: "تعليم الآلات القراءة — من حقيبة الكلمات إلى المحولات",
     accentColor: "#06b6d4",
     visualization: "nlp-text",
     keyFormulas: [

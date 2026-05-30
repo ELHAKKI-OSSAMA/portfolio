@@ -4,6 +4,8 @@ export const supervisedContent: Record<string, TopicContent> = {
   "linear-regression": {
     id: "linear-regression",
     tagline: "Finding the single best line through a cloud of noisy reality",
+    taglineFr: "Trouver la droite optimale dans un nuage de points bruités",
+    taglineAr: "إيجاد أفضل خط في سحابة من البيانات المتشعثة",
     accentColor: "#6c63ff",
     visualization: "linear-regression",
     keyFormulas: [
@@ -119,6 +121,8 @@ print("Ridge beta:", beta_ridge[:3].round(2))`,
   "decision-tree-rf": {
     id: "decision-tree-rf",
     tagline: "Recursive 20 questions: splitting reality into ever-purer regions",
+    taglineFr: "20 questions récursives : diviser la réalité en régions toujours plus pures",
+    taglineAr: "20 سؤالاً تكرارياً: تقسيم الواقع إلى مناطق أكثر نقاءً",
     accentColor: "#00d4aa",
     visualization: "decision-tree-rf",
     keyFormulas: [
@@ -223,6 +227,8 @@ shap_values = explainer.shap_values(X_test)`,
   "gradient-boosting": {
     id: "gradient-boosting",
     tagline: "Many small corrections beat one big guess — sequentially chasing the residuals",
+    taglineFr: "De petites corrections cumulées valent mieux qu'une grande supposition — poursuivre les résidus séquentiellement",
+    taglineAr: "تصحيحات صغيرة متتالية تتفوق على تخمين واحد كبير — ملاحقة البواقي بالتسلسل",
     accentColor: "#f59e0b",
     visualization: "gradient-boosting-all",
     keyFormulas: [
@@ -332,6 +338,8 @@ study.optimize(objective, n_trials=100)`,
   "svm-knn-svr": {
     id: "svm-knn-svr",
     tagline: "Maximum margin is the answer — the wider the street, the more confident the classifier",
+    taglineFr: "La marge maximale est la réponse — plus la rue est large, plus le classifieur est confiant",
+    taglineAr: "الهامش الأقصى هو الجواب — كلما اتسع الشارع، زادت ثقة المصنّف",
     accentColor: "#f97316",
     visualization: "svm-knn-svr",
     keyFormulas: [

@@ -136,7 +136,11 @@ export default async function TopicPage({
               className="text-lg sm:text-xl italic mb-6 max-w-3xl"
               style={{ color, opacity: 0.9 }}
             >
-              &ldquo;{content.tagline}&rdquo;
+              &ldquo;{
+                locale === "fr" && content.taglineFr ? content.taglineFr
+                : locale === "ar" && content.taglineAr ? content.taglineAr
+                : content.tagline
+              }&rdquo;
             </p>
           )}
 

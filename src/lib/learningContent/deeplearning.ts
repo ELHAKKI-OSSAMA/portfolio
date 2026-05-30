@@ -5,6 +5,8 @@ export const deeplearningContent: Record<string, TopicContent> = {
   "dl-optimization": {
     id: "dl-optimization",
     tagline: "From SGD to Adam — the tricks that make deep networks actually train",
+    taglineFr: "De SGD à Adam — les astuces qui permettent aux réseaux profonds de vraiment s'entraîner",
+    taglineAr: "من SGD إلى Adam — الحيل التي تجعل الشبكات العميقة تتدرب فعلاً",
     accentColor: "#a78bfa",
     visualization: "dl-optimization",
     keyFormulas: [

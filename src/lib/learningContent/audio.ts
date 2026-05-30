@@ -5,6 +5,8 @@ export const audioContent: Record<string, TopicContent> = {
   "audio-ml": {
     id: "audio-ml",
     tagline: "From raw waveforms to MFCC features — how machines listen and understand speech",
+    taglineFr: "Des formes d'onde brutes aux caractéristiques MFCC — comment les machines écoutent et comprennent la parole",
+    taglineAr: "من الموجات الخام إلى ميزات MFCC — كيف تستمع الآلات وتفهم الكلام",
     accentColor: "#84cc16",
     visualization: "spectrogram",
     keyFormulas: [

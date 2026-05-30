@@ -4,6 +4,8 @@ export const evaluationContent: Record<string, TopicContent> = {
   "model-evaluation": {
     id: "model-evaluation",
     tagline: "Accuracy is a lie — learning to choose the right metric for the real problem",
+    taglineFr: "La précision est un mensonge — apprendre à choisir la bonne métrique pour le vrai problème",
+    taglineAr: "الدقة كذبة — تعلّم اختيار المقياس الصحيح للمشكلة الحقيقية",
     accentColor: "#ff6b6b",
     visualization: "evaluation-suite",
     keyFormulas: [
@@ -123,6 +125,8 @@ print(f"Optimal threshold: {best_threshold:.3f}, F1: {max(f1s):.4f}")`,
   "error-analysis": {
     id: "error-analysis",
     tagline: "Every model error is either a wrong assumption or sensitivity to noise — diagnosing which changes everything",
+    taglineFr: "Chaque erreur de modèle est soit une mauvaise hypothèse soit une sensibilité au bruit — diagnostiquer laquelle change tout",
+    taglineAr: "كل خطأ في النموذج إما افتراض خاطئ أو حساسية للضوضاء — تشخيص أيهما يغير كل شيء",
     accentColor: "#10b981",
     visualization: "bias-variance",
     keyFormulas: [

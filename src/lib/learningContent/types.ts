@@ -33,6 +33,8 @@ export interface KeyFormula {
 export interface TopicContent {
   id: string;
   tagline: string;
+  taglineFr?: string;
+  taglineAr?: string;
   accentColor: string;
   visualization: string;
   keyFormulas: KeyFormula[];
