@@ -94,10 +94,13 @@ class DQNAgent {
     this.totalSteps=0;
     this.episode=0;
     this.lastLoss=0;
+    this.lastActs=null;
   }
   act(state) {
+    const {q,a1,a2}=this.online.forward(state);
+    this.lastActs={inp:[...state],h1:[...a1],h2:[...a2],out:[...q]};
     if(rnd()<this.epsilon) return Math.floor(rnd()*DQN_CFG.ACTION_SIZE);
-    return argmax(this.online.predict(state));
+    return argmax(q);
   }
   remember(s,a,r,ns,done) {
     if(this.memory.length>=DQN_CFG.MEMORY_SIZE) this.memory.shift();

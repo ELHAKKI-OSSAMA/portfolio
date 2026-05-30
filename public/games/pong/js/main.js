@@ -49,7 +49,9 @@ function gameStep(){
   if(done){ball=makeBall();trailBall=[];episodes++;rally=0;}
 }
 
-function resize(){const p=gc.parentElement;const s=Math.min(p.clientWidth/GW,p.clientHeight/GH);gc.width=GW*s;gc.height=GH*s;gc.style.width=gc.width+'px';gc.style.height=gc.height+'px';}
+const nnc=document.getElementById('nn-canvas');
+
+function resize(){const p=gc.parentElement;const s=Math.min((p.clientWidth-260)/GW,p.clientHeight/GH);gc.width=GW*s;gc.height=GH*s;gc.style.width=gc.width+'px';gc.style.height=gc.height+'px';NNDraw.resize();}
 window.addEventListener('resize',resize);resize();
 
 function draw(){const W=gc.width,H=gc.height;const s=W/GW;gx.fillStyle='#06060e';gx.fillRect(0,0,W,H);
@@ -79,5 +81,5 @@ gx.fillStyle='#ff664499';gx.fillText(rScore,W*0.75,s*50);
 }
 
 function loop(){requestAnimationFrame(loop);
-  if(_paused){draw();return;}for(let i=0;i<simSpeed;i++)gameStep();draw();document.getElementById('s-l').textContent=lScore;document.getElementById('s-r').textContent=rScore;document.getElementById('s-rally').textContent=rally;document.getElementById('s-ep').textContent=episodes;}
+  if(_paused){draw();NNDraw.draw(agentL,episodes);return;}for(let i=0;i<simSpeed;i++)gameStep();draw();NNDraw.draw(agentL,episodes);document.getElementById('s-l').textContent=lScore;document.getElementById('s-r').textContent=rScore;document.getElementById('s-rally').textContent=rally;document.getElementById('s-ep').textContent=episodes;}
 loop();

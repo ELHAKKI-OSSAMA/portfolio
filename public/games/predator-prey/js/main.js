@@ -6,15 +6,15 @@ const TWO_PI=Math.PI*2;
 function rnd(){return Math.random();}function rndRange(a,b){return a+(b-a)*rnd();}function relu(x){return Math.max(0,x);}function sigmoid(x){return 1/(1+Math.exp(-x));}
 
 class Brain{constructor(inp,hid,out){this.inp=inp;this.hid=hid;this.out=out;this.w1=Float32Array.from({length:inp*hid},()=>rndRange(-1,1));this.b1=Float32Array.from({length:hid},()=>0);this.w2=Float32Array.from({length:hid*out},()=>rndRange(-1,1));this.b2=Float32Array.from({length:out},()=>0);}
-forward(x){const h=new Float32Array(this.hid);for(let j=0;j<this.hid;j++){let s=this.b1[j];for(let i=0;i<this.inp;i++)s+=x[i]*this.w1[i*this.hid+j];h[j]=relu(s);}const o=new Float32Array(this.out);for(let j=0;j<this.out;j++){let s=this.b2[j];for(let i=0;i<this.hid;i++)s+=h[i]*this.w2[i*this.out+j];o[j]=sigmoid(s);}return Array.from(o);}
+forward(x){const h=new Float32Array(this.hid);for(let j=0;j<this.hid;j++){let s=this.b1[j];for(let i=0;i<this.inp;i++)s+=x[i]*this.w1[i*this.hid+j];h[j]=relu(s);}const o=new Float32Array(this.out);for(let j=0;j<this.out;j++){let s=this.b2[j];for(let i=0;i<this.hid;i++)s+=h[i]*this.w2[i*this.out+j];o[j]=sigmoid(s);}return{h:Array.from(h),o:Array.from(o)};}
 clone(){const b=new Brain(this.inp,this.hid,this.out);b.w1=new Float32Array(this.w1);b.b1=new Float32Array(this.b1);b.w2=new Float32Array(this.w2);b.b2=new Float32Array(this.b2);return b;}
 mutate(rate=0.1,str=0.3){[this.w1,this.w2].forEach(arr=>{for(let i=0;i<arr.length;i++)if(rnd()<rate)arr[i]+=rndRange(-str,str);});}
 crossover(o){const c=this.clone();['w1','w2'].forEach(k=>{for(let i=0;i<c[k].length;i++)if(rnd()<0.5)c[k][i]=o[k][i];});return c;}}
 
-class Agent{constructor(x,y,brain,type){this.x=x;this.y=y;this.brain=brain;this.type=type;this.angle=rnd()*TWO_PI;this.speed=0;this.alive=true;this.fitness=0;this.energy=100;}
+class Agent{constructor(x,y,brain,type){this.x=x;this.y=y;this.brain=brain;this.type=type;this.angle=rnd()*TWO_PI;this.speed=0;this.alive=true;this.fitness=0;this.energy=100;this.lastInputs=new Array(brain.inp).fill(0);this.lastActs={h:new Array(brain.hid).fill(0),o:new Array(brain.out).fill(0)};}
 nearest(others,maxD=150){let best=null,bd=maxD;for(const o of others){if(!o.alive)continue;const d=Math.hypot(o.x-this.x,o.y-this.y);if(d<bd){bd=d;best=o;}}return{agent:best,dist:bd};}
 getInputs(prey,pred,plants){const np=this.nearest(prey,200);const nd=this.nearest(pred,200);const npl=this.nearest(plants,200);const angle=(a)=>a?Math.atan2(a.y-this.y,a.x-this.x):0;return[np.dist/200,np.agent?(angle(np.agent)-this.angle)/(Math.PI):0,nd.dist/200,nd.agent?(angle(nd.agent)-this.angle)/(Math.PI):0,npl.dist/200,npl.agent?(angle(npl.agent)-this.angle)/(Math.PI):0,this.energy/100,this.speed/3];}
-step(prey,pred,plants){if(!this.alive)return;const inp=this.getInputs(prey,pred,plants);const out=this.brain.forward(inp);const turn=(out[0]-0.5)*0.2;this.angle+=turn;this.speed=0.5+out[1]*2.5;this.x+=Math.cos(this.angle)*this.speed;this.y+=Math.sin(this.angle)*this.speed;this.x=((this.x%GW)+GW)%GW;this.y=((this.y%GH)+GH)%GH;this.energy-=0.05;this.fitness++;if(this.energy<=0)this.alive=false;}}
+step(prey,pred,plants){if(!this.alive)return;const inp=this.getInputs(prey,pred,plants);const acts=this.brain.forward(inp);this.lastInputs=inp;this.lastActs=acts;const out=acts.o;const turn=(out[0]-0.5)*0.2;this.angle+=turn;this.speed=0.5+out[1]*2.5;this.x+=Math.cos(this.angle)*this.speed;this.y+=Math.sin(this.angle)*this.speed;this.x=((this.x%GW)+GW)%GW;this.y=((this.y%GH)+GH)%GH;this.energy-=0.05;this.fitness++;if(this.energy<=0)this.alive=false;}}
 
 class Plant{constructor(){this.x=rnd()*GW;this.y=rnd()*GH;this.alive=true;}}
 
@@ -49,7 +49,7 @@ if(frameCount>=800||prey.filter(p=>p.alive).length===0)evolve();}
 
 const gc=document.getElementById('game-canvas');const gx=gc.getContext('2d');
 const cc=document.getElementById('chart-canvas');const cx=cc.getContext('2d');
-function resize(){gc.width=gc.parentElement.clientWidth;gc.height=gc.parentElement.clientHeight;cc.width=cc.parentElement.clientWidth;cc.height=cc.parentElement.clientHeight;}
+function resize(){gc.width=gc.parentElement.clientWidth;gc.height=gc.parentElement.clientHeight;const chartH=cc.parentElement.clientHeight;cc.width=cc.parentElement.clientWidth;cc.height=Math.floor(chartH/2);if(typeof NNDraw!=='undefined')NNDraw.resize();}
 window.addEventListener('resize',resize);resize();
 let simSpeed=2;
 document.getElementById('speed').addEventListener('input',e=>{simSpeed=parseInt(e.target.value);document.getElementById('speed-val').textContent=simSpeed+'x';});
@@ -62,6 +62,7 @@ preds.filter(p=>p.alive).forEach(p=>{gx.save();gx.translate(p.x*sx,p.y*sy);gx.ro
 
 function drawChart(){const W=cc.width,H=cc.height;cx.fillStyle='#06060e';cx.fillRect(0,0,W,H);cx.fillStyle='#1a3a1a';cx.font='8px Courier New';cx.textAlign='left';cx.fillText('POPULATION',8,12);if(preyHist.length<2)return;const pts=preyHist.slice(-60);const ppts=predHist.slice(-60);const maxV=Math.max(...pts,...ppts,1);[{data:pts,col:'#00ff8877'},{data:ppts,col:'#ff444477'}].forEach(({data,col})=>{cx.strokeStyle=col;cx.lineWidth=1.5;cx.beginPath();data.forEach((v,i)=>{const x=8+(i/(data.length-1))*(W-16);const y=H-16-(v/maxV)*(H-28);i===0?cx.moveTo(x,y):cx.lineTo(x,y);});cx.stroke();});cx.fillStyle='#00ff8866';cx.font='8px Courier New';cx.fillText('▲ prey',8,H-4);cx.fillStyle='#ff444466';cx.fillText('  pred',8+40,H-4);}
 
+function getBestAgent(agents){return agents.filter(a=>a.alive).reduce((best,a)=>(!best||a.fitness>best.fitness)?a:best,null)||agents.reduce((best,a)=>(!best||a.fitness>best.fitness)?a:best,null);}
 function loop(){requestAnimationFrame(loop);
-  if(_paused){draw();drawChart();return;}for(let i=0;i<simSpeed;i++)simStep();draw();drawChart();document.getElementById('s-gen').textContent=generation;document.getElementById('s-prey').textContent=prey.filter(p=>p.alive).length;document.getElementById('s-pred').textContent=preds.filter(p=>p.alive).length;document.getElementById('s-eaten').textContent=eaten;}
+  if(_paused){draw();drawChart();return;}for(let i=0;i<simSpeed;i++)simStep();draw();drawChart();const bestPrey=getBestAgent(prey);const bestPred=getBestAgent(preds);if(typeof NNDraw!=='undefined')NNDraw.draw(bestPrey,bestPred);document.getElementById('s-gen').textContent=generation;document.getElementById('s-prey').textContent=prey.filter(p=>p.alive).length;document.getElementById('s-pred').textContent=preds.filter(p=>p.alive).length;document.getElementById('s-eaten').textContent=eaten;}
 loop();

@@ -12,7 +12,8 @@ body{background:#06060e;font-family:'Courier New',monospace;overflow:hidden;widt
 #main{display:flex;flex:1;overflow:hidden;min-height:0}
 #game-wrap{flex:1;height:100%}
 #side-wrap{width:260px;display:flex;flex-direction:column;border-left:1px solid #111}
-#game-canvas,#radar-canvas,#reward-canvas{width:100%;display:block}
+#game-canvas,#radar-canvas,#reward-canvas,#nn-canvas{width:100%;display:block}
 #game-canvas{height:100%}
 #radar-canvas{flex:1}
 #reward-canvas{flex:1;border-top:1px solid #111}
+#nn-canvas{flex:1;border-top:1px solid #111}

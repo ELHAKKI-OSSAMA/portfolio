@@ -38,7 +38,9 @@ const noMore=bricks.every(b=>!b.alive);if(noMore){reward=5;done=true;}
 const ns=getState();agent.push(s,a,reward,ns,done);agent.train();
 if(done){if(epScore>bestScore)bestScore=epScore;scoreHist.push(epScore);episode++;resetGame();}return done;}
 
-function resize(){gc.width=GW*1.5;gc.height=GH*1.5;qc.width=qc.parentElement.clientWidth;qc.height=Math.floor(qc.parentElement.clientHeight/2);ec.width=ec.parentElement.clientWidth;ec.height=Math.floor(ec.parentElement.clientHeight/2);}
+const nc=document.getElementById('nn-canvas');
+
+function resize(){gc.width=GW*1.5;gc.height=GH*1.5;qc.width=qc.parentElement.clientWidth;qc.height=Math.floor(qc.parentElement.clientHeight/5);ec.width=ec.parentElement.clientWidth;ec.height=Math.floor(ec.parentElement.clientHeight/5);nc.width=nc.parentElement.clientWidth;nc.height=Math.floor(nc.parentElement.clientHeight*3/5);NNDraw.resize();}
 window.addEventListener('resize',resize);resize();
 const S=1.5;
 function draw(){gx.fillStyle='#06060e';gx.fillRect(0,0,gc.width,gc.height);
@@ -58,5 +60,6 @@ function drawQ(){const W=qc.width,H=qc.height;qx.fillStyle='#06060e';qx.fillRect
 function drawEps(){const W=ec.width,H=ec.height;ex.fillStyle='#06060e';ex.fillRect(0,0,W,H);ex.fillStyle='#2a1a2a';ex.font='9px Courier New';ex.textAlign='left';ex.fillText('ε DECAY CURVE',10,12);const pts=agent.epsHist.slice(-100);if(pts.length<2)return;ex.strokeStyle='#ff44cc66';ex.lineWidth=1.2;ex.beginPath();pts.forEach((v,i)=>{const x=10+(i/(pts.length-1))*(W-20);const y=H-10-(v)*(H-24);i===0?ex.moveTo(x,y):ex.lineTo(x,y);});ex.stroke();}
 
 function loop(){requestAnimationFrame(loop);
-  if(_paused){draw();drawQ();drawEps();return;}for(let i=0;i<simSpeed;i++)gameStep();draw();drawQ();drawEps();document.getElementById('s-ep').textContent=episode;document.getElementById('s-score').textContent=epScore;document.getElementById('s-best').textContent=bestScore;document.getElementById('s-eps').textContent=agent.eps.toFixed(3);}
+  agent.episode=episode;
+  if(_paused){draw();drawQ();drawEps();NNDraw.draw(agent);return;}for(let i=0;i<simSpeed;i++)gameStep();draw();drawQ();drawEps();NNDraw.draw(agent);document.getElementById('s-ep').textContent=episode;document.getElementById('s-score').textContent=epScore;document.getElementById('s-best').textContent=bestScore;document.getElementById('s-eps').textContent=agent.eps.toFixed(3);}
 loop();

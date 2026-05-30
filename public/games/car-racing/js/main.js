@@ -130,6 +130,8 @@ class Car {
     this.progress = 0; this.laps = 0;
     this.frames = 0; this.framesSinceProgress = 0;
     this.lastProgress = 0; this.outputs = [0,0,0];
+    this.lastInputs = new Array(NEAT_CFG.INPUTS).fill(0);
+    this.lastActs = {h: new Array(NEAT_CFG.HIDDEN).fill(0), o: [0,0,0]};
   }
   getRays() {
     // Spread rays in front hemisphere more densely
@@ -141,7 +143,10 @@ class Car {
     const rays = this.getRays();
     // Normalize progress to nearest wall distances
     const inp = [...rays, this.speed / 6];
-    const out = this.genome.forward(inp);
+    const acts = this.genome.forward(inp);
+    this.lastInputs = inp;
+    this.lastActs = acts;
+    const out = acts.o;
     this.outputs = out;
     const steer = (out[1] - out[0]) * 0.08; // net steering
     const throttle = out[2];
@@ -193,10 +198,12 @@ const rc2 = rewardC.getContext('2d');
 function resize() {
   gc.width = gc.parentElement.clientWidth;
   gc.height = gc.parentElement.clientHeight;
+  const sideH = radar.parentElement.clientHeight;
   radar.width = radar.parentElement.clientWidth;
-  radar.height = Math.floor(radar.parentElement.clientHeight / 2);
+  radar.height = Math.floor(sideH / 3);
   rewardC.width = rewardC.parentElement.clientWidth;
-  rewardC.height = Math.floor(rewardC.parentElement.clientHeight / 2);
+  rewardC.height = Math.floor(sideH / 3);
+  if(typeof NNDraw !== 'undefined') NNDraw.resize();
 }
 window.addEventListener('resize', resize); resize();
 
@@ -328,6 +335,7 @@ function loop() {
   drawBestCar(best,scale,ox,oy);
   drawRadar(best);
   drawFitnessChart(bestHist);
+  if(typeof NNDraw !== 'undefined') NNDraw.draw(best);
   document.getElementById('s-gen').textContent=neat.generation;
   document.getElementById('s-alive').textContent=cars.filter(c=>c.alive).length;
   document.getElementById('s-lap').textContent=bestLap;

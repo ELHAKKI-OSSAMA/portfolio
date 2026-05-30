@@ -21,13 +21,18 @@ document.getElementById('speed').addEventListener('input',e=>{
   document.getElementById('speed-val').textContent=stepsPerSec+'x';
 });
 
+const nc=document.getElementById('nn-canvas');
+
 function resize(){
   gc.width=gc.parentElement.clientWidth;
   gc.height=gc.parentElement.clientHeight;
   qc.width=qc.parentElement.clientWidth;
-  qc.height=Math.floor(qc.parentElement.clientHeight/2);
+  qc.height=Math.floor(qc.parentElement.clientHeight/3);
   rc.width=rc.parentElement.clientWidth;
-  rc.height=Math.floor(rc.parentElement.clientHeight/2);
+  rc.height=Math.floor(rc.parentElement.clientHeight/3);
+  nc.width=nc.parentElement.clientWidth;
+  nc.height=Math.floor(nc.parentElement.clientHeight/3*2);
+  NNDraw.resize();
 }
 window.addEventListener('resize',resize); resize();
 
@@ -144,19 +149,21 @@ function doStep(){
 
 // Time-based: run stepsPerSec game steps per second
 function loop(ts){
+  agent.episode=episode;
   requestAnimationFrame(loop);
   const interval=1000/stepsPerSec;
   const elapsed=ts-lastStepTime;
   if(elapsed>=interval){
     // Run one or more steps to catch up, max 5 at once
     const count=Math.min(5,Math.floor(elapsed/interval));
-    if(_paused){drawGame();drawQValues();drawScoreHistory();updateUI();return;}
+    if(_paused){drawGame();drawQValues();drawScoreHistory();NNDraw.draw(agent);updateUI();return;}
     for(let i=0;i<count;i++) doStep();
     lastStepTime=ts;
   }
   drawGame();
   drawQValues();
   drawScoreHistory();
+  NNDraw.draw(agent);
   updateUI();
 }
 requestAnimationFrame(loop);

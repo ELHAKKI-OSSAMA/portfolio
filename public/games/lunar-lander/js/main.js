@@ -16,9 +16,9 @@ terrain.forEach(p=>{if(p.x>PAD_X-PAD_W&&p.x<PAD_X+PAD_W)p.y=PAD_Y;});
 function collidesGround(x,y){for(let i=0;i<terrain.length-1;i++){const a=terrain[i],b=terrain[i+1];if(x>=a.x&&x<=b.x){const ty=a.y+(b.y-a.y)*((x-a.x)/(b.x-a.x));if(y>=ty)return{hit:true,onPad:x>PAD_X-PAD_W&&x<PAD_X+PAD_W,ty};}}return{hit:false};}
 
 class Lander{constructor(genome,idx){this.genome=genome;this.idx=idx;this.color=SPECIES_COLORS[genome.speciesId%SPECIES_COLORS.length];this.reset();}
-reset(){this.x=100+rnd()*(GW-200);this.y=60+rnd()*80;this.vx=rndRange(-1,1);this.vy=rndRange(0,1);this.angle=rndRange(-0.3,0.3);this.va=0;this.alive=true;this.score=0;this.frames=0;this.thrusting=false;this.sideL=false;this.sideR=false;this.particles=[];}
+reset(){this.x=100+rnd()*(GW-200);this.y=60+rnd()*80;this.vx=rndRange(-1,1);this.vy=rndRange(0,1);this.angle=rndRange(-0.3,0.3);this.va=0;this.alive=true;this.score=0;this.frames=0;this.thrusting=false;this.sideL=false;this.sideR=false;this.particles=[];this.lastActs={h:Array(LCFG.HID).fill(0),o:Array(LCFG.OUT).fill(0)};}
 getInputs(){return[this.x/GW,this.y/GH,(this.x-PAD_X)/GW,this.vy/5,this.vx/5,this.angle/Math.PI,this.va/0.1,(PAD_Y-this.y)/GH];}
-step(){if(!this.alive)return;const inp=this.getInputs();const out=this.genome.forward(inp);this.thrusting=out[0]>0.5;this.sideL=out[1]>0.5;this.sideR=out[2]>0.5;if(this.thrusting){this.vx+=Math.sin(this.angle)*THRUST*(-1);this.vy-=Math.cos(this.angle)*THRUST;// particle
+step(){if(!this.alive)return;const inp=this.getInputs();const out=this.genome.forward(inp);this.lastActs=out;this.thrusting=out.o[0]>0.5;this.sideL=out.o[1]>0.5;this.sideR=out.o[2]>0.5;if(this.thrusting){this.vx+=Math.sin(this.angle)*THRUST*(-1);this.vy-=Math.cos(this.angle)*THRUST;// particle
 this.particles.push({x:this.x+Math.sin(this.angle)*14,y:this.y+Math.cos(this.angle)*14,vx:Math.sin(this.angle)*2+(rnd()-0.5),vy:Math.cos(this.angle)*2+(rnd()-0.5),life:12});}
 if(this.sideL)this.va-=0.005;
 if(this.sideR)this.va+=0.005;
@@ -41,7 +41,8 @@ const neat=new LunarNEAT();
 let landers=neat.genomes.map((g,i)=>new Lander(g,i));
 let landed=0;
 
-function resize(){const p=gc.parentElement;const s=Math.min(p.clientWidth/GW,p.clientHeight/GH);gc.width=GW*s;gc.height=GH*s;}
+function getBestLander(){const alive=landers.filter(l=>l.alive);if(alive.length)return alive.reduce((a,b)=>b.score>a.score?b:a);return landers.reduce((a,b)=>b.score>a.score?b:a);}
+function resize(){const p=gc.parentElement;const s=Math.min(p.clientWidth/GW,p.clientHeight/GH);gc.width=GW*s;gc.height=GH*s;if(typeof NNDraw!=='undefined')NNDraw.resize();}
 window.addEventListener('resize',resize);resize();
 
 function simStep(){landers.forEach(l=>l.step());if(landers.every(l=>!l.alive)){landers.forEach(l=>{if(l.score>=180)landed++;});neat.evolve(landers);landers=neat.genomes.map((g,i)=>new Lander(g,i));}}
@@ -75,5 +76,5 @@ const hm_y=GH-48,hm_h=8;for(let x=0;x<GW;x+=4){const v=Math.max(0,1-Math.abs(x-P
 gx.restore();}
 
 function loop(){requestAnimationFrame(loop);
-  if(_paused){draw();return;}for(let i=0;i<simSpeed;i++)simStep();draw();const alive=landers.filter(l=>l.alive).length;document.getElementById('s-gen').textContent=neat.generation;document.getElementById('s-alive').textContent=alive;document.getElementById('s-best').textContent=Math.floor(neat.bestEver);document.getElementById('s-land').textContent=landed;}
+  if(_paused){draw();if(typeof NNDraw!=='undefined')NNDraw.draw(getBestLander());return;}for(let i=0;i<simSpeed;i++)simStep();draw();if(typeof NNDraw!=='undefined')NNDraw.draw(getBestLander());const alive=landers.filter(l=>l.alive).length;document.getElementById('s-gen').textContent=neat.generation;document.getElementById('s-alive').textContent=alive;document.getElementById('s-best').textContent=Math.floor(neat.bestEver);document.getElementById('s-land').textContent=landed;}
 loop();

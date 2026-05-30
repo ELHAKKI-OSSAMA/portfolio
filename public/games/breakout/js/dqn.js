@@ -8,8 +8,8 @@ class QNet{constructor(){this.l1=new Dense(8,128);this.l2=new Dense(128,64);this
 forward(s){const z1=this.l1.forward(s);const a1=z1.map(relu);const z2=this.l2.forward(a1);const a2=z2.map(relu);return{q:this.l3.forward(a2),z1,a1,z2,a2};}
 clone(){const n=new QNet();n.l1=this.l1.clone();n.l2=this.l2.clone();n.l3=this.l3.clone();return n;}
 train(s,a,target,lr=0.001){const{q,z1,a1,z2,a2}=this.forward(s);const dq=q.map((v,i)=>i===a?2*(v-target):0);const da2=this.l3.train(dq,a2,lr).map((v,i)=>z2[i]>0?v:0);const da1=this.l2.train(da2,a1,lr).map((v,i)=>z1[i]>0?v:0);this.l1.train(da1,s,lr);return Math.pow(q[a]-target,2);}}
-class BreakoutAgent{constructor(){this.online=new QNet();this.target=this.online.clone();this.mem=[];this.eps=1.0;this.steps=0;this.epsHist=[];}
-act(s){if(rnd()<this.eps)return Math.floor(rnd()*3);return argmax(this.online.forward(s).q);}
+class BreakoutAgent{constructor(){this.online=new QNet();this.target=this.online.clone();this.mem=[];this.eps=1.0;this.steps=0;this.epsHist=[];this.episode=0;this.lastActs=null;}
+act(s){const{q,a1,a2}=this.online.forward(s);this.lastActs={inp:[...s],h1:[...a1],h2:[...a2],out:[...q]};if(rnd()<this.eps)return Math.floor(rnd()*3);return argmax(q);}
 push(s,a,r,ns,done){if(this.mem.length>8000)this.mem.shift();this.mem.push({s,a,r,ns,done});}
 train(){if(this.mem.length<128)return;for(let k=0;k<4;k++){const{s,a,r,ns,done}=this.mem[Math.floor(rnd()*this.mem.length)];const tq=this.target.forward(ns).q;const t=done?r:r+0.95*Math.max(...tq);this.online.train(s,a,t);}this.steps++;if(this.eps>0.01)this.eps*=0.9997;if(this.steps%80===0)this.target=this.online.clone();if(this.steps%10===0)this.epsHist.push(this.eps);}
 getQ(s){return this.online.forward(s).q;}}
