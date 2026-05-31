@@ -1,7 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
-<head><meta charset="UTF-8"/><title>Car Racing — PPO AI</title><link rel="stylesheet" href="css/style.css"/></head>
+<head><meta charset="UTF-8"/><title>Car Racing — NEAT AI</title><link rel="stylesheet" href="css/style.css"/></head>
 <body>
+
+<!-- ── Race selection menu ── -->
+<div id="menu">
+  <div class="menu-header">
+    <div class="menu-icon">🏎️</div>
+    <h1>SELECT RACE TRACK</h1>
+    <p>NEAT evolves 30 cars · 11 sensor inputs · 3 outputs</p>
+  </div>
+  <div id="track-cards"></div>
+</div>
+
+<!-- ── Game UI (hidden until track selected) ── -->
 <div id="top-bar">
   <div class="stat"><span class="stat-label">GEN</span><span class="stat-val" id="s-gen">1</span></div>
   <div class="sep"></div>
@@ -15,7 +27,9 @@
     <input type="range" id="speed" min="1" max="10" value="2" step="1"/>
     <span id="speed-val">2x</span>
   </div>
+  <button id="menu-btn" onclick="showMenu()">◀ TRACKS</button>
 </div>
+
 <div id="main">
   <div id="game-wrap"><canvas id="game-canvas"></canvas></div>
   <div id="side-wrap">
@@ -24,6 +38,7 @@
     <canvas id="nn-canvas"></canvas>
   </div>
 </div>
+
 <script src="js/pause.js"></script>
 <script src="js/neat.js"></script>
 <script src="js/nn-draw.js"></script>
