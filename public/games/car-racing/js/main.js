@@ -34,27 +34,52 @@ const TRACKS = [
     ]
   },
   {
-    id:'technical', name:'TECHNICAL', emoji:'🔧',
-    desc:'Square 7×7 layout — equal straights on all sides. Corners decide everything.',
+    id:'s-circuit', name:'S-CIRCUIT', emoji:'🔀',
+    desc:'Chicanes & S-bends — left then right then left again. Mixed turns, hardest track.',
     difficulty:'HARD', color:'#ff6644',
-    T:68, TW:23, GO:{x:162,y:62},
+    T:58, TW:20, GO:{x:139,y:97},
+    // Turn sequence: R,R, L,L, R,R, L, R,L, L,L
+    // Two chicane sections force the AI to master direction reversals
     cells:[
-      {c:1,r:1},{c:2,r:1},{c:3,r:1},{c:4,r:1},{c:5,r:1},{c:6,r:1},{c:7,r:1},
-      {c:7,r:2},{c:7,r:3},{c:7,r:4},{c:7,r:5},{c:7,r:6},{c:7,r:7},
-      {c:6,r:7},{c:5,r:7},{c:4,r:7},{c:3,r:7},{c:2,r:7},{c:1,r:7},
-      {c:1,r:6},{c:1,r:5},{c:1,r:4},{c:1,r:3},{c:1,r:2},
+      // Top straight going E
+      {c:2,r:1},{c:3,r:1},{c:4,r:1},{c:5,r:1},{c:6,r:1},{c:7,r:1},{c:8,r:1},
+      // Right side going S, then W (R+R)
+      {c:8,r:2},{c:8,r:3},
+      {c:7,r:3},{c:6,r:3},{c:5,r:3},
+      // First chicane: L-turn S, L-turn E
+      {c:5,r:4},{c:5,r:5},
+      {c:6,r:5},{c:7,r:5},{c:8,r:5},
+      // Right side going S, then W (R+R)
+      {c:8,r:6},{c:8,r:7},
+      {c:7,r:7},{c:6,r:7},{c:5,r:7},{c:4,r:7},{c:3,r:7},{c:2,r:7},
+      // Left side going N, then E (L+R)
+      {c:2,r:6},{c:2,r:5},
+      {c:3,r:5},{c:4,r:5},
+      // Second chicane: L-turn N, L-turn W
+      {c:4,r:4},{c:4,r:3},
+      {c:3,r:3},{c:2,r:3},
+      // Final going N to close
+      {c:2,r:2},
     ]
   },
   {
     id:'sprint', name:'SPRINT', emoji:'💨',
-    desc:'Tiny 5×3 track — ultra-short laps, blazing-fast evolution.',
-    difficulty:'EASY', color:'#00ff88',
-    T:80, TW:28, GO:{x:200,y:180},
+    desc:'Two chicane jogs — rapid L/R changes on a short lap. Fast evolution, real challenge.',
+    difficulty:'MEDIUM', color:'#00ff88',
+    T:70, TW:24, GO:{x:190,y:90},
+    // Turn sequence: R, R, L, R, R, L, R, R  (6R + 2L, net 4 CW)
+    // Top jog = R→L, bottom jog = L→R
     cells:[
-      {c:1,r:1},{c:2,r:1},{c:3,r:1},{c:4,r:1},{c:5,r:1},
-      {c:5,r:2},{c:5,r:3},
-      {c:4,r:3},{c:3,r:3},{c:2,r:3},{c:1,r:3},
-      {c:1,r:2},
+      // Top straight with R→L jog (chicane 1)
+      {c:1,r:1},{c:2,r:1},{c:3,r:1},
+      {c:3,r:2},{c:4,r:2},{c:5,r:2},{c:6,r:2},
+      // Right side going S
+      {c:6,r:3},{c:6,r:4},{c:6,r:5},
+      // Bottom with L→R jog (chicane 2)
+      {c:5,r:5},{c:4,r:5},
+      {c:4,r:6},{c:3,r:6},{c:2,r:6},{c:1,r:6},
+      // Left side going N
+      {c:1,r:5},{c:1,r:4},{c:1,r:3},{c:1,r:2},
     ]
   }
 ];
@@ -185,7 +210,7 @@ class Car{
     const start=ptOnTrack(0),tang=trackTangent(0);
     this.x=start.x;this.y=start.y;
     this.angle=Math.atan2(tang.ty,tang.tx);
-    this.speed=1.5;this.alive=true;this.fitness=0;
+    this.speed=2.0;this.alive=true;this.fitness=0;this.speedBonus=0;
     this.progress=0;this.laps=0;this.frames=0;
     this.framesSinceProgress=0;this.lastProgress=0;
     this.outputs=[0,0,0];
@@ -196,14 +221,15 @@ class Car{
   step(){
     if(!this.alive)return;
     const rays=this.getRays();
-    const inp=[...rays,this.speed/6];
+    const inp=[...rays,this.speed/7];
     const acts=this.genome.forward(inp);
     this.lastInputs=inp;this.lastActs=acts;
     const out=acts.o;this.outputs=out;
     const steer=(out[1]-out[0])*0.09,throttle=out[2];
     this.angle+=steer;
-    this.speed+=(throttle-0.4)*0.3;
-    this.speed=Math.max(0.6,Math.min(6,this.speed));
+    // Easier to accelerate (lower resistance threshold 0.35 vs 0.4)
+    this.speed+=(throttle-0.35)*0.35;
+    this.speed=Math.max(0.8,Math.min(7,this.speed));
     this.x+=Math.cos(this.angle)*this.speed;
     this.y+=Math.sin(this.angle)*this.speed;
     this.frames++;
@@ -215,12 +241,15 @@ class Car{
       this.progress=newT;this.framesSinceProgress=0;
       if(this.lastProgress>0.9&&newT<0.1)this.laps++;
       this.lastProgress=newT;
+      // Reward high speed while making forward progress
+      this.speedBonus+=Math.max(0,this.speed-1.5)*0.28;
     } else {
       this.framesSinceProgress++;
-      if(delta<-0.001)this.fitness-=8;
+      if(delta<-0.001)this.speedBonus-=10; // backwards penalty persists
     }
-    if(this.framesSinceProgress>140){this.alive=false;return;}
-    this.fitness=this.laps*1000+this.progress*500+this.frames*0.01;
+    if(this.framesSinceProgress>150){this.alive=false;return;}
+    // Time penalty: slow survival hurts. Fast laps compensate via speedBonus.
+    this.fitness=Math.max(0,this.laps*1000+this.progress*500+this.speedBonus-this.frames*0.3);
   }
 }
 
@@ -344,7 +373,8 @@ function buildMenu(){
 
 // ── Game state ────────────────────────────────────
 let neat=null,cars=null,simSpeed=2,bestHist=[],bestLap=0;
-let _gameActive=false;
+let _gameActive=false,genFrames=0;
+const MAX_GEN_FRAMES=3000; // force evolution after this many sim-frames per generation
 
 document.getElementById('speed').addEventListener('input',e=>{
   simSpeed=parseInt(e.target.value);
@@ -362,7 +392,7 @@ function selectTrack(track){
   // Fresh NEAT
   neat=new NEAT();
   cars=neat.genomes.map((g,i)=>new Car(g,i));
-  bestHist=[];bestLap=0;
+  bestHist=[];bestLap=0;genFrames=0;
   if(typeof _paused!=='undefined')_paused=false;
 
   // Show game
@@ -556,12 +586,16 @@ function loop(){
   }
   for(let k=0;k<simSpeed;k++){
     cars.forEach(c=>c.step());
-    if(cars.every(c=>!c.alive)){
+    genFrames++;
+    if(cars.every(c=>!c.alive)||genFrames>=MAX_GEN_FRAMES){
+      // Kill any still-alive cars so they're scored with current fitness
+      cars.forEach(c=>c.alive=false);
       const best=getBest();
       bestHist.push(best.fitness);
       if(best.laps>bestLap)bestLap=best.laps;
       neat.evolve(cars);
       cars=neat.genomes.map((g,i)=>new Car(g,i));
+      genFrames=0;
     }
   }
   const W=gc.width,H=gc.height,scale=Math.min(W/800,H/600);
