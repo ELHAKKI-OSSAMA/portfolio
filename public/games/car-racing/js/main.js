@@ -60,7 +60,7 @@ const TRACKS = [
 ];
 
 // ── Mutable track state (rebuilt on selectTrack) ──
-let T, TRACK_WIDTH, GRID_ORIGIN, cellMap, trackCenter, walls;
+let T, TRACK_WIDTH, GRID_ORIGIN, cellMap, trackCenter, walls, cumDist=[], trackPerimeter=0;
 
 // ── Geometry helpers ──────────────────────────────
 function cellCenter(c,r){
@@ -124,10 +124,14 @@ function nearestProgress(x,y,hint,range=0.12){
 
 function buildWalls(){
   const inner=[],outer=[],n=trackCenter.length;
+  cumDist=[];trackPerimeter=0;
   for(let i=0;i<n;i++){
+    cumDist.push(trackPerimeter);
     const tang=trackTangent(i/n);
     inner.push({x:trackCenter[i].x+tang.nx*TRACK_WIDTH, y:trackCenter[i].y+tang.ny*TRACK_WIDTH});
     outer.push({x:trackCenter[i].x-tang.nx*TRACK_WIDTH, y:trackCenter[i].y-tang.ny*TRACK_WIDTH});
+    const j=(i+1)%n;
+    trackPerimeter+=Math.hypot(trackCenter[j].x-trackCenter[i].x,trackCenter[j].y-trackCenter[i].y);
   }
   return {inner,outer};
 }
@@ -376,110 +380,97 @@ function showMenu(){
   document.getElementById('main').style.display='none';
 }
 
-// ── Tile rendering ─────────────────────────────────
-function drawStraightTile(cx,cy,ts,rh,isVert,isFinish){
-  gx.save();
-  if(isVert){gx.translate(cx,cy);gx.rotate(Math.PI/2);gx.translate(-cx,-cy);}
-  const curbH=Math.max(3,rh*0.22), stripes=5, sw=ts/stripes;
-
-  gx.fillStyle='#1b1b21';gx.fillRect(cx-ts/2,cy-rh,ts,rh*2);
-  gx.fillStyle='rgba(0,0,0,0.13)';gx.fillRect(cx-ts/2,cy+rh*0.45,ts,rh*0.55);
-  gx.fillStyle='rgba(255,210,120,0.04)';gx.fillRect(cx-ts/2,cy-rh,ts,rh*0.55);
-
-  if(isFinish){
-    const ck=Math.max(4,rh*0.38), cols=Math.ceil(ts/ck), rows=Math.ceil(rh*2/ck);
-    gx.save();gx.beginPath();gx.rect(cx-ts/2,cy-rh,ts,rh*2);gx.clip();
-    for(let ci=0;ci<cols;ci++)for(let ri=0;ri<rows;ri++){
-      gx.fillStyle=(ci+ri)%2===0?'#ffffff':'#111111';
-      gx.fillRect(cx-ts/2+ci*ck,cy-rh+ri*ck,ck,ck);
-    }
-    gx.restore();
-    gx.fillStyle='#dd1111';
-    gx.beginPath();gx.ellipse(cx-ts/2+ts*0.08,cy-rh-6,4,6,0,0,TWO_PI);gx.fill();
-    gx.beginPath();gx.ellipse(cx-ts/2+ts*0.08,cy+rh+6,4,6,0,0,TWO_PI);gx.fill();
-    gx.strokeStyle='rgba(255,255,255,0.7)';gx.lineWidth=1.5;
-    gx.beginPath();gx.moveTo(cx-ts/2+ts*0.08,cy-rh);gx.lineTo(cx-ts/2+ts*0.08,cy+rh);gx.stroke();
-  } else {
-    for(let i=0;i<stripes;i++){
-      gx.fillStyle=i%2===0?'#cc1f1f':'#eeeeee';
-      gx.fillRect(cx-ts/2+i*sw,cy-rh,sw,curbH);
-      gx.fillRect(cx-ts/2+i*sw,cy+rh-curbH,sw,curbH);
-    }
-    gx.save();gx.setLineDash([ts*0.12,ts*0.14]);
-    gx.strokeStyle='rgba(255,255,255,0.42)';gx.lineWidth=Math.max(1,ts*0.022);
-    gx.beginPath();gx.moveTo(cx-ts/2,cy);gx.lineTo(cx+ts/2,cy);gx.stroke();
-    gx.restore();
-  }
-  gx.restore();
-}
-
-function drawCornerTile(cx,cy,ts,rh,mask){
-  const h=ts/2;
-  let acx,acy,a0,a1;
-  if     (mask===9 ){acx=cx-h;acy=cy-h;a0=0;           a1=Math.PI/2;}
-  else if(mask===3 ){acx=cx+h;acy=cy-h;a0=Math.PI/2;   a1=Math.PI;}
-  else if(mask===6 ){acx=cx+h;acy=cy+h;a0=Math.PI;     a1=3*Math.PI/2;}
-  else if(mask===12){acx=cx-h;acy=cy+h;a0=3*Math.PI/2; a1=TWO_PI;}
-  else return;
-
-  const R1=Math.max(0,h-rh),R2=h+rh,curbH=Math.max(2,rh*0.22),span=a1-a0;
-
-  gx.beginPath();gx.arc(acx,acy,R2,a0,a1);gx.arc(acx,acy,R1,a1,a0,true);
-  gx.closePath();gx.fillStyle='#1b1b21';gx.fill();
-  gx.beginPath();gx.arc(acx,acy,R2,a0,a1);gx.arc(acx,acy,R2-curbH*0.7,a1,a0,true);
-  gx.closePath();gx.fillStyle='rgba(0,0,0,0.11)';gx.fill();
-  if(R1>0){
-    gx.beginPath();gx.arc(acx,acy,R1+Math.min(curbH,R1*0.8),a0,a1);
-    gx.arc(acx,acy,R1,a1,a0,true);gx.closePath();
-    gx.fillStyle='rgba(255,220,120,0.05)';gx.fill();
-  }
-  const numS=Math.max(3,Math.round(R2*span/(ts*0.22)));
-  for(let i=0;i<numS;i++){
-    const sa=a0+(i/numS)*span,ea=a0+((i+1)/numS)*span;
-    gx.beginPath();gx.arc(acx,acy,R2,sa,ea);gx.arc(acx,acy,R2-curbH,ea,sa,true);
-    gx.closePath();gx.fillStyle=i%2===0?'#cc1f1f':'#eeeeee';gx.fill();
-  }
-  if(R1>2){
-    gx.beginPath();gx.arc(acx,acy,R1+Math.min(curbH*0.7,R1),a0,a1);
-    gx.arc(acx,acy,R1,a1,a0,true);gx.closePath();
-    gx.fillStyle='rgba(255,255,255,0.12)';gx.fill();
-  }
-  gx.save();gx.setLineDash([T*0.5*0.1,T*0.5*0.12]);
-  gx.strokeStyle='rgba(255,255,255,0.4)';gx.lineWidth=Math.max(1,(T/64)*1.4);
-  gx.beginPath();gx.arc(acx,acy,(R1+R2)/2,a0,a1);gx.stroke();gx.restore();
-}
-
+// ── Smooth road rendering ──────────────────────────
 function drawTrack(W,H,scale,ox,oy){
-  const ts=T*scale,rh=TRACK_WIDTH*scale;
+  const toS=p=>({x:ox+p.x*scale,y:oy+p.y*scale});
+  const n=trackCenter.length;
+  const gStep=T*scale;
 
+  // 1. Grass + patches
   gx.fillStyle='#2b5f24';gx.fillRect(0,0,W,H);
   gx.fillStyle='rgba(30,70,20,0.18)';
-  for(const [fx,fy,fw,fh] of [[.05,.06,.32,.28],[.55,.02,.38,.22],[.12,.62,.28,.35],[.62,.55,.34,.4],[.3,.28,.18,.44]])
-    gx.fillRect(W*fx,H*fy,W*fw,H*fh);
-  gx.fillStyle='rgba(60,100,30,0.07)';
-  for(const [fx,fy,fw,fh] of [[0,0,.55,.5],[.45,.5,.55,.5]])
+  for(const[fx,fy,fw,fh]of[[.05,.06,.32,.28],[.55,.02,.38,.22],[.12,.62,.28,.35],[.62,.55,.34,.4]])
     gx.fillRect(W*fx,H*fy,W*fw,H*fh);
 
+  // Grid overlay
   gx.strokeStyle='rgba(0,0,0,0.07)';gx.lineWidth=0.5;
-  const gox=((ox+GRID_ORIGIN.x*scale)%ts+ts)%ts;
-  const goy=((oy+GRID_ORIGIN.y*scale)%ts+ts)%ts;
-  for(let x=gox-ts;x<W;x+=ts){gx.beginPath();gx.moveTo(x,0);gx.lineTo(x,H);gx.stroke();}
-  for(let y=goy-ts;y<H;y+=ts){gx.beginPath();gx.moveTo(0,y);gx.lineTo(W,y);gx.stroke();}
+  const gox=((ox+GRID_ORIGIN.x*scale)%gStep+gStep)%gStep;
+  const goy=((oy+GRID_ORIGIN.y*scale)%gStep+gStep)%gStep;
+  for(let x=gox-gStep;x<W;x+=gStep){gx.beginPath();gx.moveTo(x,0);gx.lineTo(x,H);gx.stroke();}
+  for(let y=goy-gStep;y<H;y+=gStep){gx.beginPath();gx.moveTo(0,y);gx.lineTo(W,y);gx.stroke();}
 
-  const sun=gx.createLinearGradient(0,0,W*0.55,H*0.55);
-  sun.addColorStop(0,'rgba(255,200,80,0.05)');sun.addColorStop(1,'rgba(20,50,80,0.06)');
-  gx.fillStyle=sun;gx.fillRect(0,0,W,H);
+  // 2. Road surface (outer polygon fill)
+  gx.beginPath();
+  walls.outer.forEach((p,i)=>{const s=toS(p);i===0?gx.moveTo(s.x,s.y):gx.lineTo(s.x,s.y);});
+  gx.closePath();gx.fillStyle='#1c1c22';gx.fill();
 
-  for(const cell of cellMap){
-    const ctr=cellCenter(cell.c,cell.r);
-    const scx=ox+ctr.x*scale,scy=oy+ctr.y*scale;
-    const isFinish=(cell===cellMap[1]);
-    if(cell.mask===10||cell.mask===5) drawStraightTile(scx,scy,ts,rh,cell.mask===5,isFinish);
-    else drawCornerTile(scx,scy,ts,rh,cell.mask);
+  // 3. Inner grass cutout
+  gx.beginPath();
+  walls.inner.forEach((p,i)=>{const s=toS(p);i===0?gx.moveTo(s.x,s.y):gx.lineTo(s.x,s.y);});
+  gx.closePath();gx.fillStyle='#2d6428';gx.fill();
+
+  // 4. Curb stripes — alternating red/white quads along both walls
+  const sw=trackPerimeter/28; // 28 stripes per lap
+  for(let i=0;i<n;i++){
+    const j=(i+1)%n;
+    const col=Math.floor(cumDist[i]/sw)%2===0?'#c91e1e':'#e8e8e8';
+    const oo=toS(walls.outer[i]),oj=toS(walls.outer[j]);
+    const ii2=toS(walls.inner[i]),ij=toS(walls.inner[j]);
+    const tc=toS(trackCenter[i]),jtc=toS(trackCenter[j]);
+    // outer curb — 22% inward from wall toward centerline
+    const ox0=oo.x+(tc.x-oo.x)*.22,oy0=oo.y+(tc.y-oo.y)*.22;
+    const ox1=oj.x+(jtc.x-oj.x)*.22,oy1=oj.y+(jtc.y-oj.y)*.22;
+    gx.fillStyle=col;
+    gx.beginPath();gx.moveTo(oo.x,oo.y);gx.lineTo(oj.x,oj.y);gx.lineTo(ox1,oy1);gx.lineTo(ox0,oy0);gx.closePath();gx.fill();
+    // inner curb
+    const ix0=ii2.x+(tc.x-ii2.x)*.22,iy0=ii2.y+(tc.y-ii2.y)*.22;
+    const ix1=ij.x+(jtc.x-ij.x)*.22,iy1=ij.y+(jtc.y-ij.y)*.22;
+    gx.beginPath();gx.moveTo(ii2.x,ii2.y);gx.lineTo(ij.x,ij.y);gx.lineTo(ix1,iy1);gx.lineTo(ix0,iy0);gx.closePath();gx.fill();
   }
 
-  const fog=gx.createRadialGradient(W/2,H/2,Math.min(W,H)*0.28,W/2,H/2,Math.max(W,H)*0.74);
-  fog.addColorStop(0,'rgba(0,0,0,0)');fog.addColorStop(.6,'rgba(5,15,5,0.06)');fog.addColorStop(1,'rgba(5,15,5,0.44)');
+  // 5. Center dashes
+  gx.save();gx.setLineDash([6*scale,8*scale]);
+  gx.strokeStyle='rgba(255,255,255,0.32)';gx.lineWidth=Math.max(1,1.4*scale);
+  gx.beginPath();
+  trackCenter.forEach((p,i)=>{const s=toS(p);i===0?gx.moveTo(s.x,s.y):gx.lineTo(s.x,s.y);});
+  gx.closePath();gx.stroke();gx.restore();
+
+  // 6. Checkered finish line at trackCenter[0]
+  const fp=toS(trackCenter[0]),t0=trackTangent(0);
+  const fw2=TRACK_WIDTH*scale, flen=7*scale;
+  const cols=8,rows=2;
+  gx.save();
+  gx.beginPath();
+  const fc=[
+    {x:fp.x-t0.tx*flen-t0.nx*fw2,y:fp.y-t0.ty*flen-t0.ny*fw2},
+    {x:fp.x+t0.tx*flen-t0.nx*fw2,y:fp.y+t0.ty*flen-t0.ny*fw2},
+    {x:fp.x+t0.tx*flen+t0.nx*fw2,y:fp.y+t0.ty*flen+t0.ny*fw2},
+    {x:fp.x-t0.tx*flen+t0.nx*fw2,y:fp.y-t0.ty*flen+t0.ny*fw2},
+  ];
+  gx.moveTo(fc[0].x,fc[0].y);fc.forEach(p=>gx.lineTo(p.x,p.y));gx.closePath();gx.clip();
+  for(let ci=0;ci<cols;ci++)for(let ri=0;ri<rows;ri++){
+    const s0=-1+(ci/cols)*2,s1=-1+((ci+1)/cols)*2;
+    const r0=-1+(ri/rows)*2,r1=-1+((ri+1)/rows)*2;
+    gx.fillStyle=(ci+ri)%2===0?'#ffffff':'#111111';
+    gx.beginPath();
+    gx.moveTo(fp.x+t0.nx*fw2*s0+t0.tx*flen*r0,fp.y+t0.ny*fw2*s0+t0.ty*flen*r0);
+    gx.lineTo(fp.x+t0.nx*fw2*s1+t0.tx*flen*r0,fp.y+t0.ny*fw2*s1+t0.ty*flen*r0);
+    gx.lineTo(fp.x+t0.nx*fw2*s1+t0.tx*flen*r1,fp.y+t0.ny*fw2*s1+t0.ty*flen*r1);
+    gx.lineTo(fp.x+t0.nx*fw2*s0+t0.tx*flen*r1,fp.y+t0.ny*fw2*s0+t0.ty*flen*r1);
+    gx.closePath();gx.fill();
+  }
+  gx.restore();
+  // Red poles flanking start line
+  gx.fillStyle='#dd1111';
+  gx.beginPath();gx.arc(fp.x-t0.nx*(fw2+5),fp.y-t0.ny*(fw2+5),Math.max(3,4*scale),0,TWO_PI);gx.fill();
+  gx.beginPath();gx.arc(fp.x+t0.nx*(fw2+5),fp.y+t0.ny*(fw2+5),Math.max(3,4*scale),0,TWO_PI);gx.fill();
+
+  // 7. Directional sun + fog
+  const sun=gx.createLinearGradient(0,0,W*.55,H*.55);
+  sun.addColorStop(0,'rgba(255,200,80,0.04)');sun.addColorStop(1,'rgba(20,50,80,0.06)');
+  gx.fillStyle=sun;gx.fillRect(0,0,W,H);
+  const fog=gx.createRadialGradient(W/2,H/2,Math.min(W,H)*.28,W/2,H/2,Math.max(W,H)*.74);
+  fog.addColorStop(0,'rgba(0,0,0,0)');fog.addColorStop(.65,'rgba(5,15,5,0.05)');fog.addColorStop(1,'rgba(5,15,5,0.42)');
   gx.fillStyle=fog;gx.fillRect(0,0,W,H);
 }
 
