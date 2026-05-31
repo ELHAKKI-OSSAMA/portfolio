@@ -10,8 +10,9 @@ body{background:#06060e;font-family:'Courier New',monospace;overflow:hidden;widt
 #speed-wrap input{width:80px}
 #speed-val{font-size:11px;color:#00ff88;min-width:20px}
 #main{flex:1;display:flex;overflow-x:auto;overflow-y:hidden;min-height:0}
-#game-canvas{flex:1;display:block;height:100%}
-#chart-wrap{width:200px;border-left:1px solid #111;display:flex;flex-direction:column}
+#game-wrap{flex:1;min-width:0;overflow:hidden}
+#game-canvas{display:block;width:100%}
+#chart-wrap{width:200px;flex-shrink:0;border-left:1px solid #111;display:flex;flex-direction:column;overflow-y:auto}
 #chart-canvas{width:100%;display:block;flex:1}
 #nn-canvas{width:100%;display:block;flex:1;border-top:1px solid #111}
 
@@ -21,3 +22,7 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.25)}
 input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:#00ff88;border:2px solid #00ff8844;cursor:pointer}
 input[type=range]::-moz-range-track{height:4px;background:#1a1a2a;border-radius:2px}
 input[type=range]::-webkit-slider-runnable-track{height:4px;background:#1a1a2a;border-radius:2px}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:rgba(255,255,255,0.03);border-radius:3px}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.18);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:rgba(255,255,255,0.32);cursor:pointer}
