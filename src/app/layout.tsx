@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, Cairo } from "next/font/google";
 import { cookies } from "next/headers";
 import { getLocale } from "next-intl/server";
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 
 const inter = Inter({
@@ -71,6 +72,7 @@ export default async function RootLayout({
         style={{ backgroundColor: "var(--bg-main)", color: "var(--text-primary)" }}
       >
         {children}
+        <Analytics />
       </body>
     </html>
   );
