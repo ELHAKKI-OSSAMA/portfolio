@@ -84,6 +84,14 @@ class Dense {
     for(let j=0;j<this.out;j++)
       this.b[j]=tau*src.b[j]+(1-tau)*this.b[j];
   }
+  // Pull weights a little toward an anchor layer (EWC-lite anti-forgetting).
+  anchorPull(anchor, k){
+    for(let i=0;i<this.inp;i++)
+      for(let j=0;j<this.out;j++)
+        this.w[i][j]+=k*(anchor.w[i][j]-this.w[i][j]);
+    for(let j=0;j<this.out;j++)
+      this.b[j]+=k*(anchor.b[j]-this.b[j]);
+  }
 }
 
 // ─── Q-Network (LeakyReLU, 7 inputs) ─────────────────────────────────────────
@@ -110,6 +118,11 @@ class QNet {
     this.l1.copyFrom(src.l1);
     this.l2.copyFrom(src.l2);
     this.l3.copyFrom(src.l3);
+  }
+  anchorPull(anchor, k){
+    this.l1.anchorPull(anchor.l1, k);
+    this.l2.anchorPull(anchor.l2, k);
+    this.l3.anchorPull(anchor.l3, k);
   }
   train(s,a,target,lr){
     const{q,z1,a1,z2,a2}=this.forward(s);
@@ -197,19 +210,23 @@ class PongAgent {
     // Initialize with intercept policy — works from step 0
     initInterceptWeights(this.online);
     this.target.copyFrom(this.online);
+    // Frozen snapshot of the optimal policy — training is pulled back toward it
+    // every step so self-play can never make the agent "go stupid".
+    this.anchor=this.online.clone();
 
     this.mem=new ReplayBuffer(100000);
-    this.eps=0.10;   // start low — already have good policy, just refine
+    this.eps=0.08;   // start low — already have good policy, just refine
     this.steps=0;
     this.lastActs=null;
     this.lastLoss=0;
 
-    this.LR          = 0.0005;  // conservative — don't destroy the init policy
+    this.LR          = 0.0001;  // small — gentle fine-tuning only
     this.GAMMA       = 0.99;
     this.BATCH       = 64;
     this.MIN_REPLAY  = 500;
-    this.EPS_MIN     = 0.05;
-    this.EPS_DECAY   = 0.9999;  // very slow decay — policy already good
+    this.EPS_MIN     = 0.01;    // almost no random misses once warmed up
+    this.EPS_DECAY   = 0.9995;  // decay exploration toward zero
+    this.ANCHOR_K    = 0.02;    // anti-forgetting pull strength per train step
     this.TARGET_UPDATE = 2000;  // hard copy every 2000 trains
   }
 
@@ -236,10 +253,16 @@ class PongAgent {
       const tdTarget=done?r:r+this.GAMMA*targetNext[bestNext];
       totalLoss+=this.online.train(s,a,tdTarget,this.LR);
     }
+    // Anti-forgetting: nudge weights back toward the optimal intercept policy.
+    this.online.anchorPull(this.anchor, this.ANCHOR_K);
     this.lastLoss=totalLoss/this.BATCH;
     this.steps++;
     if(this.steps%this.TARGET_UPDATE===0) this.target.copyFrom(this.online);
   }
 
   getQ(s){ return this.online.predict(s); }
+}
+
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = { PongAgent, QNet, Dense, ReplayBuffer, initInterceptWeights, argmax };
 }

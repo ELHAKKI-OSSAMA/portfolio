@@ -13,27 +13,25 @@
   <div class="sep"></div>
   <div class="stat"><span class="stat-label">BEST</span><span class="stat-val" id="s-best">0</span></div>
   <div class="sep"></div>
-  <div class="stat"><span class="stat-label">EPSILON</span><span class="stat-val" id="s-eps">1.00</span></div>
+  <div class="stat"><span class="stat-label">LENGTH</span><span class="stat-val" id="s-eps">3</span></div>
   <div class="sep"></div>
   <div class="stat"><span class="stat-label">STEPS</span><span class="stat-val" id="s-steps">0</span></div>
   <div id="speed-wrap">
     <label>SPEED</label>
-    <input type="range" id="speed" min="1" max="20" value="5" step="1"/>
-    <span id="speed-val">5x</span>
+    <input type="range" id="speed" min="1" max="20" value="1" step="1"/>
+    <span id="speed-val">1x</span>
   </div>
 </div>
 <div id="main">
   <div id="game-wrap"><canvas id="game-canvas"></canvas></div>
   <div id="info-wrap">
-    <canvas id="q-canvas"></canvas>
+    <canvas id="cycle-canvas"></canvas>
     <canvas id="reward-canvas"></canvas>
-    <canvas id="nn-canvas"></canvas>
+    <canvas id="stats-canvas"></canvas>
   </div>
 </div>
 <script src="js/pause.js"></script>
-<script src="js/dqn.js"></script>
 <script src="js/game.js"></script>
-<script src="js/nn-draw.js"></script>
 <script src="js/main.js"></script>
 <div style="position:fixed;bottom:10px;right:14px;font-family:Courier New,monospace;font-size:9px;color:#0f2010;letter-spacing:2px;z-index:100;pointer-events:none">[P] / [SPACE] PAUSE</div>
 </body>

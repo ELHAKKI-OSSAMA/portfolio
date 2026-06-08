@@ -44,3 +44,6 @@ next-env.d.ts
 # Manim animation workspace (render cache, frames, temp files — 1 GB+)
 # Compiled videos are in public/manim/ instead
 /manim_videos/
+
+# YouTube Shorts / Reels workspace (Manim sources + large raw renders)
+/content/yt/

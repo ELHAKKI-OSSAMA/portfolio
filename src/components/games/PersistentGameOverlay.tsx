@@ -7,7 +7,7 @@ import { useState } from "react";
 
 const GAME_META: Record<string, { title: string; titleFr: string; titleAr: string; icon: string; accent: string }> = {
   "flappy-bird":    { title: "Flappy Bird",       titleFr: "Oiseau Flappy",           titleAr: "الطائر الرفرف",   icon: "🐦", accent: "#00ff88" },
-  "snake":          { title: "Snake",              titleFr: "Serpent",                 titleAr: "الثعبان",         icon: "🐍", accent: "#4488ff" },
+  "snake":          { title: "Snake",              titleFr: "Serpent",                 titleAr: "الثعبان",         icon: "🐍", accent: "#22d3aa" },
   "car-racing":     { title: "Car Racing",         titleFr: "Course Automobile",       titleAr: "سباق السيارات",   icon: "🏎️", accent: "#ffcc00" },
   "pong":           { title: "Pong",               titleFr: "Pong",                    titleAr: "بونج",            icon: "🏓", accent: "#4488ff" },
   "asteroid-dodge": { title: "Asteroid Dodge",     titleFr: "Évitement d'Astéroïdes",  titleAr: "تفادي الكويكبات", icon: "🚀", accent: "#9966cc" },

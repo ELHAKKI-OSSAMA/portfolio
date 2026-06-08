@@ -1,36 +1,33 @@
-// Snake — Hamiltonian Cycle AI  (scores 300+ per episode, never dies)
-// main.js is mostly unchanged — game.js handles all strategy internally.
+// Snake — Hamiltonian Cycle + Shortcuts AI (renderer)
+// The side panels show the REAL algorithm state: the Hamiltonian cycle map,
+// the score history, and live AI stats. (No fake neural network.)
 
 const gc = document.getElementById('game-canvas');
 const gx = gc.getContext('2d');
-const qc = document.getElementById('q-canvas');
-const qx = qc.getContext('2d');
+const cyc = document.getElementById('cycle-canvas');
+const cx  = cyc.getContext('2d');
 const rc = document.getElementById('reward-canvas');
 const rx = rc.getContext('2d');
+const sc = document.getElementById('stats-canvas');
+const sx = sc.getContext('2d');
 
-const agent = new DQNAgent();
-const env   = new SnakeGame();
-let stepsPerSec = 60;
-let episode = 1, bestScore = 0, scoreHist = [], lastStepTime = 0;
-let state = env.reset(), epReward = 0;
+const env = new SnakeGame();
+const speedEl = document.getElementById('speed');
+let speed = parseInt(speedEl.value) || 1;   // slider position
+let episode = 1, bestScore = 0, scoreHist = [], _moveAcc = 0, totalMoves = 0;
 
-document.getElementById('speed').addEventListener('input', e => {
-  stepsPerSec = parseInt(e.target.value);
-  document.getElementById('speed-val').textContent = stepsPerSec + 'x';
+document.getElementById('speed-val').textContent = speed + 'x';
+speedEl.addEventListener('input', e => {
+  speed = parseInt(e.target.value) || 1;
+  document.getElementById('speed-val').textContent = speed + 'x';
 });
-
-const nc = document.getElementById('nn-canvas');
 
 function resize() {
   gc.width  = gc.parentElement.clientWidth;
   gc.height = gc.parentElement.clientHeight;
-  qc.width  = qc.parentElement.clientWidth;
-  qc.height = qc.clientHeight;
-  rc.width  = rc.parentElement.clientWidth;
-  rc.height = rc.clientHeight;
-  nc.width  = nc.parentElement.clientWidth;
-  nc.height = nc.clientHeight;
-  NNDraw.resize();
+  cyc.width = cyc.parentElement.clientWidth;  cyc.height = cyc.clientHeight;
+  rc.width  = rc.parentElement.clientWidth;   rc.height  = rc.clientHeight;
+  sc.width  = sc.parentElement.clientWidth;   sc.height  = sc.clientHeight;
 }
 window.addEventListener('resize', resize);
 resize();
@@ -45,20 +42,22 @@ function drawGame() {
 
   gx.strokeStyle = '#0d1a0d'; gx.lineWidth = 0.4;
   for (let i = 0; i <= GRID; i++) {
-    gx.beginPath(); gx.moveTo(ox+i*cs,oy);     gx.lineTo(ox+i*cs,oy+cs*GRID); gx.stroke();
-    gx.beginPath(); gx.moveTo(ox,oy+i*cs);     gx.lineTo(ox+cs*GRID,oy+i*cs); gx.stroke();
+    gx.beginPath(); gx.moveTo(ox+i*cs,oy); gx.lineTo(ox+i*cs,oy+cs*GRID); gx.stroke();
+    gx.beginPath(); gx.moveTo(ox,oy+i*cs); gx.lineTo(ox+cs*GRID,oy+i*cs); gx.stroke();
   }
 
-  // Draw Ham cycle path (faint) for visual flair
-  gx.strokeStyle = '#0a1a0a'; gx.lineWidth = 0.3;
-  gx.beginPath();
-  HAM_ORDER.forEach(([x,y],i) => {
-    const px = ox+x*cs+cs/2, py = oy+y*cs+cs/2;
-    i===0 ? gx.moveTo(px,py) : gx.lineTo(px,py);
-  });
-  gx.closePath(); gx.stroke();
+  // AI's live planned path to the apple
+  const path = env.plannedPath || [];
+  if (path.length) {
+    gx.strokeStyle = env.mode === 'food' ? '#00ff8855' : '#ffaa0044';
+    gx.lineWidth = 2;
+    gx.beginPath();
+    const [hx0, hy0] = env.snake[0];
+    gx.moveTo(ox+hx0*cs+cs/2, oy+hy0*cs+cs/2);
+    path.forEach(([x,y]) => gx.lineTo(ox+x*cs+cs/2, oy+y*cs+cs/2));
+    gx.stroke();
+  }
 
-  // Food
   if (env.food) {
     const [fx,fy] = env.food;
     const fgr = gx.createRadialGradient(ox+fx*cs+cs/2,oy+fy*cs+cs/2,1,ox+fx*cs+cs/2,oy+fy*cs+cs/2,cs*0.5);
@@ -67,12 +66,14 @@ function drawGame() {
     gx.beginPath(); gx.arc(ox+fx*cs+cs/2,oy+fy*cs+cs/2,cs*0.42,0,Math.PI*2); gx.fill();
   }
 
-  // Snake
-  env.snake.forEach(([sx,sy],i) => {
+  const lastIdx = env.snake.length - 1;
+  env.snake.forEach(([sx2,sy],i) => {
     const t = i/env.snake.length;
-    gx.fillStyle = i===0 ? '#00ff88' : `rgb(0,${255-Math.floor(t*160)},${Math.floor(80-t*60)})`;
+    gx.fillStyle = i===0 ? '#00ff88'
+                 : i===lastIdx ? '#ffcc33'
+                 : `rgb(0,${255-Math.floor(t*160)},${Math.floor(80-t*60)})`;
     const pad = cs*0.06;
-    gx.fillRect(ox+sx*cs+pad, oy+sy*cs+pad, cs-pad*2, cs-pad*2);
+    gx.fillRect(ox+sx2*cs+pad, oy+sy*cs+pad, cs-pad*2, cs-pad*2);
   });
 
   gx.fillStyle = '#1a3a1a';
@@ -81,36 +82,56 @@ function drawGame() {
   gx.fillText(`SCORE ${env.score}  LEN ${env.snake.length}`, ox+4, oy-5);
 }
 
-function drawQValues() {
-  const W=qc.width, H=qc.height;
-  qx.fillStyle='#06060e'; qx.fillRect(0,0,W,H);
-  const q=agent.getQValues(state);
-  const labels=['▲','▼','◄','►'];
-  const maxQ=Math.max(...q.map(Math.abs))||1;
-  const bw=(W-20)/4;
-  let bestIdx=0; q.forEach((v,i)=>{ if(v>q[bestIdx])bestIdx=i; });
-  q.forEach((v,i) => {
-    const bh=(H-36)*Math.abs(v)/maxQ;
-    qx.fillStyle   = i===bestIdx?'#00ff8833':'#112211';
-    qx.fillRect(10+i*bw+2,H-26-bh,bw-4,bh);
-    qx.strokeStyle = i===bestIdx?'#00ff88':'#224422'; qx.lineWidth=0.8;
-    qx.strokeRect(10+i*bw+2,H-26-bh,bw-4,bh);
-    qx.fillStyle=i===bestIdx?'#00ff88':'#335533';
-    qx.font='11px Courier New'; qx.textAlign='center';
-    qx.fillText(labels[i],10+i*bw+bw/2-2,H-10);
-    qx.fillStyle='#00ff8888'; qx.font='8px Courier New';
-    qx.fillText(v.toFixed(1),10+i*bw+bw/2-2,H-26-bh-7);
+// ── REAL panel 1: the Hamiltonian cycle the AI actually follows ──────────────
+function drawCycleMap() {
+  const W = cyc.width, H = cyc.height;
+  cx.fillStyle = '#06060e'; cx.fillRect(0,0,W,H);
+  cx.fillStyle = '#1a3a2a'; cx.font = '9px Courier New'; cx.textAlign = 'left';
+  cx.fillText('HAMILTONIAN CYCLE', 10, 12);
+
+  const top = 18;
+  const cs = Math.min(W - 20, H - top - 8) / GRID;
+  const ox = (W - cs*GRID)/2, oy = top + (H - top - 8 - cs*GRID)/2;
+
+  // the closed cycle every cell is visited on
+  cx.strokeStyle = '#13351f'; cx.lineWidth = 1;
+  cx.beginPath();
+  HAM_ORDER.forEach(([x,y],i) => {
+    const px = ox+x*cs+cs/2, py = oy+y*cs+cs/2;
+    i===0 ? cx.moveTo(px,py) : cx.lineTo(px,py);
   });
-  qx.fillStyle='#1a3a2a'; qx.font='9px Courier New'; qx.textAlign='left';
-  qx.fillText('HAM CYCLE',10,12);
+  cx.closePath(); cx.stroke();
+
+  // live planned path on top
+  const path = env.plannedPath || [];
+  if (path.length) {
+    cx.strokeStyle = env.mode === 'food' ? '#00ff88' : '#ffaa00';
+    cx.lineWidth = 1.6;
+    cx.beginPath();
+    const [hx0,hy0] = env.snake[0];
+    cx.moveTo(ox+hx0*cs+cs/2, oy+hy0*cs+cs/2);
+    path.forEach(([x,y]) => cx.lineTo(ox+x*cs+cs/2, oy+y*cs+cs/2));
+    cx.stroke();
+  }
+
+  // snake body dots + food
+  env.snake.forEach(([x,y],i) => {
+    cx.fillStyle = i===0 ? '#00ff88' : i===env.snake.length-1 ? '#ffcc33' : '#0c5a30';
+    cx.fillRect(ox+x*cs+cs*0.2, oy+y*cs+cs*0.2, cs*0.6, cs*0.6);
+  });
+  if (env.food) {
+    cx.fillStyle = '#ff5555';
+    cx.beginPath(); cx.arc(ox+env.food[0]*cs+cs/2, oy+env.food[1]*cs+cs/2, cs*0.3, 0, Math.PI*2); cx.fill();
+  }
 }
 
+// ── REAL panel 2: score history ─────────────────────────────────────────────
 function drawScoreHistory() {
   const W=rc.width, H=rc.height;
   rx.fillStyle='#06060e'; rx.fillRect(0,0,W,H);
   rx.fillStyle='#1a3a2a'; rx.font='9px Courier New'; rx.textAlign='left';
   rx.fillText('SCORE HISTORY',10,12);
-  if(scoreHist.length<2)return;
+  if(scoreHist.length<2){ rx.fillStyle='#1a3a2a'; rx.fillText('(finish an episode…)',10,28); return; }
   const pts=scoreHist.slice(-80);
   const maxV=Math.max(...pts)||1;
   rx.fillStyle='rgba(0,255,136,0.06)';
@@ -119,7 +140,7 @@ function drawScoreHistory() {
     const x=10+(i/(pts.length-1))*(W-20), y=H-10-(v/maxV)*(H-28);
     i===0?rx.moveTo(x,H-10):rx.lineTo(x,y);
   });
-  rx.lineTo(10+(pts.length-1)/(pts.length-1)*(W-20),H-10); rx.closePath(); rx.fill();
+  rx.lineTo(W-10,H-10); rx.closePath(); rx.fill();
   rx.strokeStyle='#00ff8877'; rx.lineWidth=1.5; rx.beginPath();
   pts.forEach((v,i)=>{
     const x=10+(i/(pts.length-1))*(W-20), y=H-10-(v/maxV)*(H-28);
@@ -130,43 +151,62 @@ function drawScoreHistory() {
   rx.fillText('best:'+bestScore,W-6,12);
 }
 
+// ── REAL panel 3: live AI stats ─────────────────────────────────────────────
+function drawStats() {
+  const W=sc.width, H=sc.height;
+  sx.fillStyle='#06060e'; sx.fillRect(0,0,W,H);
+  sx.textAlign='left';
+  sx.fillStyle='#1a3a2a'; sx.font='9px Courier New';
+  sx.fillText('AI STATUS',10,12);
+
+  const fill = (env.snake.length / N * 100);
+  const eff  = env.score > 0 ? (env.steps / env.score) : 0; // moves per apple
+  const rows = [
+    ['mode',       (env.mode||'food').toUpperCase(), env.mode==='food' ? '#00ff88' : '#ffaa00'],
+    ['apple dist', (env.plannedPath ? env.plannedPath.length : 0) + ' cells', '#9fdfff'],
+    ['length',     env.snake.length + ' / ' + N, '#cfeccf'],
+    ['board fill', fill.toFixed(1) + ' %', '#cfeccf'],
+    ['shortcuts',  String(env.shortcuts || 0), '#cfeccf'],
+    ['moves/apple',eff ? eff.toFixed(1) : '—', '#cfeccf'],
+    ['total moves',String(totalMoves), '#cfeccf'],
+  ];
+  let y = 30;
+  for (const [label, val, col] of rows) {
+    sx.fillStyle='#3a5a4a'; sx.font='10px Courier New';
+    sx.fillText(label, 10, y);
+    sx.fillStyle=col; sx.font='bold 11px Courier New'; sx.textAlign='right';
+    sx.fillText(val, W-10, y);
+    sx.textAlign='left';
+    y += 16;
+  }
+}
+
 function updateUI() {
   document.getElementById('s-ep').textContent    = episode;
-  document.getElementById('s-score').textContent  = env.score;
-  document.getElementById('s-best').textContent   = bestScore;
-  document.getElementById('s-eps').textContent    = agent.epsilon.toFixed(3);
-  document.getElementById('s-steps').textContent  = agent.totalSteps;
+  document.getElementById('s-score').textContent = env.score;
+  document.getElementById('s-best').textContent  = bestScore;
+  document.getElementById('s-eps').textContent   = env.snake.length;   // LENGTH
+  document.getElementById('s-steps').textContent = env.steps;          // real game steps
 }
 
 function doStep() {
-  const action = agent.act(state);      // for UI display only
-  const { reward, done } = env.step(action); // game ignores action, follows Ham
-  const ns = env.getState();
-  epReward += reward;
-  agent.remember(state, action, reward, ns, done);
-  agent.train();
-  state = ns;
+  const { done } = env.step(0);   // AI decides internally; action is ignored
+  totalMoves++;
   if (done) {
     if (env.score > bestScore) bestScore = env.score;
     scoreHist.push(env.score);
     episode++;
-    agent.onEpisodeEnd();
-    state = env.reset();
-    epReward = 0;
+    env.reset();
   }
 }
 
-function loop(ts) {
-  agent.episode = episode;
+function loop() {
   requestAnimationFrame(loop);
-  const interval = 1000/stepsPerSec;
-  const elapsed  = ts - lastStepTime;
-  if (elapsed >= interval) {
-    const count = Math.min(10, Math.floor(elapsed/interval));
-    if (_paused) { drawGame(); drawQValues(); drawScoreHistory(); NNDraw.draw(agent); updateUI(); return; }
-    for (let i = 0; i < count; i++) doStep();
-    lastStepTime = ts;
+  if (!_paused) {
+    // Accumulator lets x1 run slower than one move/frame.
+    _moveAcc += speed / 6;
+    while (_moveAcc >= 1) { doStep(); _moveAcc--; }
   }
-  drawGame(); drawQValues(); drawScoreHistory(); NNDraw.draw(agent); updateUI();
+  drawGame(); drawCycleMap(); drawScoreHistory(); drawStats(); updateUI();
 }
 requestAnimationFrame(loop);
