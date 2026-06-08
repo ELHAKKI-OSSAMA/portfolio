@@ -240,6 +240,8 @@ export default async function GamesPage({
               tags={game.tags}
               accent={game.accent}
               playLabel={locale === "fr" ? "JOUER ↗" : locale === "ar" ? "العب ↗" : "PLAY ↗"}
+              docHref={`/${locale}/games/${game.id}`}
+              docLabel={locale === "fr" ? "Comment l'IA fonctionne" : locale === "ar" ? "كيف يعمل الذكاء الاصطناعي" : "How the AI works"}
             />
           ))}
         </div>

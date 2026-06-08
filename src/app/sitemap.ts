@@ -1,5 +1,5 @@
 import { MetadataRoute } from "next";
-import { blogPosts, projects, learningTopics, SITE_URL } from "@/lib/data";
+import { blogPosts, projects, learningTopics, gameDocs, SITE_URL } from "@/lib/data";
 
 const locales = ["en", "fr", "ar"] as const;
 
@@ -58,5 +58,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
     entriesFor(`/learning/${t.id}`, { priority: 0.6 })
   );
 
-  return [...staticEntries, ...blogEntries, ...projectEntries, ...learningEntries];
+  const gameEntries = gameDocs.flatMap((g) =>
+    entriesFor(`/games/${g.id}`, { priority: 0.6 })
+  );
+
+  return [...staticEntries, ...blogEntries, ...projectEntries, ...learningEntries, ...gameEntries];
 }
