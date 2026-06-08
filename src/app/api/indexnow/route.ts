@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { SITE_URL } from "@/lib/data";
+import { rateLimit, clientIp } from "@/lib/rateLimit";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -17,6 +18,12 @@ export async function GET(req: Request) {
   const secret = process.env.CRON_SECRET;
   if (secret && req.headers.get("authorization") !== `Bearer ${secret}`) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  }
+
+  // Defense in depth (esp. if no CRON_SECRET): max 3 calls/min per IP.
+  const rl = rateLimit(`indexnow:${clientIp(req)}`, 3, 60_000);
+  if (!rl.ok) {
+    return NextResponse.json({ error: "rate limited" }, { status: 429 });
   }
 
   try {
