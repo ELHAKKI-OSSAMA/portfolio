@@ -14,13 +14,39 @@ export default function ContactPage() {
   const [submitted, setSubmitted] = useState(false);
   const [sending, setSending] = useState(false);
   const [msgLen, setMsgLen] = useState(0);
+  const [error, setError] = useState<string | null>(null);
+
+  const errorLabel = locale === "fr"
+    ? "Échec de l'envoi. Réessayez ou écrivez-moi directement par e-mail."
+    : locale === "ar"
+    ? "فشل الإرسال. حاول مجدداً أو راسلني مباشرة عبر البريد."
+    : "Couldn't send. Please try again or email me directly.";
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setError(null);
     setSending(true);
-    await new Promise((r) => setTimeout(r, 1200));
-    setSending(false);
-    setSubmitted(true);
+    const fd = new FormData(e.currentTarget);
+    const payload = {
+      name: fd.get("name"),
+      email: fd.get("email"),
+      subject: fd.get("subject"),
+      message: fd.get("message"),
+      company: fd.get("company"), // honeypot
+    };
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) throw new Error();
+      setSubmitted(true);
+    } catch {
+      setError(errorLabel);
+    } finally {
+      setSending(false);
+    }
   };
 
   const availableFor = [t("avail1"), t("avail2"), t("avail3"), t("avail4"), t("avail5")];
@@ -154,20 +180,26 @@ export default function ContactPage() {
                 </div>
               ) : (
                 <form onSubmit={handleSubmit} className="space-y-5">
+                  {/* Honeypot — hidden from humans, bots fill it */}
+                  <input
+                    type="text" name="company" tabIndex={-1} autoComplete="off"
+                    aria-hidden="true"
+                    style={{ position: "absolute", left: "-9999px", width: 1, height: 1, opacity: 0 }}
+                  />
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--text-secondary)" }}>{t("name")}</label>
-                      <input type="text" required className={inputCls} style={inputStyle} placeholder={t("name")} />
+                      <input type="text" name="name" required maxLength={200} className={inputCls} style={inputStyle} placeholder={t("name")} />
                     </div>
                     <div>
                       <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--text-secondary)" }}>{t("email")}</label>
-                      <input type="email" required className={inputCls} style={inputStyle} placeholder={t("email")} />
+                      <input type="email" name="email" required className={inputCls} style={inputStyle} placeholder={t("email")} />
                     </div>
                   </div>
 
                   <div>
                     <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--text-secondary)" }}>{t("subject")}</label>
-                    <input type="text" required className={inputCls} style={inputStyle} placeholder={t("subject")} />
+                    <input type="text" name="subject" required maxLength={300} className={inputCls} style={inputStyle} placeholder={t("subject")} />
                   </div>
 
                   <div>
@@ -176,13 +208,17 @@ export default function ContactPage() {
                       <span className="text-xs" style={{ color: msgLen > 20 ? "var(--secondary)" : "var(--text-muted)" }}>{msgLen} {locale === "fr" ? "caractères" : locale === "ar" ? "حرف" : "chars"}</span>
                     </div>
                     <textarea
-                      required rows={6}
+                      required rows={6} name="message" maxLength={5000}
                       className="w-full px-4 py-3 rounded-xl border text-sm outline-none transition-colors resize-none focus:border-[var(--primary)]"
                       style={inputStyle}
                       placeholder={t("message")}
                       onChange={(e) => setMsgLen(e.target.value.length)}
                     />
                   </div>
+
+                  {error && (
+                    <p className="text-sm" style={{ color: "#ef4444" }} role="alert">{error}</p>
+                  )}
 
                   <button
                     type="submit" disabled={sending}
