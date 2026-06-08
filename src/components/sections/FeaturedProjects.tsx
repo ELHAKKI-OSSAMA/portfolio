@@ -2,9 +2,11 @@
 
 import { useTranslations, useLocale } from "next-intl";
 import Link from "next/link";
+import Image from "next/image";
 import { ExternalLink, ArrowRight, TrendingUp, ChevronRight } from "lucide-react";
 import { GithubIcon } from "@/components/ui/SocialIcons";
 import { projects } from "@/lib/data";
+import { projectImages } from "@/lib/data/projects/images";
 
 const categoryColors: Record<string, string> = {
   fraud: "#ff6b6b",
@@ -37,6 +39,11 @@ export default function FeaturedProjects() {
   const locale = useLocale();
   const featured = projects.filter((p) => p.featured).slice(0, 6);
 
+  const getTitle = (p: typeof projects[0]) =>
+    locale === "fr" ? (p.titleFr ?? p.title) : locale === "ar" ? (p.titleAr ?? p.title) : p.title;
+  const getDesc = (p: typeof projects[0]) =>
+    locale === "fr" ? (p.descriptionFr ?? p.description) : locale === "ar" ? (p.descriptionAr ?? p.description) : p.description;
+
   return (
     <section className="section-padding">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -50,7 +57,10 @@ export default function FeaturedProjects() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
-          {featured.map((project) => (
+          {featured.map((project) => {
+            const accentColor = categoryColors[project.category[0]] || "#6c63ff";
+            const previewImg = projectImages[project.id]?.[0]?.src;
+            return (
             <div
               key={project.id}
               className="group relative flex flex-col rounded-2xl overflow-hidden border card-glow"
@@ -59,12 +69,30 @@ export default function FeaturedProjects() {
                 borderColor: "var(--border)",
               }}
             >
-              <div
-                className="h-1 w-full"
-                style={{
-                  background: `linear-gradient(90deg, ${categoryColors[project.category[0]] || "#6c63ff"}, transparent)`,
-                }}
-              />
+              {previewImg ? (
+                <div className="relative h-40 overflow-hidden" style={{ backgroundColor: "var(--bg-main)" }}>
+                  <Image
+                    src={previewImg}
+                    alt={project.title}
+                    fill
+                    sizes="(max-width: 768px) 100vw, 33vw"
+                    className="object-cover opacity-70 transition-opacity group-hover:opacity-85"
+                  />
+                  <div
+                    className="absolute inset-0"
+                    style={{ background: "linear-gradient(to bottom, transparent 30%, var(--bg-card) 100%)" }}
+                  />
+                  <div
+                    className="absolute top-0 left-0 right-0 h-0.5"
+                    style={{ background: `linear-gradient(90deg, ${accentColor}, transparent)` }}
+                  />
+                </div>
+              ) : (
+                <div
+                  className="h-1 w-full"
+                  style={{ background: `linear-gradient(90deg, ${accentColor}, transparent)` }}
+                />
+              )}
 
               <div className="flex-1 p-6">
                 <div className="flex flex-wrap gap-2 mb-4">
@@ -86,10 +114,10 @@ export default function FeaturedProjects() {
                   className="font-semibold text-lg mb-2 transition-colors"
                   style={{ color: "var(--text-primary)" }}
                 >
-                  {project.title}
+                  {getTitle(project)}
                 </h3>
                 <p className="text-sm leading-relaxed mb-4" style={{ color: "var(--text-muted)" }}>
-                  {project.description}
+                  {getDesc(project)}
                 </p>
 
                 {project.metrics && (
@@ -127,7 +155,7 @@ export default function FeaturedProjects() {
                   style={{ color: "var(--primary)" }}
                 >
                   <ChevronRight size={12} />
-                  Details
+                  {t("details")}
                 </Link>
                 {project.kaggleUrl && (
                   <a
@@ -155,7 +183,8 @@ export default function FeaturedProjects() {
                 )}
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
 
         <div className="text-center">

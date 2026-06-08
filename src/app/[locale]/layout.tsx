@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { Inter, Cairo } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
@@ -9,26 +8,11 @@ import Footer from "@/components/layout/Footer";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { GameProvider } from "@/contexts/GameContext";
 import PersistentGameOverlay from "@/components/games/PersistentGameOverlay";
-import { PersonSchema, WebsiteSchema } from "@/components/seo/JsonLd";
-import "../globals.css";
-
-// ── Fonts loaded at build-time (no external request, no render-blocking) ──
-const inter = Inter({
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700", "800"],
-  variable: "--font-inter",
-  display: "swap",
-});
-
-const cairo = Cairo({
-  subsets: ["arabic"],
-  weight: ["300", "400", "500", "600", "700", "800"],
-  variable: "--font-cairo",
-  display: "swap",
-});
+import { PersonSchema, WebsiteSchema, OrganizationSchema } from "@/components/seo/JsonLd";
+import Analytics from "@/components/analytics/Analytics";
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://ismmax.com"),
+  metadataBase: new URL("https://ossamaelhakki.com"),
   title: {
     default: "Ossama Elhakki | AI Engineer & ML Systems Builder",
     template: "%s | Ossama Elhakki",
@@ -49,12 +33,12 @@ export const metadata: Metadata = {
     "Ossama Elhakki",
     "أسامة الحقّي",
   ],
-  authors: [{ name: "Ossama Elhakki", url: "https://ismmax.com" }],
+  authors: [{ name: "Ossama Elhakki", url: "https://ossamaelhakki.com" }],
   creator: "Ossama Elhakki",
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://ismmax.com",
+    url: "https://ossamaelhakki.com",
     siteName: "Ossama Elhakki | AI Engineer",
     title: "Ossama Elhakki | AI Engineer & ML Systems Builder",
     description:
@@ -75,15 +59,21 @@ export const metadata: Metadata = {
     images: ["/api/og"],
   },
   alternates: {
-    canonical: "https://ismmax.com/en",
+    canonical: "https://ossamaelhakki.com/en",
     languages: {
-      en: "https://ismmax.com/en",
-      fr: "https://ismmax.com/fr",
-      ar: "https://ismmax.com/ar",
+      en: "https://ossamaelhakki.com/en",
+      fr: "https://ossamaelhakki.com/fr",
+      ar: "https://ossamaelhakki.com/ar",
     },
   },
   verification: {
-    google: "your-google-verification-code",
+    // Set GOOGLE_SITE_VERIFICATION / BING_SITE_VERIFICATION in your env (.env / Vercel).
+    ...(process.env.GOOGLE_SITE_VERIFICATION
+      ? { google: process.env.GOOGLE_SITE_VERIFICATION }
+      : {}),
+    ...(process.env.BING_SITE_VERIFICATION
+      ? { other: { "msvalidate.01": process.env.BING_SITE_VERIFICATION } }
+      : {}),
   },
   robots: {
     index: true,
@@ -115,35 +105,27 @@ export default async function LocaleLayout({
     notFound();
   }
 
-  // Enable static rendering — must be called before any next-intl API
   setRequestLocale(locale);
 
   const messages = await getMessages();
-  const isRtl = locale === "ar";
 
   return (
-    <html
-      lang={locale}
-      dir={isRtl ? "rtl" : "ltr"}
-      className={`h-full ${inter.variable} ${cairo.variable}`}
-    >
-      <head>
-        <link rel="alternate" type="application/rss+xml" title="Ossama Elhakki Blog" href="/feed.xml" />
-        <PersonSchema />
-        <WebsiteSchema />
-      </head>
-      <body className="min-h-screen flex flex-col antialiased" style={{ backgroundColor: "var(--bg-main)", color: "var(--text-primary)" }}>
-        <NextIntlClientProvider messages={messages}>
-          <ThemeProvider>
-            <GameProvider>
-              <Navbar />
-              <main className="flex-1">{children}</main>
-              <Footer />
-              <PersistentGameOverlay />
-            </GameProvider>
-          </ThemeProvider>
-        </NextIntlClientProvider>
-      </body>
-    </html>
+    <>
+      <link rel="alternate" type="application/rss+xml" title="Ossama Elhakki Blog" href="/feed.xml" />
+      <PersonSchema />
+      <WebsiteSchema />
+      <OrganizationSchema />
+      <NextIntlClientProvider messages={messages}>
+        <ThemeProvider locale={locale}>
+          <GameProvider>
+            <Navbar />
+            <main className="flex-1">{children}</main>
+            <Footer />
+            <PersistentGameOverlay />
+          </GameProvider>
+        </ThemeProvider>
+      </NextIntlClientProvider>
+      <Analytics />
+    </>
   );
 }

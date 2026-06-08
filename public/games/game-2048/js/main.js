@@ -81,7 +81,7 @@ function drawTree() {
 }
 
 function gameStep() {
-  const dec = mcts(board, 120);
+  const dec = mcts(board, 200);
   lastDecision = dec;
   if (!dec.best) { board = newBoard(); score = 0; games++; return; }
   const { board: nb, score: sc, moved } = move(board, dec.best);
@@ -101,19 +101,20 @@ function updateUI() {
   document.getElementById('s-games').textContent = games;
 }
 
-window.addEventListener('resize', () => { drawBoard(); drawTree(); });
+window.addEventListener('resize', () => { drawBoard(); drawTree(); if(typeof NNDraw!=='undefined')NNDraw.draw(lastDecision); });
 
 // Time-based loop — moves happen at movesPerSec rate
 let lastMoveTime = 0;
 function loop(ts) {
   requestAnimationFrame(loop);
-  if(_paused){drawBoard();drawTree();return;}
+  if(_paused){drawBoard();drawTree();if(typeof NNDraw!=='undefined')NNDraw.draw(lastDecision);return;}
   const interval = 1000 / movesPerSec;
   if (ts - lastMoveTime >= interval) {
     gameStep();
     lastMoveTime = ts;
     drawBoard();
     drawTree();
+    if(typeof NNDraw!=='undefined')NNDraw.draw(lastDecision);
     updateUI();
   }
 }

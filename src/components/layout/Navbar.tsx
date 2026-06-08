@@ -12,7 +12,7 @@ export default function Navbar() {
   const t = useTranslations("nav");
   const locale = useLocale();
   const pathname = usePathname();
-  const { theme, toggleTheme } = useTheme();
+  const { theme, toggleTheme, mounted } = useTheme();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -85,8 +85,10 @@ export default function Navbar() {
               onClick={toggleTheme}
               className="p-2 rounded-lg transition-all hover:bg-[var(--border)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]"
               aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+              suppressHydrationWarning
             >
-              {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
+              {/* Only render after mount so SSR icon matches client icon */}
+              {mounted ? (theme === "dark" ? <Sun size={18} /> : <Moon size={18} />) : <Sun size={18} />}
             </button>
             <LanguageSwitcher />
             <Link
@@ -104,8 +106,9 @@ export default function Navbar() {
               onClick={toggleTheme}
               className="p-2 rounded-lg transition-all text-[var(--text-secondary)]"
               aria-label="Toggle theme"
+              suppressHydrationWarning
             >
-              {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
+              {mounted ? (theme === "dark" ? <Sun size={18} /> : <Moon size={18} />) : <Sun size={18} />}
             </button>
             <button
               className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] p-2"

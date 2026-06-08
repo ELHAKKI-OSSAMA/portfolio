@@ -7,6 +7,8 @@ export const certifications = [
     nameAr: "شهادة جوجل المهنية للذكاء الاصطناعي",
     issuer: "Google",
     desc: "Practical AI training: generative AI for decision-making, creativity, and task automation",
+    descFr: "Formation pratique en IA : IA générative pour la décision, la créativité et l'automatisation des tâches",
+    descAr: "تدريب عملي على الذكاء الاصطناعي: الذكاء التوليدي لاتخاذ القرار والإبداع وأتمتة المهام",
   },
   {
     id: "hackerrank-sql",
@@ -15,6 +17,8 @@ export const certifications = [
     nameAr: "شهادة HackerRank - SQL",
     issuer: "HackerRank",
     desc: "Complex queries: JOINs, aggregations, subqueries, performance optimization",
+    descFr: "Requêtes complexes : JOINs, agrégations, sous-requêtes, optimisation des performances",
+    descAr: "استعلامات معقدة: عمليات الربط والتجميعات والاستعلامات الفرعية وتحسين الأداء",
   },
   {
     id: "hackerrank-python",
@@ -23,6 +27,8 @@ export const certifications = [
     nameAr: "شهادة HackerRank - Python",
     issuer: "HackerRank",
     desc: "Advanced algorithms, data structures, data manipulation and problem solving",
+    descFr: "Algorithmes avancés, structures de données, manipulation de données et résolution de problèmes",
+    descAr: "خوارزميات متقدمة وهياكل بيانات ومعالجة البيانات وحل المشكلات",
   },
   {
     id: "coursera-ml",
@@ -31,6 +37,8 @@ export const certifications = [
     nameAr: "تعلم الآلة وعلم البيانات",
     issuer: "Coursera",
     desc: "Comprehensive ML and data science training",
+    descFr: "Formation complète en ML et data science",
+    descAr: "تدريب شامل في تعلم الآلة وعلم البيانات",
   },
   {
     id: "n8n",
@@ -39,5 +47,7 @@ export const certifications = [
     nameAr: "أتمتة سير العمل مع n8n",
     issuer: "N8N",
     desc: "Building automated AI agent pipelines and multi-agent orchestration",
+    descFr: "Construction de pipelines d'agents IA automatisés et orchestration multi-agents",
+    descAr: "بناء خطوط أنابيب وكلاء الذكاء الاصطناعي الآلية وتنسيق متعدد الوكلاء",
   },
 ];

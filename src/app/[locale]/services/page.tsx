@@ -2,7 +2,7 @@
 
 import { useTranslations, useLocale } from "next-intl";
 import Link from "next/link";
-import { Check, Star } from "lucide-react";
+import { Check, Star, MessageCircle, Cpu, Rocket } from "lucide-react";
 import { services } from "@/lib/data";
 
 const serviceColors = ["#6c63ff", "#00d4aa", "#ff6b6b"];
@@ -80,16 +80,18 @@ export default function ServicesPage() {
                     {t(service.descKey as keyof typeof t)}
                   </p>
 
-                  {/* Price */}
-                  <div className="flex items-end gap-1 mb-6">
-                    <span className="text-sm" style={{ color: "var(--text-primary)" }}>$</span>
-                    <span className="text-4xl font-bold" style={{ color: "var(--text-primary)" }}>
-                      {service.price}
-                    </span>
-                    <span className="text-sm mb-1" style={{ color: "var(--text-secondary)" }}>
-                      {t(service.priceType as keyof typeof t)}
-                    </span>
-                  </div>
+                  {/* Price — hidden on the French site */}
+                  {locale !== "fr" && (
+                    <div className="flex items-end gap-1 mb-6">
+                      <span className="text-sm" style={{ color: "var(--text-primary)" }}>$</span>
+                      <span className="text-4xl font-bold" style={{ color: "var(--text-primary)" }}>
+                        {service.price}
+                      </span>
+                      <span className="text-sm mb-1" style={{ color: "var(--text-secondary)" }}>
+                        {t(service.priceType as keyof typeof t)}
+                      </span>
+                    </div>
+                  )}
 
                   {/* CTA */}
                   <Link
@@ -126,26 +128,69 @@ export default function ServicesPage() {
           })}
         </div>
 
-        {/* Available for section */}
-        <div className="text-center">
-          <h2 className="text-2xl font-bold mb-8" style={{ color: "var(--text-primary)" }}>
-            {t("contact_me")}
+        {/* How it works */}
+        {(() => {
+          const steps = locale === "fr"
+            ? [
+                { icon: MessageCircle, color: "#6c63ff", n: "01", title: "Discutons", desc: "Envoyez-moi un message décrivant votre projet. Je réponds sous 24h avec des questions ciblées." },
+                { icon: Cpu,           color: "#00d4aa", n: "02", title: "Conception", desc: "Je propose un plan détaillé : architecture, livrables, timeline et prix exact avant de commencer." },
+                { icon: Rocket,        color: "#ff6b6b", n: "03", title: "Livraison",  desc: "Code propre, documentation complète, déploiement ou handoff — vous êtes opérationnel." },
+              ]
+            : locale === "ar"
+            ? [
+                { icon: MessageCircle, color: "#6c63ff", n: "01", title: "تواصل",    desc: "أرسل لي رسالة تصف مشروعك. سأرد خلال 24 ساعة بأسئلة دقيقة." },
+                { icon: Cpu,           color: "#00d4aa", n: "02", title: "التخطيط",   desc: "أقدم خطة تفصيلية: الهندسة، المخرجات، الجدول الزمني والسعر الدقيق." },
+                { icon: Rocket,        color: "#ff6b6b", n: "03", title: "التسليم",   desc: "كود نظيف، توثيق كامل، نشر أو تسليم — أنت جاهز للعمل." },
+              ]
+            : [
+                { icon: MessageCircle, color: "#6c63ff", n: "01", title: "Let's Talk",  desc: "Send me a message describing your project. I reply within 24h with targeted questions to scope it precisely." },
+                { icon: Cpu,           color: "#00d4aa", n: "02", title: "We Design",   desc: "I propose a detailed plan: architecture, deliverables, timeline and exact price — before writing a line of code." },
+                { icon: Rocket,        color: "#ff6b6b", n: "03", title: "You Launch",  desc: "Clean code, full documentation, deployment or handoff — you're live and operational." },
+              ];
+          const heading = locale === "fr" ? "Comment ça marche" : locale === "ar" ? "كيف يعمل" : "How it works";
+          return (
+            <div className="mb-20">
+              <h2 className="text-2xl font-bold text-center mb-10" style={{ color: "var(--text-primary)" }}>{heading}</h2>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 relative">
+                {steps.map((s, i) => (
+                  <div key={i} className="flex flex-col items-center text-center p-6 rounded-2xl border"
+                    style={{ backgroundColor: "var(--bg-card)", borderColor: "var(--border)" }}>
+                    <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4"
+                      style={{ backgroundColor: `${s.color}20` }}>
+                      <s.icon size={24} style={{ color: s.color }} />
+                    </div>
+                    <span className="text-xs font-bold mb-1" style={{ color: s.color }}>{s.n}</span>
+                    <h3 className="font-bold text-lg mb-2" style={{ color: "var(--text-primary)" }}>{s.title}</h3>
+                    <p className="text-sm leading-relaxed" style={{ color: "var(--text-muted)" }}>{s.desc}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })()}
+
+        {/* Available for + CTA */}
+        <div className="rounded-2xl border p-8 text-center" style={{ backgroundColor: "var(--bg-card)", borderColor: "var(--border)" }}>
+          <h2 className="text-2xl font-bold mb-2" style={{ color: "var(--text-primary)" }}>
+            {locale === "fr" ? "Disponible pour" : locale === "ar" ? "متاح لـ" : "Available for"}
           </h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl mx-auto">
+          <p className="text-sm mb-8" style={{ color: "var(--text-secondary)" }}>
+            {locale === "fr" ? "Ouvert aux opportunités mondiales et locales" : locale === "ar" ? "متاح للفرص المحلية والعالمية" : "Open to worldwide and local opportunities"}
+          </p>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 max-w-3xl mx-auto mb-8">
             {availableFor.map((item, i) => (
-              <div
-                key={i}
-                className="p-4 rounded-xl text-sm text-center"
-                style={{
-                  backgroundColor: "var(--bg-card)",
-                  border: "1px solid var(--border)",
-                  color: "var(--text-secondary)",
-                }}
-              >
+              <div key={i} className="p-3 rounded-xl text-sm"
+                style={{ backgroundColor: "var(--bg-elevated)", border: "1px solid var(--border)", color: "var(--text-secondary)" }}>
                 {locale === "fr" ? item.fr : locale === "ar" ? item.ar : item.en}
               </div>
             ))}
           </div>
+          <Link href={`/${locale}/contact`}
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-white font-medium transition-all"
+            style={{ backgroundColor: "var(--primary)" }}>
+            <MessageCircle size={16} />
+            {t("contact_me")}
+          </Link>
         </div>
       </div>
     </div>

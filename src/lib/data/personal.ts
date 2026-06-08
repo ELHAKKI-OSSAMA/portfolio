@@ -1,9 +1,9 @@
 // ─── Personal Info ────────────────────────────────────────────────────────────
-export const SITE_URL = "https://ismmax.com";
+export const SITE_URL = "https://ossamaelhakki.com";
 export const GITHUB_URL = "https://github.com/ELHAKKI-OSSAMA";
 export const KAGGLE_URL = "https://www.kaggle.com/ossamaelhakk/code";
 export const LINKEDIN_URL = "https://www.linkedin.com/in/elhakki-ossama-985b64190/";
-export const EMAIL = "ossamaelhhaki@gmail.com";
+export const EMAIL = "ossamaelhakki@gmail.com";
 export const PHONE = "+212 6 73 10 52 17";
 export const LOCATION = "Casablanca, Morocco";
 export const ARABIC_NAME = "أسامة الحقّي";

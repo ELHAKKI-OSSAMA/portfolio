@@ -19,7 +19,7 @@ export default function GameCard({ id, num, icon, title, desc, tags, accent, pla
   return (
     <button
       onClick={() => launchGame(id)}
-      className="group flex flex-col gap-3 rounded-2xl border p-5 transition-all duration-200 hover:-translate-y-1 relative overflow-hidden text-left"
+      className="group flex flex-col gap-3 rounded-2xl border p-5 transition-all duration-200 hover:-translate-y-1 relative overflow-hidden text-start"
       style={{ backgroundColor: "var(--bg-card)", borderColor: "var(--border)" }}
       onMouseEnter={(e) => {
         (e.currentTarget as HTMLElement).style.borderColor = accent + "60";
@@ -30,7 +30,7 @@ export default function GameCard({ id, num, icon, title, desc, tags, accent, pla
         (e.currentTarget as HTMLElement).style.boxShadow = "none";
       }}
     >
-      <span className="absolute top-3 right-3 text-xs font-mono opacity-30" style={{ color: accent }}>
+      <span className="absolute top-3 end-3 text-xs font-mono opacity-30" style={{ color: accent }}>
         {num}
       </span>
 

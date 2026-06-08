@@ -1,10 +1,15 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, ExternalLink, Database, TrendingUp, Layers, Target, Code2 } from "lucide-react";
+import { getTranslations, setRequestLocale } from "next-intl/server";
+import { ArrowLeft, ArrowRight, ExternalLink, Database, TrendingUp, Layers, Target, Code2 } from "lucide-react";
 import { GithubIcon } from "@/components/ui/SocialIcons";
-import { projects } from "@/lib/data";
+import { projects, SITE_URL } from "@/lib/data";
+import { BreadcrumbSchema } from "@/components/seo/JsonLd";
+import { projectImages } from "@/lib/data/projects/images";
 import ProjectMarkdown from "@/components/ui/ProjectMarkdown";
+import ProjectImageGallery from "@/components/ui/ProjectImageGallery";
+import { buildMetadata } from "@/lib/seo";
 
 export async function generateStaticParams() {
   return projects.map((p) => ({ id: p.id }));
@@ -19,18 +24,17 @@ export async function generateMetadata({
   const project = projects.find((p) => p.id === id);
   if (!project) return { title: "Project Not Found" };
 
-  return {
-    title: `${project.title} | Ossama Elhakki`,
-    description: project.description,
-    alternates: {
-      canonical: `https://ismmax.com/${locale}/projects/${id}`,
-    },
-    openGraph: {
-      title: `${project.title} | Ossama Elhakki`,
-      description: project.description,
-      type: "article",
-    },
-  };
+  const title = locale === "fr" ? (project.titleFr ?? project.title) : locale === "ar" ? (project.titleAr ?? project.title) : project.title;
+  const description = locale === "fr" ? (project.descriptionFr ?? project.description) : locale === "ar" ? (project.descriptionAr ?? project.description) : project.description;
+
+  return buildMetadata({
+    locale,
+    path: `/projects/${id}`,
+    title: `${title} | Ossama Elhakki`,
+    description,
+    type: "article",
+    keywords: [...(project.tags ?? []), ...(project.techStack ?? [])].slice(0, 12),
+  });
 }
 
 const categoryColors: Record<string, string> = {
@@ -46,18 +50,6 @@ const categoryColors: Record<string, string> = {
   deployment: "#f97316",
 };
 
-const categoryLabels: Record<string, string> = {
-  fraud: "Fraud Detection",
-  cv: "Computer Vision",
-  nlp: "NLP",
-  medical: "Medical AI",
-  timeseries: "Time Series",
-  genai: "Generative AI",
-  agents: "AI Agents",
-  rl: "Reinforcement Learning",
-  backend: "Backend",
-  deployment: "Deployment",
-};
 
 export default async function ProjectDetailPage({
   params,
@@ -65,14 +57,30 @@ export default async function ProjectDetailPage({
   params: Promise<{ locale: string; id: string }>;
 }) {
   const { locale, id } = await params;
+  setRequestLocale(locale);
   const project = projects.find((p) => p.id === id);
 
   if (!project) notFound();
 
+  const t = await getTranslations({ locale, namespace: "projects" });
+  const isRtl = locale === "ar";
   const accentColor = categoryColors[project.category[0]] || "#6c63ff";
+
+  const title = locale === "fr" ? (project.titleFr ?? project.title) : locale === "ar" ? (project.titleAr ?? project.title) : project.title;
+  const longDescription = locale === "fr" ? (project.longDescriptionFr ?? project.longDescription) : locale === "ar" ? (project.longDescriptionAr ?? project.longDescription) : project.longDescription;
+  const description = locale === "fr" ? (project.descriptionFr ?? project.description) : locale === "ar" ? (project.descriptionAr ?? project.description) : project.description;
+  const dataset = locale === "fr" ? (project.datasetFr ?? project.dataset) : locale === "ar" ? (project.datasetAr ?? project.dataset) : project.dataset;
+  const approach = locale === "fr" ? (project.approachFr ?? project.approach) : locale === "ar" ? (project.approachAr ?? project.approach) : project.approach;
 
   return (
     <div className="min-h-screen pt-24 pb-20 section-padding">
+      <BreadcrumbSchema
+        items={[
+          { name: locale === "fr" ? "Accueil" : locale === "ar" ? "الرئيسية" : "Home", url: `${SITE_URL}/${locale}` },
+          { name: t("back_all"), url: `${SITE_URL}/${locale}/projects` },
+          { name: title, url: `${SITE_URL}/${locale}/projects/${id}` },
+        ]}
+      />
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
 
         {/* Back */}
@@ -81,8 +89,8 @@ export default async function ProjectDetailPage({
           className="inline-flex items-center gap-2 text-sm mb-8 transition-opacity hover:opacity-70"
           style={{ color: "var(--text-secondary)" }}
         >
-          <ArrowLeft size={15} />
-          All Projects
+          {isRtl ? <ArrowRight size={15} /> : <ArrowLeft size={15} />}
+          {t("back_all")}
         </Link>
 
         {/* Header */}
@@ -105,7 +113,7 @@ export default async function ProjectDetailPage({
                   color: categoryColors[cat],
                 }}
               >
-                {categoryLabels[cat]}
+                {t(`cat_${cat}` as Parameters<typeof t>[0])}
               </span>
             ))}
             {project.featured && (
@@ -116,7 +124,7 @@ export default async function ProjectDetailPage({
                   color: "var(--primary)",
                 }}
               >
-                ⭐ Featured
+                {t("featured_badge")}
               </span>
             )}
           </div>
@@ -125,11 +133,11 @@ export default async function ProjectDetailPage({
             className="text-3xl sm:text-4xl font-bold mb-4 leading-tight"
             style={{ color: "var(--text-primary)" }}
           >
-            {project.title}
+            {title}
           </h1>
 
           <p className="text-lg leading-relaxed mb-6" style={{ color: "var(--text-secondary)" }}>
-            {project.description}
+            {description}
           </p>
 
           {/* Links */}
@@ -143,7 +151,7 @@ export default async function ProjectDetailPage({
                 style={{ backgroundColor: accentColor }}
               >
                 <ExternalLink size={14} />
-                View on Kaggle
+                {t("view_kaggle")}
               </a>
             )}
             {project.githubUrl && (
@@ -158,7 +166,7 @@ export default async function ProjectDetailPage({
                 }}
               >
                 <GithubIcon size={14} />
-                View Code
+                {t("view_code")}
               </a>
             )}
           </div>
@@ -203,10 +211,10 @@ export default async function ProjectDetailPage({
                 style={{ color: "var(--text-primary)" }}
               >
                 <Database size={15} style={{ color: accentColor }} />
-                Dataset
+                {t("dataset")}
               </div>
               <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
-                {project.dataset}
+                {dataset}
               </p>
             </div>
           )}
@@ -222,10 +230,10 @@ export default async function ProjectDetailPage({
                 style={{ color: "var(--text-primary)" }}
               >
                 <Target size={15} style={{ color: accentColor }} />
-                Approach
+                {t("approach")}
               </div>
               <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
-                {project.approach}
+                {approach}
               </p>
             </div>
           )}
@@ -242,7 +250,7 @@ export default async function ProjectDetailPage({
               style={{ color: "var(--text-primary)" }}
             >
               <Code2 size={15} style={{ color: accentColor }} />
-              Tech Stack
+              {t("tech_stack")}
             </div>
             <div className="flex flex-wrap gap-2">
               {project.techStack.map((tech) => (
@@ -271,7 +279,7 @@ export default async function ProjectDetailPage({
             style={{ color: "var(--text-primary)" }}
           >
             <Layers size={15} style={{ color: "var(--text-muted)" }} />
-            Keywords
+            {t("keywords")}
           </div>
           <div className="flex flex-wrap gap-2">
             {project.tags.map((tag) => (
@@ -289,6 +297,18 @@ export default async function ProjectDetailPage({
           </div>
         </div>
 
+        {/* Visualizations gallery */}
+        {projectImages[project.id] && (
+          <ProjectImageGallery
+            images={projectImages[project.id]}
+            projectTitle={project.title}
+            accentColor={accentColor}
+            visualizationsLabel={t("visualizations")}
+            chartsLabel={t("charts")}
+            moreChartsLabel={t("more_charts")}
+          />
+        )}
+
         {/* Long description / analysis */}
         {project.longDescription && (
           <div
@@ -300,9 +320,9 @@ export default async function ProjectDetailPage({
               style={{ color: "var(--text-primary)" }}
             >
               <TrendingUp size={18} style={{ color: accentColor }} />
-              Deep Dive
+              {t("deep_dive")}
             </div>
-            <ProjectMarkdown content={project.longDescription} accentColor={accentColor} />
+            <ProjectMarkdown content={longDescription!} accentColor={accentColor} locale={locale} />
           </div>
         )}
 
@@ -313,15 +333,15 @@ export default async function ProjectDetailPage({
             className="inline-flex items-center gap-2 text-sm transition-opacity hover:opacity-70"
             style={{ color: "var(--text-secondary)" }}
           >
-            <ArrowLeft size={14} />
-            Back to Projects
+            {isRtl ? <ArrowRight size={14} /> : <ArrowLeft size={14} />}
+            {t("back")}
           </Link>
           <Link
             href={`/${locale}/contact`}
             className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-white text-sm font-medium"
             style={{ backgroundColor: "var(--primary)" }}
           >
-            Hire Me
+            {t("hire_me")}
           </Link>
         </div>
 

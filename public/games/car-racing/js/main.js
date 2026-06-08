@@ -249,7 +249,7 @@ class Car{
     }
     if(this.framesSinceProgress>150){this.alive=false;return;}
     // Time penalty: slow survival hurts. Fast laps compensate via speedBonus.
-    this.fitness=Math.max(0,this.laps*1000+this.progress*500+this.speedBonus-this.frames*0.3);
+    this.fitness=Math.max(0,this.laps*1000+this.progress*500+this.speedBonus-this.frames*0.05);
   }
 }
 

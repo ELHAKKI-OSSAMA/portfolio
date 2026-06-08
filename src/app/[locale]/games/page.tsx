@@ -1,11 +1,33 @@
 import type { Metadata } from "next";
 import { setRequestLocale } from "next-intl/server";
 import GameCard from "./GameCard";
+import { buildMetadata, pick } from "@/lib/seo";
+import { SITE_URL } from "@/lib/data";
+import { BreadcrumbSchema, ItemListSchema } from "@/components/seo/JsonLd";
+import HireCTA from "@/components/sections/HireCTA";
 
-export const metadata: Metadata = {
-  title: "AI Game Lab | Ossama Elhakki",
-  description: "10 browser games each powered by a real AI algorithm — NEAT, DQN, MCTS, Genetic Algorithms. No install needed.",
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale } = await params;
+  return buildMetadata({
+    locale,
+    path: "/games",
+    title: pick(locale, {
+      en: "AI Game Lab — Browser Games Powered by Real AI | Ossama Elhakki",
+      fr: "Laboratoire de jeux IA — Jeux navigateur animés par de vraies IA | Ossama Elhakki",
+      ar: "مختبر ألعاب الذكاء الاصطناعي — ألعاب متصفح تعمل بذكاء حقيقي | أسامة الحقّي",
+    }),
+    description: pick(locale, {
+      en: "10 browser games, each powered by a real AI algorithm — NEAT, Deep Q-Networks, Monte Carlo Tree Search, and Genetic Algorithms. Play instantly, no install needed.",
+      fr: "10 jeux navigateur, chacun animé par un véritable algorithme d'IA — NEAT, Deep Q-Networks, MCTS et algorithmes génétiques. Jouez instantanément, sans installation.",
+      ar: "10 ألعاب متصفح، كل منها يعمل بخوارزمية ذكاء اصطناعي حقيقية — NEAT وDeep Q-Networks وMCTS والخوارزميات الجينية. العب فوراً دون تثبيت.",
+    }),
+    keywords: ["AI games", "NEAT", "DQN", "Monte Carlo Tree Search", "genetic algorithm game", "reinforcement learning demo"],
+  });
+}
 
 const GAMES = [
   {
@@ -163,6 +185,16 @@ export default async function GamesPage({
 
   return (
     <div className="min-h-screen pt-24 pb-20" style={{ backgroundColor: "var(--bg-main)" }}>
+      <BreadcrumbSchema
+        items={[
+          { name: locale === "fr" ? "Accueil" : locale === "ar" ? "الرئيسية" : "Home", url: `${SITE_URL}/${locale}` },
+          { name: locale === "fr" ? "Jeux IA" : locale === "ar" ? "ألعاب الذكاء الاصطناعي" : "AI Games", url: `${SITE_URL}/${locale}/games` },
+        ]}
+      />
+      <ItemListSchema
+        name="AI-powered browser games"
+        items={GAMES.map((g) => ({ name: getTitle(g), url: `${SITE_URL}/${locale}/games#${g.id}` }))}
+      />
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
 
         {/* ── Header ── */}
@@ -212,6 +244,7 @@ export default async function GamesPage({
           ))}
         </div>
       </div>
+      <HireCTA locale={locale} />
     </div>
   );
 }
