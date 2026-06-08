@@ -18,10 +18,14 @@
 </div>
 <div id="main">
   <div id="board-wrap"><canvas id="board-canvas"></canvas></div>
-  <div id="tree-wrap"><canvas id="tree-canvas"></canvas></div>
+  <div id="tree-wrap">
+    <div id="tree-panel"><canvas id="tree-canvas"></canvas></div>
+    <div id="nn-panel"><canvas id="nn-canvas"></canvas></div>
+  </div>
 </div>
 <script src="js/pause.js"></script>
 <script src="js/mcts.js"></script>
+<script src="js/nn-draw.js"></script>
 <script src="js/main.js"></script>
 <div style="position:fixed;bottom:10px;right:14px;font-family:Courier New,monospace;font-size:9px;color:#0f2010;letter-spacing:2px;z-index:100;pointer-events:none">[P] / [SPACE] PAUSE</div>
 </body>

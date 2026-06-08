@@ -19,7 +19,7 @@ const NNDraw = (()=>{
 
   function resize() {
     canvas.width  = canvas.parentElement.clientWidth;
-    canvas.height = canvas.parentElement.clientHeight;
+    canvas.height = canvas.clientHeight || canvas.parentElement.clientHeight;
   }
 
   function draw(agent) {

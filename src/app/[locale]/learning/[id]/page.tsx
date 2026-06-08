@@ -6,6 +6,10 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { learningTopics } from "@/lib/data";
 import { topicContents } from "@/lib/learningContent";
 import TopicDetailClient from "./TopicDetailClient";
+import { buildMetadata } from "@/lib/seo";
+import { LearningResourceSchema, BreadcrumbSchema } from "@/components/seo/JsonLd";
+import HireCTA from "@/components/sections/HireCTA";
+import { SITE_URL } from "@/lib/data";
 
 export async function generateStaticParams() {
   return learningTopics.map(t => ({ id: t.id }));
@@ -21,19 +25,16 @@ export async function generateMetadata({
   if (!topic) return { title: "Not Found" };
   const content = topicContents[id];
 
-  return {
+  return buildMetadata({
+    locale,
+    path: `/learning/${id}`,
     title: `${topic.title} | ML Learning Hub`,
-    description: `${topic.description} — Visual explanations, ${topic.diagrams} diagrams, full math derivations, Python code examples.`,
+    description:
+      content?.tagline ??
+      `${topic.description} — ${topic.diagrams} diagrams, math derivations, and runnable Python examples.`,
     keywords: topic.concepts,
-    alternates: {
-      canonical: `https://ismmax.com/${locale}/learning/${id}`,
-    },
-    openGraph: {
-      title: `${topic.title} — Visual ML Guide`,
-      description: content?.tagline || topic.description,
-      type: "article",
-    },
-  };
+    type: "article",
+  });
 }
 
 const categoryColors: Record<string, string> = {
@@ -87,6 +88,18 @@ export default async function TopicPage({
 
   return (
     <div className="min-h-screen pt-24 pb-20">
+      <LearningResourceSchema
+        name={topicTitle(topic)}
+        description={topicDesc(topic)}
+        url={`${SITE_URL}/${locale}/learning/${id}`}
+      />
+      <BreadcrumbSchema
+        items={[
+          { name: locale === "fr" ? "Accueil" : locale === "ar" ? "الرئيسية" : "Home", url: `${SITE_URL}/${locale}` },
+          { name: t("title"), url: `${SITE_URL}/${locale}/learning` },
+          { name: topicTitle(topic), url: `${SITE_URL}/${locale}/learning/${id}` },
+        ]}
+      />
       {/* Hero */}
       <div
         className="relative overflow-hidden mb-0"
@@ -278,6 +291,7 @@ export default async function TopicPage({
           )}
         </div>
       </div>
+      <HireCTA locale={locale} />
     </div>
   );
 }

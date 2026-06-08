@@ -155,7 +155,7 @@ export default function LearningClient() {
             type="text"
             value={query}
             onChange={e => setQuery(e.target.value)}
-            placeholder="Search topics, concepts, algorithms…"
+            placeholder={t("search_placeholder")}
             className="w-full pl-11 pr-24 py-3 rounded-2xl border text-sm outline-none transition-all"
             style={{
               backgroundColor:"var(--bg-card)",
@@ -179,7 +179,9 @@ export default function LearningClient() {
         </div>
         {query && (
           <p className="text-center text-sm mb-5" style={{ color:"var(--text-muted)" }}>
-            {filtered.length} result{filtered.length !== 1 ? "s" : ""} for &quot;<span style={{ color:"#6c63ff" }}>{query}</span>&quot;
+            <span>{filtered.length} </span>
+            <span>{t("search_results_for")}</span>
+            <span style={{ color:"#6c63ff" }}> &quot;{query}&quot;</span>
           </p>
         )}
 
@@ -192,7 +194,7 @@ export default function LearningClient() {
               ? { backgroundColor:"var(--primary)", color:"#fff" }
               : { backgroundColor:"var(--filter-btn-bg)", border:"1px solid var(--filter-btn-border)", color:"var(--filter-btn-text, var(--text-secondary))" }}
           >
-            All ({totalTopics})
+            {t("all")} ({totalTopics})
           </button>
           {Object.entries(CAT_META).map(([cat, meta]) => {
             const count = learningTopics.filter(tp => tp.category === cat).length;

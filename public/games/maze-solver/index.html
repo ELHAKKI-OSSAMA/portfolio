@@ -1,26 +1,110 @@
 <!DOCTYPE html>
 <html lang="en">
-<head><meta charset="UTF-8"/><title>Maze Solver — GA + Pheromones</title><link rel="stylesheet" href="css/style.css"/></head>
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>MAZE/AI — Ensemble Solver</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link rel="stylesheet" href="css/style.css"/>
+</head>
 <body>
+
 <div id="top-bar">
-  <div class="stat"><span class="stat-label">GEN</span><span class="stat-val" id="s-gen">1</span></div>
-  <div class="sep"></div>
-  <div class="stat"><span class="stat-label">ALIVE</span><span class="stat-val" id="s-alive">200</span></div>
-  <div class="sep"></div>
-  <div class="stat"><span class="stat-label">BEST DIST</span><span class="stat-val" id="s-best">0</span></div>
-  <div class="sep"></div>
-  <div class="stat"><span class="stat-label">SOLVED</span><span class="stat-val" id="s-solved">0</span></div>
-  <div class="sep"></div>
-  <div class="stat"><span class="stat-label">REPLAY</span><span class="stat-val" id="s-replay">-</span></div>
+
+  <div id="top-bar-title">
+    <div class="pulse-dot"></div>
+    <div>
+      <span class="logo-text">MAZE / AI</span>
+      <span class="logo-sub">A* · ENSEMBLE · DAGGER</span>
+    </div>
+  </div>
+
+  <div class="stat-group">
+    <div class="stat">
+      <span class="stat-label">GENERATION</span>
+      <span class="stat-val" id="s-gen">001</span>
+    </div>
+    <div class="stat">
+      <span class="stat-label">ALIVE</span>
+      <span class="stat-val amber" id="s-alive">200</span>
+    </div>
+    <div class="stat">
+      <span class="stat-label">FITNESS</span>
+      <span class="stat-val" id="s-best">0</span>
+    </div>
+    <div class="stat">
+      <span class="stat-label">SOLVED</span>
+      <span class="stat-val" id="s-solved">0</span>
+    </div>
+    <div class="stat">
+      <span class="stat-label">MODEL</span>
+      <span class="stat-val blue" id="s-species">5 NETS</span>
+    </div>
+    <div class="stat">
+      <span class="stat-label">ALGO</span>
+      <span class="stat-val amber" id="s-mutrate">A*</span>
+    </div>
+    <div class="stat">
+      <span class="stat-label">REPLAY</span>
+      <span class="stat-val" id="s-replay">—</span>
+    </div>
+  </div>
+
   <div id="speed-wrap">
     <label>SPEED</label>
-    <input type="range" id="speed" min="1" max="12" value="3" step="1"/>
-    <span id="speed-val">3x</span>
+    <input type="range" id="speed" min="1" max="30" value="3" step="1"
+           oninput="this.style.setProperty('--val', (this.value-1)/29*100+'%')"/>
+    <span id="speed-val">3×</span>
+  </div>
+
+</div>
+
+<div id="main">
+  <div id="game-wrap">
+    <canvas id="game-canvas"></canvas>
+  </div>
+  <div id="nn-wrap">
+    <canvas id="nn-canvas"></canvas>
   </div>
 </div>
-<div id="main"><canvas id="game-canvas"></canvas></div>
+
 <script src="js/pause.js"></script>
+<script src="js/weights.js"></script>
+<script src="js/nn-draw.js"></script>
 <script src="js/main.js"></script>
-<div style="position:fixed;bottom:10px;right:14px;font-family:Courier New,monospace;font-size:9px;color:#0f2010;letter-spacing:2px;z-index:100;pointer-events:none">[P] / [SPACE] PAUSE</div>
+
+<script>
+// Flash stat values on change for tactile feedback
+(function(){
+  const watches = ['s-gen','s-solved'];
+  const prev = {};
+  setInterval(()=>{
+    watches.forEach(id=>{
+      const el = document.getElementById(id);
+      if(!el) return;
+      if(prev[id] !== el.textContent){
+        el.classList.remove('flash');
+        void el.offsetWidth; // reflow
+        el.classList.add('flash');
+        prev[id] = el.textContent;
+      }
+    });
+  }, 200);
+})();
+// Pad generation number
+const _origLoop = window.__loopHook;
+const genEl = document.getElementById('s-gen');
+const origSetText = Object.getOwnPropertyDescriptor(HTMLElement.prototype,'textContent');
+// Pad gen to 3 digits
+const _genObs = new MutationObserver(()=>{
+  const v = genEl.textContent;
+  if(!isNaN(v) && v.length < 3) genEl.textContent = v.padStart(3,'0');
+});
+if(genEl) _genObs.observe(genEl, {childList:true});
+</script>
+
+<div style="position:fixed;bottom:12px;right:16px;font-family:'Share Tech Mono',monospace;font-size:8px;color:#0a3020;letter-spacing:3px;z-index:100;pointer-events:none;text-transform:uppercase">[P] PAUSE · [SPACE] RESUME</div>
+
 </body>
 </html>

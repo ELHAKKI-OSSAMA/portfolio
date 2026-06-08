@@ -56,12 +56,36 @@
     scroll-behavior: smooth;
   }
 
+  /* Suppress ALL transitions while the theme-init script is running so there
+     is no animated "sweep" from :root defaults to the stored theme.
+     The script adds this class synchronously, then removes it on first paint. */
+  html.theme-init *,
+  html.theme-init *::before,
+  html.theme-init *::after {
+    transition: none !important;
+    animation: none !important;
+  }
+
   body {
     background-color: var(--bg-main);
     color: var(--text-primary);
     font-family: var(--font-inter), system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
     transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  /* Respect user preference for reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+    html {
+      scroll-behavior: auto;
+    }
   }
 
   [lang="ar"],
@@ -162,4 +186,164 @@
   .text-secondary-color { color: var(--text-secondary); }
   .text-muted-color { color: var(--text-muted); }
   .border-theme { border-color: var(--border); }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+   Medium-style long-form reading typography (used by the blog article body)
+   ───────────────────────────────────────────────────────────────────────── */
+.prose-blog {
+  font-size: 1.1875rem;          /* ~19px */
+  line-height: 1.85;
+  color: var(--text-secondary);
+  letter-spacing: 0.003em;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+.prose-blog p {
+  margin: 0 0 1.6rem;
+}
+
+/* Lead paragraph + Medium-style drop cap (LTR only) */
+.prose-blog > p:first-of-type {
+  font-size: 1.3rem;
+  line-height: 1.7;
+  color: var(--text-primary);
+}
+.prose-blog[dir="ltr"] > p:first-of-type::first-letter {
+  float: left;
+  font-size: 3.4rem;
+  line-height: 0.86;
+  font-weight: 700;
+  padding: 0.3rem 0.6rem 0 0;
+  color: var(--primary);
+}
+
+.prose-blog h2 {
+  font-size: 1.85rem;
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -0.015em;
+  color: var(--text-primary);
+  margin: 3rem 0 1.1rem;
+  scroll-margin-top: 6rem;
+}
+.prose-blog h3 {
+  font-size: 1.35rem;
+  font-weight: 600;
+  line-height: 1.35;
+  color: var(--text-primary);
+  margin: 2.2rem 0 0.8rem;
+  scroll-margin-top: 6rem;
+}
+
+.prose-blog a {
+  color: var(--primary);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  transition: opacity 0.2s ease;
+}
+.prose-blog a:hover { opacity: 0.7; }
+
+.prose-blog strong { color: var(--text-primary); font-weight: 650; }
+
+.prose-blog ul,
+.prose-blog ol {
+  margin: 0 0 1.6rem;
+  padding-inline-start: 1.4rem;
+}
+.prose-blog li { margin: 0.5rem 0; padding-inline-start: 0.3rem; }
+.prose-blog ul > li { list-style: none; position: relative; }
+.prose-blog ul > li::before {
+  content: "";
+  position: absolute;
+  inset-inline-start: -1rem;
+  top: 0.78em;
+  width: 6px; height: 6px;
+  border-radius: 9999px;
+  background: var(--primary);
+}
+.prose-blog ol { list-style: decimal; }
+
+.prose-blog blockquote {
+  margin: 2rem 0;
+  padding: 0.4rem 0 0.4rem 1.3rem;
+  border-inline-start: 3px solid var(--primary);
+  font-size: 1.3rem;
+  font-style: italic;
+  line-height: 1.6;
+  color: var(--text-primary);
+}
+
+.prose-blog :not(pre) > code {
+  font-family: var(--font-mono, ui-monospace, "SFMono-Regular", Menlo, monospace);
+  font-size: 0.86em;
+  padding: 0.15em 0.4em;
+  border-radius: 6px;
+  background: var(--bg-elevated);
+  color: var(--primary);
+  border: 1px solid var(--border);
+}
+
+.prose-blog pre {
+  direction: ltr;
+  text-align: left;
+  margin: 2rem 0;
+  padding: 1.15rem 1.25rem;
+  border-radius: 14px;
+  overflow-x: auto;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  font-size: 0.9rem;
+  line-height: 1.7;
+}
+.prose-blog pre code {
+  font-family: var(--font-mono, ui-monospace, "SFMono-Regular", Menlo, monospace);
+  color: var(--text-primary);
+  background: none;
+  border: none;
+  padding: 0;
+}
+
+.prose-blog .table-wrap {
+  direction: ltr;
+  margin: 2rem 0;
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+.prose-blog table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
+.prose-blog thead { background: color-mix(in srgb, var(--primary) 10%, transparent); }
+.prose-blog th {
+  text-align: left;
+  font-weight: 650;
+  color: var(--text-primary);
+  padding: 0.7rem 1rem;
+  white-space: nowrap;
+}
+.prose-blog td {
+  padding: 0.7rem 1rem;
+  border-top: 1px solid var(--border);
+  color: var(--text-secondary);
+}
+
+.prose-blog img {
+  width: 100%;
+  height: auto;
+  border-radius: 14px;
+  margin: 2rem 0;
+  border: 1px solid var(--border);
+}
+
+.prose-blog hr {
+  border: none;
+  text-align: center;
+  margin: 3rem 0;
+}
+.prose-blog hr::before {
+  content: "• • •";
+  letter-spacing: 0.6em;
+  color: var(--text-muted);
+  font-size: 1rem;
 }

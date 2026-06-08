@@ -1,33 +1,87 @@
 <!DOCTYPE html>
 <html lang="en">
-<head><meta charset="UTF-8"/><title>Breakout — DQN AI</title><link rel="stylesheet" href="css/style.css"/></head>
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Breakout — DQN AI v3</title>
+  <link rel="stylesheet" href="css/style.css"/>
+</head>
 <body>
+
 <div id="top-bar">
-  <div class="stat"><span class="stat-label">EPISODE</span><span class="stat-val" id="s-ep">1</span></div>
-  <div class="sep"></div>
-  <div class="stat"><span class="stat-label">SCORE</span><span class="stat-val" id="s-score">0</span></div>
-  <div class="sep"></div>
-  <div class="stat"><span class="stat-label">BEST</span><span class="stat-val" id="s-best">0</span></div>
-  <div class="sep"></div>
-  <div class="stat"><span class="stat-label">EPSILON</span><span class="stat-val" id="s-eps">1.00</span></div>
+  <div class="brand">DQN <span>BREAKOUT</span></div>
+
+  <div class="stat-group">
+    <div class="stat">
+      <span class="stat-label">EPISODE</span>
+      <span class="stat-val" id="s-ep">1</span>
+    </div>
+    <div class="sep"></div>
+    <div class="stat">
+      <span class="stat-label">SCORE</span>
+      <span class="stat-val" id="s-score">0</span>
+    </div>
+    <div class="sep"></div>
+    <div class="stat">
+      <span class="stat-label">BEST</span>
+      <span class="stat-val" id="s-best">0</span>
+    </div>
+    <div class="sep"></div>
+    <div class="stat">
+      <span class="stat-label">EPSILON</span>
+      <span class="stat-val" id="s-eps">1.000</span>
+    </div>
+    <div class="sep"></div>
+    <div class="stat">
+      <span class="stat-label">STEPS</span>
+      <span class="stat-val" id="s-steps">0</span>
+    </div>
+    <div class="sep"></div>
+    <div class="stat">
+      <span class="stat-label">75%+ RUNS</span>
+      <span class="stat-val" id="s-grad" style="color:#00ff88">0/4</span>
+    </div>
+  </div>
+
   <div id="speed-wrap">
-    <label>SPEED</label>
+    <label for="speed">SPEED</label>
     <input type="range" id="speed" min="1" max="20" value="4" step="1"/>
     <span id="speed-val">4x</span>
   </div>
 </div>
+
 <div id="main">
-  <div id="game-wrap"><canvas id="game-canvas"></canvas></div>
+
+  <div id="game-wrap">
+    <canvas id="game-canvas" width="280" height="400"></canvas>
+  </div>
+
   <div id="side-wrap">
-    <canvas id="q-canvas"></canvas>
-    <canvas id="eps-canvas"></canvas>
-    <canvas id="nn-canvas"></canvas>
+
+    <div class="side-card" id="q-card">
+      <div class="card-label">Q-VALUES</div>
+      <canvas id="q-canvas"></canvas>
+    </div>
+
+    <div class="side-card" id="eps-card">
+      <div class="card-label">ε DECAY &amp; SCORE HISTORY</div>
+      <canvas id="eps-canvas"></canvas>
+    </div>
+
+    <div class="side-card" id="nn-card">
+      <div class="card-label">NETWORK  <span class="arch-tag">16 → 128 → 64 → 3</span></div>
+      <canvas id="nn-canvas"></canvas>
+    </div>
+
   </div>
 </div>
+
+<div id="hint">[P] / [SPACE] &nbsp;PAUSE</div>
+
 <script src="js/pause.js"></script>
 <script src="js/dqn.js"></script>
 <script src="js/nn-draw.js"></script>
 <script src="js/main.js"></script>
-<div style="position:fixed;bottom:10px;right:14px;font-family:Courier New,monospace;font-size:9px;color:#0f2010;letter-spacing:2px;z-index:100;pointer-events:none">[P] / [SPACE] PAUSE</div>
+
 </body>
 </html>

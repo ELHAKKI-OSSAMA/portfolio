@@ -13,8 +13,14 @@ export interface ProjectResult {
 export interface Project {
   id: string;
   title: string;
+  titleFr?: string;
+  titleAr?: string;
   description: string;
+  descriptionFr?: string;
+  descriptionAr?: string;
   longDescription?: string;
+  longDescriptionFr?: string;
+  longDescriptionAr?: string;
   category: ProjectCategory[];
   tags: string[];
   kaggleUrl?: string;
@@ -22,7 +28,11 @@ export interface Project {
   featured: boolean;
   metrics?: string;
   dataset?: string;
+  datasetFr?: string;
+  datasetAr?: string;
   results?: ProjectResult[];
   techStack?: string[];
   approach?: string;
+  approachFr?: string;
+  approachAr?: string;
 }

@@ -5,11 +5,16 @@
 <div id="top-bar">
   <div class="stat"><span class="stat-label">GEN</span><span class="stat-val" id="s-gen">1</span></div>
   <div class="sep"></div>
-  <div class="stat"><span class="stat-label">ALIVE</span><span class="stat-val" id="s-alive">30</span></div>
+  <div class="stat"><span class="stat-label">ALIVE</span><span class="stat-val" id="s-alive">100</span></div>
   <div class="sep"></div>
-  <div class="stat"><span class="stat-label">BEST FRAMES</span><span class="stat-val" id="s-best">0</span></div>
+  <div class="stat"><span class="stat-label">BEST TIME</span><span class="stat-val" id="s-best">0.0s</span></div>
   <div class="sep"></div>
   <div class="stat"><span class="stat-label">SPECIES</span><span class="stat-val" id="s-sp">1</span></div>
+  <div class="sep"></div>
+  <div class="stat" id="milestone-stat">
+    <span class="stat-label">MILESTONE</span>
+    <span class="stat-val" id="s-milestone">—</span>
+  </div>
   <div id="speed-wrap">
     <label>SPEED</label>
     <input type="range" id="speed" min="1" max="10" value="2" step="1"/>
@@ -24,6 +29,31 @@
 <script src="js/neat.js"></script>
 <script src="js/nn-draw.js"></script>
 <script src="js/main.js"></script>
+<script>
+(function(){
+  const milestones=[
+    {secs:2000,label:'2000s 👑',color:'#ffffff'},
+    {secs:1000,label:'1000s 🏆',color:'#ffcc00'},
+    {secs:500, label:'500s  🔥',color:'#ff8844'},
+    {secs:300, label:'300s  ⚡',color:'#ff44cc'},
+    {secs:200, label:'200s  💫',color:'#4488ff'},
+    {secs:120, label:'120s  ✓', color:'#00ff88'},
+    {secs:40,  label:'40s   ·', color:'#669966'},
+  ];
+  const el=document.getElementById('s-milestone');
+  const orig=document.getElementById('s-best');
+  new MutationObserver(()=>{
+    const txt=orig.textContent||'';
+    const secs=parseFloat(txt);
+    if(!isNaN(secs)){
+      let hit=null;
+      for(const m of milestones){if(secs>=m.secs){hit=m;break;}}
+      if(hit){el.textContent=hit.label;el.style.color=hit.color;}
+      else{el.textContent='—';el.style.color='';}
+    }
+  }).observe(orig,{childList:true,characterData:true,subtree:true});
+})();
+</script>
 <div style="position:fixed;bottom:10px;right:14px;font-family:Courier New,monospace;font-size:9px;color:#0f2010;letter-spacing:2px;z-index:100;pointer-events:none">[P] / [SPACE] PAUSE</div>
 </body>
 </html>

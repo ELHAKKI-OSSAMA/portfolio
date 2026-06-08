@@ -1,17 +1,20 @@
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import Link from "next/link";
-import { Download, MapPin, Globe, Cpu, ArrowRight, Award, Briefcase, GraduationCap } from "lucide-react";
+import { Download, MapPin, Globe, Cpu, ArrowRight, Award, Briefcase, GraduationCap, BrainCircuit, Gamepad2, BookOpen } from "lucide-react";
 import { GithubIcon, LinkedInIcon, KaggleIcon } from "@/components/ui/SocialIcons";
+import { buildMetadata, pick } from "@/lib/seo";
 import {
   GITHUB_URL,
   LINKEDIN_URL,
   KAGGLE_URL,
   PERSON,
+  SITE_URL,
   experience,
   education,
   certifications,
 } from "@/lib/data";
+import { ProfilePageSchema, BreadcrumbSchema } from "@/components/seo/JsonLd";
 
 export async function generateMetadata({
   params,
@@ -19,31 +22,28 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
   const { locale } = await params;
-  return {
-    title: "About Ossama Elhakki | AI Engineer Morocco",
-    description:
-      "Learn about Ossama Elhakki — AI Engineer with Master's in Distributed Systems & AI from ENSET Morocco. 36+ ML projects, expertise in computer vision, NLP, and AI automation.",
-    alternates: {
-      canonical: `https://ismmax.com/${locale}/about`,
-      languages: {
-        en: "https://ismmax.com/en/about",
-        fr: "https://ismmax.com/fr/about",
-        ar: "https://ismmax.com/ar/about",
-      },
-    },
-    openGraph: {
-      title: "About Ossama Elhakki | AI Engineer",
-      description: "AI Engineer from Morocco with Master's in AI, 36+ Kaggle projects, production ML experience.",
-      type: "profile",
-      url: `https://ismmax.com/${locale}/about`,
-    },
-  };
+  return buildMetadata({
+    locale,
+    path: "/about",
+    type: "profile",
+    title: pick(locale, {
+      en: "About Ossama Elhakki — AI Engineer in Morocco",
+      fr: "À propos d'Ossama Elhakki — Ingénieur IA au Maroc",
+      ar: "نبذة عن أسامة الحقّي — مهندس ذكاء اصطناعي في المغرب",
+    }),
+    description: pick(locale, {
+      en: "Ossama Elhakki — AI Engineer with a Master's in Distributed Systems & AI from ENSET Morocco. 42+ ML projects across computer vision, NLP, generative AI, and AI automation.",
+      fr: "Ossama Elhakki — Ingénieur IA titulaire d'un Master en Systèmes Distribués & IA de l'ENSET Maroc. Plus de 42 projets ML en vision par ordinateur, NLP, IA générative et automatisation IA.",
+      ar: "أسامة الحقّي — مهندس ذكاء اصطناعي حاصل على ماجستير في الأنظمة الموزعة والذكاء الاصطناعي من ENSET المغرب. أكثر من 42 مشروع تعلم آلي في رؤية الحاسوب ومعالجة اللغات والذكاء التوليدي والأتمتة.",
+    }),
+    keywords: ["Ossama Elhakki", "AI engineer Morocco", "data scientist", "ENSET", "machine learning portfolio"],
+  });
 }
 
 const langs = [
-  { name: "Arabic", native: "العربية", level: "Native", flag: "🇲🇦" },
-  { name: "French", native: "Français", level: "Fluent", flag: "🇫🇷" },
-  { name: "English", native: "English", level: "Professional", flag: "🇬🇧" },
+  { nameKey: "lang_arabic", nativeKey: "lang_arabic_native", levelKey: "level_native", flag: "🇲🇦" },
+  { nameKey: "lang_french", nativeKey: "lang_french_native", levelKey: "level_fluent", flag: "🇫🇷" },
+  { nameKey: "lang_english", nativeKey: "lang_english", levelKey: "level_professional", flag: "🇬🇧" },
 ];
 
 export default async function AboutPage({
@@ -62,11 +62,25 @@ export default async function AboutPage({
       ? PERSON.descriptionAr
       : PERSON.description;
 
+  const highlights = [
+    { icon: BrainCircuit, value: "42+", label: locale === "fr" ? "Projets ML" : locale === "ar" ? "مشروع ذكاء اصطناعي" : "ML Projects",       color: "#6c63ff" },
+    { icon: BookOpen,     value: "34",  label: locale === "fr" ? "Sujets appris" : locale === "ar" ? "موضوع تعليمي" : "Learning Topics",       color: "#f59e0b" },
+    { icon: Gamepad2,     value: "10",  label: locale === "fr" ? "Jeux IA" : locale === "ar" ? "ألعاب ذكاء اصطناعي" : "AI Games Built",        color: "#ff6b6b" },
+    { icon: Award,        value: "10+", label: locale === "fr" ? "Domaines ML" : locale === "ar" ? "مجالات التعلم الآلي" : "ML Domains",        color: "#8b5cf6" },
+  ];
+
   return (
     <div className="min-h-screen pt-24 section-padding">
+      <ProfilePageSchema url={`${SITE_URL}/${locale}/about`} />
+      <BreadcrumbSchema
+        items={[
+          { name: pick(locale, { en: "Home", fr: "Accueil", ar: "الرئيسية" }), url: `${SITE_URL}/${locale}` },
+          { name: t("title"), url: `${SITE_URL}/${locale}/about` },
+        ]}
+      />
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="text-center mb-16">
+        <div className="text-center mb-10">
           <h1
             className="text-4xl sm:text-5xl font-bold mb-4"
             style={{ color: "var(--text-primary)" }}
@@ -76,6 +90,25 @@ export default async function AboutPage({
           <p className="max-w-xl mx-auto" style={{ color: "var(--text-secondary)" }}>
             {t("subtitle")}
           </p>
+        </div>
+
+        {/* Key numbers highlight bar */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-12">
+          {highlights.map((h) => (
+            <div
+              key={h.label}
+              className="flex items-center gap-3 p-4 rounded-2xl border"
+              style={{ backgroundColor: "var(--bg-card)", borderColor: "var(--border)" }}
+            >
+              <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: `${h.color}20` }}>
+                <h.icon size={17} style={{ color: h.color }} />
+              </div>
+              <div>
+                <div className="text-xl font-bold leading-none" style={{ color: h.color }}>{h.value}</div>
+                <div className="text-xs mt-0.5 leading-tight" style={{ color: "var(--text-muted)" }}>{h.label}</div>
+              </div>
+            </div>
+          ))}
         </div>
 
         {/* Profile card */}
@@ -107,7 +140,7 @@ export default async function AboutPage({
                 style={{ color: "var(--text-secondary)" }}
               >
                 <MapPin size={13} />
-                Morocco 🇲🇦
+                {t("location")}
               </div>
 
               {/* Languages */}
@@ -117,18 +150,18 @@ export default async function AboutPage({
                   style={{ color: "var(--text-secondary)" }}
                 >
                   <Globe size={13} />
-                  Languages
+                  {t("languages_label")}
                 </div>
                 {langs.map((l) => (
                   <div
-                    key={l.name}
+                    key={l.nameKey}
                     className="flex items-center justify-between text-sm py-1.5"
                   >
                     <span style={{ color: "var(--text-secondary)" }}>
-                      {l.flag} {l.name}
+                      {l.flag} {t(l.nameKey as Parameters<typeof t>[0])}
                     </span>
                     <span className="text-xs" style={{ color: "var(--text-muted)" }}>
-                      {l.level}
+                      {t(l.levelKey as Parameters<typeof t>[0])}
                     </span>
                   </div>
                 ))}
@@ -186,7 +219,7 @@ export default async function AboutPage({
               style={{ color: "var(--primary)" }}
             >
               <Cpu size={16} />
-              AI Engineer & Data Scientist
+              {t("bio_title")}
             </div>
             <p className="leading-relaxed mb-4" style={{ color: "var(--text-secondary)" }}>
               {description}
@@ -211,7 +244,7 @@ export default async function AboutPage({
                 }}
               >
                 <ArrowRight size={15} />
-                Hire Me
+                {t("hire_me")}
               </Link>
             </div>
           </div>
@@ -238,7 +271,7 @@ export default async function AboutPage({
                     {locale === "ar" ? exp.roleAr : locale === "fr" ? exp.roleFr : exp.role}
                   </h3>
                   <p className="text-sm font-medium" style={{ color: "var(--primary)" }}>
-                    {exp.company} · {exp.location}
+                    {exp.company} · {locale === "ar" ? exp.locationAr : locale === "fr" ? exp.locationFr : exp.location}
                   </p>
                 </div>
                 <span
@@ -252,7 +285,7 @@ export default async function AboutPage({
                 </span>
               </div>
               <ul className="space-y-1.5">
-                {(locale === "fr" ? exp.achievementsFr : exp.achievements).map((a, i) => (
+                {(locale === "fr" ? exp.achievementsFr : locale === "ar" ? exp.achievementsAr : exp.achievements).map((a, i) => (
                   <li
                     key={i}
                     className="flex items-start gap-2 text-sm"
@@ -309,10 +342,10 @@ export default async function AboutPage({
                         : edu.degree}
                     </h3>
                     <p className="text-sm" style={{ color: "var(--text-secondary)" }}>
-                      {edu.institution} · {edu.location}
+                      {locale === "ar" ? edu.institutionAr : edu.institution} · {locale === "ar" ? edu.locationAr : edu.location}
                     </p>
                     <p className="text-xs mt-1" style={{ color: "var(--text-muted)" }}>
-                      {edu.grade}
+                      {locale === "ar" ? edu.gradeAr : locale === "fr" ? edu.gradeFr : edu.grade}
                     </p>
                   </div>
                   <span
@@ -337,7 +370,7 @@ export default async function AboutPage({
             style={{ color: "var(--text-primary)" }}
           >
             <Award size={22} style={{ color: "#f59e0b" }} />
-            Certifications
+            {t("certifications")}
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {certifications.map((cert) => (
@@ -354,7 +387,7 @@ export default async function AboutPage({
                 </p>
                 {cert.desc && (
                   <p className="text-xs mt-1 leading-relaxed" style={{ color: "var(--text-muted)" }}>
-                    {cert.desc}
+                    {locale === "ar" ? cert.descAr : locale === "fr" ? cert.descFr : cert.desc}
                   </p>
                 )}
               </div>

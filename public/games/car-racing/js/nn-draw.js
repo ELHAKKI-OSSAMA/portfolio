@@ -5,7 +5,7 @@ const ACCENT='#ffcc00';
 const LAYER_COLORS=[ACCENT,'#44aaff',ACCENT];
 const INPUT_LABELS=['r0','r1','r2','r3','r4','r5','r6','r7','spd'];
 const OUTPUT_LABELS=['TurnL','TurnR','Gas'];
-function resize(){canvas.width=canvas.parentElement.clientWidth;canvas.height=Math.floor(canvas.parentElement.clientHeight/3);}
+function resize(){const tb=document.getElementById('top-bar');const h=Math.max(1,window.innerHeight-(tb?tb.offsetHeight:36));canvas.width=260;canvas.height=Math.floor(h/3);}
 function draw(car){
   const W=canvas.width,H=canvas.height;
   ctx.clearRect(0,0,W,H);
