@@ -80,18 +80,7 @@ export default function ServicesPage() {
                     {t(service.descKey as keyof typeof t)}
                   </p>
 
-                  {/* Price — hidden on the French site */}
-                  {locale !== "fr" && (
-                    <div className="flex items-end gap-1 mb-6">
-                      <span className="text-sm" style={{ color: "var(--text-primary)" }}>$</span>
-                      <span className="text-4xl font-bold" style={{ color: "var(--text-primary)" }}>
-                        {service.price}
-                      </span>
-                      <span className="text-sm mb-1" style={{ color: "var(--text-secondary)" }}>
-                        {t(service.priceType as keyof typeof t)}
-                      </span>
-                    </div>
-                  )}
+                  {/* Price removed — quoted per project after scoping */}
 
                   {/* CTA */}
                   <Link
