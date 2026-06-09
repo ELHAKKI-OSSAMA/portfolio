@@ -34,9 +34,11 @@ const nextConfig: NextConfig = {
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "img-src 'self' data: blob: https:",
       "font-src 'self' data: https://fonts.gstatic.com",
+      "media-src 'self' blob:",
       "connect-src 'self' https://cdn.jsdelivr.net https://www.google-analytics.com https://region1.google-analytics.com https://plausible.io",
       "worker-src 'self' blob:",
-      "frame-src 'self'",
+      // YouTube embeds in the learning topic video panels.
+      "frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com",
       "frame-ancestors 'self'",
       "base-uri 'self'",
       "form-action 'self'",
