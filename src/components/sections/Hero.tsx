@@ -126,7 +126,7 @@ export default function Hero() {
           </a>
           <span style={{ color: "var(--border)" }}>•</span>
           <a
-            href="/cv/ossama_elhakki_resume_ai_engineer.pdf"
+            href={locale === "fr" ? "/cv/ossama_elhakki_cv_fr.pdf" : "/cv/ossama_elhakki_resume_ai_engineer.pdf"}
             className="flex items-center gap-2 text-sm transition-colors"
             style={{ color: "var(--text-secondary)" }}
             download
