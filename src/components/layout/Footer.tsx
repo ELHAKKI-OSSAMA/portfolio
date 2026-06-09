@@ -64,7 +64,7 @@ export default function Footer() {
 
           {/* Brand + bio */}
           <div className="sm:col-span-2 lg:col-span-1">
-            <div className="text-xl font-bold gradient-text mb-3">Ossama.dev</div>
+            <div className="text-xl font-bold gradient-text mb-3">ossamaelhakki.com</div>
             <p className="text-sm leading-relaxed mb-4" style={{ color: "var(--text-secondary)" }}>
               {t("footer.brand_desc")}
             </p>

@@ -56,7 +56,7 @@ export default function Navbar() {
             href={`/${locale}`}
             className="text-xl font-bold gradient-text hover:opacity-80 transition-opacity"
           >
-            Ossama.dev
+            ossamaelhakki.com
           </Link>
 
           {/* Desktop nav */}

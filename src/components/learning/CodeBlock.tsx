@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { Copy, Check, Play } from "lucide-react";
-import { useVizTheme } from "@/hooks/useVizTheme";
 
 interface Props {
   code: string;
@@ -10,35 +9,64 @@ interface Props {
   accentColor?: string;
 }
 
-function highlight(code: string, lang: string): string {
-  if (lang !== "python") return escHtml(code);
-
-  const keywords  = /\b(import|from|def|class|return|for|in|if|else|elif|while|with|as|not|and|or|True|False|None|pass|break|continue|yield|lambda|self|super|print|range|len|zip|enumerate|type|isinstance|try|except|raise|finally|async|await)\b/g;
-  const builtins  = /\b(str|int|float|list|dict|set|tuple|bool|np|pd|torch|nn|F|optim|plt|sns|lgb|xgb|cb)\b/g;
-  const strings   = /("""[\s\S]*?"""|'''[\s\S]*?'''|"[^"\\]*(?:\\.[^"\\]*)*"|'[^'\\]*(?:\\.[^'\\]*)*')/g;
-  const comments  = /(#[^\n]*)/g;
-  const numbers   = /\b(\d+\.?\d*(?:e[+-]?\d+)?)\b/g;
-  const decorators= /(@\w+)/g;
-  const skClass   = /\b(sklearn|Pipeline|ColumnTransformer|StandardScaler|MinMaxScaler|RobustScaler|OneHotEncoder|OrdinalEncoder|SimpleImputer|IterativeImputer|KMeans|DBSCAN|PCA|IsolationForest|RandomForestClassifier|RandomForestRegressor|GradientBoostingClassifier|LogisticRegression|LinearRegression|SVC|SVR|KNeighborsClassifier|MultinomialNB|GaussianNB|ComplementNB|TfidfVectorizer|GridSearchCV|RandomizedSearchCV|cross_val_score|train_test_split|TimeSeriesSplit|SelectFromModel)\b/g;
-
-  let result = escHtml(code);
-  result = result.replace(strings,   '<span class="tok-str">$1</span>');
-  result = result.replace(comments,  '<span class="tok-comment">$1</span>');
-  result = result.replace(numbers,   '<span class="tok-num">$1</span>');
-  result = result.replace(decorators,'<span class="tok-dec">$1</span>');
-  result = result.replace(keywords,  '<span class="tok-kw">$1</span>');
-  result = result.replace(skClass,   '<span class="tok-sk">$1</span>');
-  result = result.replace(builtins,  '<span class="tok-builtin">$1</span>');
-  return result;
-}
-
 function escHtml(s: string) {
   return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
+const PY_KEYWORDS = new Set([
+  "import","from","def","class","return","for","in","if","else","elif","while",
+  "with","as","not","and","or","True","False","None","pass","break","continue",
+  "yield","lambda","self","super","print","range","len","zip","enumerate","type",
+  "isinstance","try","except","raise","finally","async","await",
+]);
+const PY_BUILTINS = new Set([
+  "str","int","float","list","dict","set","tuple","bool","np","pd","torch","nn",
+  "F","optim","plt","sns","lgb","xgb","cb",
+]);
+const PY_SK = new Set([
+  "sklearn","Pipeline","ColumnTransformer","StandardScaler","MinMaxScaler",
+  "RobustScaler","OneHotEncoder","OrdinalEncoder","SimpleImputer","IterativeImputer",
+  "KMeans","DBSCAN","PCA","IsolationForest","RandomForestClassifier",
+  "RandomForestRegressor","GradientBoostingClassifier","LogisticRegression",
+  "LinearRegression","SVC","SVR","KNeighborsClassifier","MultinomialNB","GaussianNB",
+  "ComplementNB","TfidfVectorizer","GridSearchCV","RandomizedSearchCV",
+  "cross_val_score","train_test_split","TimeSeriesSplit","SelectFromModel",
+]);
+
+// Single-pass tokenizer. Each token is matched exactly once and its inner text is
+// escaped — so keywords inside comments/strings (or "str" inside a generated class
+// name) are never re-tokenized. This fixes the nested-span corruption.
+const TOKEN =
+  /("""[\s\S]*?"""|'''[\s\S]*?'''|"[^"\\]*(?:\\.[^"\\]*)*"|'[^'\\]*(?:\\.[^'\\]*)*')|(#[^\n]*)|(@\w+)|(\d+\.?\d*(?:[eE][+-]?\d+)?)|([A-Za-z_]\w*)/g;
+
+function highlight(code: string, lang: string): string {
+  if (lang !== "python") return escHtml(code);
+
+  let out = "";
+  let last = 0;
+  let m: RegExpExecArray | null;
+  TOKEN.lastIndex = 0;
+  while ((m = TOKEN.exec(code)) !== null) {
+    out += escHtml(code.slice(last, m.index));
+    last = TOKEN.lastIndex;
+    const [, str, comment, dec, num, word] = m;
+    if (str !== undefined) out += `<span class="tok-str">${escHtml(str)}</span>`;
+    else if (comment !== undefined) out += `<span class="tok-comment">${escHtml(comment)}</span>`;
+    else if (dec !== undefined) out += `<span class="tok-dec">${escHtml(dec)}</span>`;
+    else if (num !== undefined) out += `<span class="tok-num">${escHtml(num)}</span>`;
+    else if (word !== undefined) {
+      if (PY_KEYWORDS.has(word)) out += `<span class="tok-kw">${word}</span>`;
+      else if (PY_SK.has(word)) out += `<span class="tok-sk">${word}</span>`;
+      else if (PY_BUILTINS.has(word)) out += `<span class="tok-builtin">${word}</span>`;
+      else out += escHtml(word);
+    }
+  }
+  out += escHtml(code.slice(last));
+  return out;
+}
+
 /** Encode code as a Colab-compatible ipynb data URI, then open in Colab */
 function openInColab(code: string) {
-  // Build a minimal Jupyter notebook JSON with one code cell
   const nb = {
     nbformat: 4,
     nbformat_minor: 5,
@@ -64,10 +92,7 @@ function openInColab(code: string) {
     ],
   };
 
-  const json = JSON.stringify(nb);
-  const b64  = btoa(unescape(encodeURIComponent(json)));
-  // Colab can open a gist or GitHub file — we use the 'notebook' URL param via a data URI approach
-  // Fallback: copy to clipboard and open blank Colab
+  void JSON.stringify(nb); // (kept for future data-URI flow)
   navigator.clipboard
     .writeText(code)
     .catch(() => {})
@@ -77,9 +102,8 @@ function openInColab(code: string) {
 }
 
 export default function CodeBlock({ code, language = "python", accentColor = "#6c63ff" }: Props) {
-  const [copied,  setCopied]  = useState(false);
+  const [copied, setCopied] = useState(false);
   const [colabMsg, setColabMsg] = useState(false);
-  const vt = useVizTheme();
 
   const handleCopy = () => {
     navigator.clipboard.writeText(code).then(() => {
@@ -95,45 +119,36 @@ export default function CodeBlock({ code, language = "python", accentColor = "#6
   };
 
   const highlighted = highlight(code, language);
-  const lineCount   = code.split("\n").length;
+  const lineCount = code.split("\n").length;
 
   return (
-    <div className="my-6 rounded-2xl overflow-hidden"
-      style={{ backgroundColor: vt.codeBg, border:`1px solid ${vt.codeBorder}` }}>
-
+    <div className="cb-card my-6 rounded-2xl overflow-hidden border">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-2.5 border-b"
-        style={{ borderColor: vt.codeHeaderBorder }}>
+      <div className="cb-head flex items-center justify-between px-4 py-2.5 border-b">
         <div className="flex items-center gap-2">
           <span className="px-2 py-0.5 rounded text-xs font-mono font-semibold"
-            style={{ backgroundColor:`${accentColor}20`, color:accentColor }}>
+            style={{ backgroundColor: `${accentColor}20`, color: accentColor }}>
             {language}
           </span>
-          <span className="text-xs" style={{ color: vt.textFaint }}>
+          <span className="cb-faint text-xs">
             {lineCount} line{lineCount !== 1 ? "s" : ""}
           </span>
         </div>
 
         <div className="flex items-center gap-1.5">
-          {/* Open in Colab (Python only) */}
           {language === "python" && (
             <button onClick={handleColab}
-              className="flex items-center gap-1 text-xs px-2.5 py-1 rounded transition-all"
-              style={{
-                color: colabMsg ? "#f97316" : vt.textMuted,
-                backgroundColor: colabMsg ? "#f9731615" : vt.surface,
-                border: `1px solid ${colabMsg ? "#f9731640" : "transparent"}`,
-              }}
+              className="cb-btn flex items-center gap-1 text-xs px-2.5 py-1 rounded transition-all"
+              style={colabMsg ? { color: "#f97316", backgroundColor: "#f9731615", borderColor: "#f9731640" } : undefined}
               title="Code copied to clipboard — paste in the new Colab notebook">
               <Play size={11} />
               {colabMsg ? "Paste in Colab ↗" : "Run in Colab"}
             </button>
           )}
 
-          {/* Copy button */}
           <button onClick={handleCopy}
-            className="flex items-center gap-1.5 text-xs transition-opacity hover:opacity-70 px-2 py-1 rounded"
-            style={{ color: copied ? "#10b981" : vt.copyColor, backgroundColor: vt.surface }}>
+            className="cb-btn flex items-center gap-1.5 text-xs transition-opacity hover:opacity-70 px-2 py-1 rounded"
+            style={copied ? { color: "#10b981" } : undefined}>
             {copied ? <Check size={12} /> : <Copy size={12} />}
             {copied ? "Copied!" : "Copy"}
           </button>
@@ -143,36 +158,47 @@ export default function CodeBlock({ code, language = "python", accentColor = "#6
       {/* Colab hint banner */}
       {colabMsg && (
         <div className="px-4 py-2 text-xs border-b flex items-center gap-2"
-          style={{ backgroundColor:"#f9731610", borderColor:"#f9731630", color:"#f97316" }}>
+          style={{ backgroundColor: "#f9731610", borderColor: "#f9731630", color: "#f97316" }}>
           <Play size={11} />
-          Code copied! A new Colab notebook opened — press <kbd className="px-1 py-0.5 rounded font-mono mx-1" style={{ backgroundColor:"#f9731620" }}>Ctrl+V</kbd> to paste, then <kbd className="px-1 py-0.5 rounded font-mono mx-1" style={{ backgroundColor:"#f9731620" }}>Shift+Enter</kbd> to run.
+          Code copied! A new Colab notebook opened — press <kbd className="px-1 py-0.5 rounded font-mono mx-1" style={{ backgroundColor: "#f9731620" }}>Ctrl+V</kbd> to paste, then <kbd className="px-1 py-0.5 rounded font-mono mx-1" style={{ backgroundColor: "#f9731620" }}>Shift+Enter</kbd> to run.
         </div>
       )}
 
       {/* Code — always LTR regardless of page language */}
       <div className="overflow-x-auto" dir="ltr">
-        <pre className="p-5 text-xs leading-relaxed font-mono"
-          style={{ color: vt.codeText, margin: 0, direction: "ltr", textAlign: "left" }}
+        <pre className="cb-pre p-5 text-xs leading-relaxed font-mono"
+          style={{ margin: 0, direction: "ltr", textAlign: "left" }}
           dangerouslySetInnerHTML={{ __html: highlighted }} />
       </div>
 
-      {/* Syntax highlighting CSS */}
+      {/* Theme-driven styling — keyed off [data-theme] on <html> so it matches the
+          theme before React hydrates (no SSR/client mismatch). Base = dark. */}
       <style>{`
-        [data-theme="dark"] .tok-kw      { color: #ff7b72; }
-        [data-theme="dark"] .tok-str     { color: #a5d6ff; }
-        [data-theme="dark"] .tok-num     { color: #79c0ff; }
-        [data-theme="dark"] .tok-comment { color: #8b949e; font-style: italic; }
-        [data-theme="dark"] .tok-dec     { color: #ffa657; }
-        [data-theme="dark"] .tok-builtin { color: #d2a8ff; }
-        [data-theme="dark"] .tok-sk      { color: #7ee787; }
+        .cb-card { background:#0d1117; border-color:rgba(255,255,255,0.08); }
+        .cb-head { border-color:rgba(255,255,255,0.06); }
+        .cb-faint { color:rgba(255,255,255,0.4); }
+        .cb-btn { color:rgba(255,255,255,0.5); background-color:rgba(255,255,255,0.05); border:1px solid transparent; }
+        .cb-pre { color:#e6edf3; }
+        .tok-kw { color:#ff7b72; }
+        .tok-str { color:#a5d6ff; }
+        .tok-num { color:#79c0ff; }
+        .tok-comment { color:#8b949e; font-style:italic; }
+        .tok-dec { color:#ffa657; }
+        .tok-builtin { color:#d2a8ff; }
+        .tok-sk { color:#7ee787; }
 
-        [data-theme="light"] .tok-kw      { color: #cf222e; }
-        [data-theme="light"] .tok-str     { color: #0550ae; }
-        [data-theme="light"] .tok-num     { color: #0a3069; }
-        [data-theme="light"] .tok-comment { color: #6e7781; font-style: italic; }
-        [data-theme="light"] .tok-dec     { color: #953800; }
-        [data-theme="light"] .tok-builtin { color: #8250df; }
-        [data-theme="light"] .tok-sk      { color: #116329; }
+        [data-theme="light"] .cb-card { background:#f6f8fa; border-color:rgba(0,0,0,0.12); }
+        [data-theme="light"] .cb-head { border-color:rgba(0,0,0,0.08); }
+        [data-theme="light"] .cb-faint { color:rgba(0,0,0,0.4); }
+        [data-theme="light"] .cb-btn { color:rgba(0,0,0,0.5); background-color:rgba(0,0,0,0.04); }
+        [data-theme="light"] .cb-pre { color:#24292f; }
+        [data-theme="light"] .tok-kw { color:#cf222e; }
+        [data-theme="light"] .tok-str { color:#0550ae; }
+        [data-theme="light"] .tok-num { color:#0a3069; }
+        [data-theme="light"] .tok-comment { color:#6e7781; font-style:italic; }
+        [data-theme="light"] .tok-dec { color:#953800; }
+        [data-theme="light"] .tok-builtin { color:#8250df; }
+        [data-theme="light"] .tok-sk { color:#116329; }
       `}</style>
     </div>
   );
