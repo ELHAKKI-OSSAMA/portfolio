@@ -29,8 +29,11 @@ export default function robots(): MetadataRoute.Robots {
     rules: [
       {
         userAgent: "*",
-        allow: "/",
-        disallow: ["/api/", "/_next/"],
+        // Allow /_next/ (static JS/CSS/fonts + the /_next/image optimizer):
+        // Google needs these to render pages and index images. Only the OG
+        // image endpoint is exposed under /api/; the rest of /api/ stays blocked.
+        allow: ["/", "/api/og"],
+        disallow: ["/api/"],
       },
       // Explicitly allow each AI crawler full access to public content.
       ...AI_BOTS.map((bot) => ({
