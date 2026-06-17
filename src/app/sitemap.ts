@@ -17,10 +17,14 @@ function entriesFor(
   path: string,
   opts: { changeFrequency?: Entry["changeFrequency"]; priority?: number; lastModified?: Date } = {}
 ): MetadataRoute.Sitemap {
-  const { changeFrequency = "monthly", priority = 0.8, lastModified = new Date() } = opts;
+  const { changeFrequency = "monthly", priority = 0.8, lastModified } = opts;
+  // Only emit <lastmod> when we have a real content date (e.g. blog publish
+  // date). Stamping `new Date()` on every deploy makes every URL look freshly
+  // modified each build, which teaches Google to distrust our lastmod signal
+  // site-wide and wastes crawl budget re-checking unchanged pages.
   return locales.map((locale) => ({
     url: `${SITE_URL}/${locale}${path}`,
-    lastModified,
+    ...(lastModified ? { lastModified } : {}),
     changeFrequency,
     priority,
     alternates: alternatesFor(path),
