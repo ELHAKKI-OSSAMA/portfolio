@@ -10,19 +10,7 @@ import { projects, type ProjectCategory } from "@/lib/data";
 import { projectImages } from "@/lib/data/projects/images";
 import HireCTA from "@/components/sections/HireCTA";
 import { accentInk } from "@/lib/a11yColor";
-
-const categoryColors: Record<string, string> = {
-  fraud:      "#ff6b6b",
-  cv:         "#6c63ff",
-  nlp:        "#00d4aa",
-  medical:    "#f59e0b",
-  timeseries: "#8b5cf6",
-  genai:      "#ec4899",
-  agents:     "#06b6d4",
-  rl:         "#10b981",
-  backend:    "#64748b",
-  deployment: "#f97316",
-};
+import { projectCategoryColors as categoryColors } from "@/lib/data";
 
 const filters: Array<{ key: string; cat: ProjectCategory | "all" }> = [
   { key: "filter_all",        cat: "all"        },

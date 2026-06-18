@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Clock, BarChart2, BookOpen, ChevronLeft, ChevronRight } from "lucide-react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { learningTopics } from "@/lib/data";
+import { learningTopics, learningCategoryColors as categoryColors } from "@/lib/data";
 import { topicContents } from "@/lib/learningContent";
 import TopicDetailClient from "./TopicDetailClient";
 import { buildMetadata } from "@/lib/seo";
@@ -36,13 +36,6 @@ export async function generateMetadata({
     type: "article",
   });
 }
-
-const categoryColors: Record<string, string> = {
-  regression: "#6c63ff",
-  classification: "#00d4aa",
-  ensemble: "#f59e0b",
-  evaluation: "#ff6b6b",
-};
 
 export default async function TopicPage({
   params,

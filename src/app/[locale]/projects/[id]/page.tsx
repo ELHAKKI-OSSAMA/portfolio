@@ -4,7 +4,7 @@ import Link from "next/link";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { ArrowLeft, ArrowRight, ExternalLink, Database, TrendingUp, Layers, Target, Code2 } from "lucide-react";
 import { GithubIcon } from "@/components/ui/SocialIcons";
-import { projects, SITE_URL } from "@/lib/data";
+import { projects, SITE_URL, projectCategoryColors as categoryColors } from "@/lib/data";
 import { BreadcrumbSchema } from "@/components/seo/JsonLd";
 import { projectImages } from "@/lib/data/projects/images";
 import ProjectMarkdown from "@/components/ui/ProjectMarkdown";
@@ -37,19 +37,6 @@ export async function generateMetadata({
     keywords: [...(project.tags ?? []), ...(project.techStack ?? [])].slice(0, 12),
   });
 }
-
-const categoryColors: Record<string, string> = {
-  fraud: "#ff6b6b",
-  cv: "#6c63ff",
-  nlp: "#00d4aa",
-  medical: "#f59e0b",
-  timeseries: "#8b5cf6",
-  genai: "#ec4899",
-  agents: "#06b6d4",
-  rl: "#10b981",
-  backend: "#64748b",
-  deployment: "#f97316",
-};
 
 
 export default async function ProjectDetailPage({

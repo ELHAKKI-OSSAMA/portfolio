@@ -6,20 +6,21 @@ import { Clock, Tag, Zap, ChevronRight, CheckCircle2, Circle, BookMarked } from 
 import type { LearningTopic } from "@/lib/data";
 import { useTopicProgress } from "@/hooks/useTopicProgress";
 import { accentInk } from "@/lib/a11yColor";
+import { learningCategoryColors as C } from "@/lib/data";
 
 // ── Category config ──────────────────────────────────────────────────────────
 export const CAT_META: Record<string, { color: string; emoji: string; labelEn: string; labelFr: string; labelAr: string }> = {
-  foundations:    { color:"#06b6d4", emoji:"📐", labelEn:"Foundations",     labelFr:"Fondations",                      labelAr:"الأسس" },
-  regression:     { color:"#6c63ff", emoji:"📈", labelEn:"Regression",      labelFr:"Régression",                      labelAr:"الانحدار" },
-  classification: { color:"#00d4aa", emoji:"🏷️", labelEn:"Classification",  labelFr:"Classification",                  labelAr:"التصنيف" },
-  ensemble:       { color:"#f59e0b", emoji:"🌲", labelEn:"Ensembles",        labelFr:"Ensembles",                       labelAr:"المجموعة" },
-  evaluation:     { color:"#ff6b6b", emoji:"📊", labelEn:"Evaluation",       labelFr:"Évaluation",                      labelAr:"التقييم" },
-  unsupervised:   { color:"#8b5cf6", emoji:"🔮", labelEn:"Unsupervised",     labelFr:"Non supervisé",                   labelAr:"غير مُشرف" },
-  applied:        { color:"#22c55e", emoji:"⚙️", labelEn:"Applied ML",       labelFr:"ML Appliqué",                     labelAr:"تطبيقي" },
-  deeplearning:   { color:"#a78bfa", emoji:"🧠", labelEn:"Deep Learning",    labelFr:"Apprentissage Profond",           labelAr:"التعلم العميق" },
-  vision:         { color:"#ec4899", emoji:"👁️", labelEn:"Computer Vision",  labelFr:"Vision par Ordinateur",           labelAr:"رؤية الحاسوب" },
-  audio:          { color:"#84cc16", emoji:"🎵", labelEn:"Audio & Speech",   labelFr:"Audio & Parole",                  labelAr:"الصوت" },
-  rl:             { color:"#f43f5e", emoji:"🎮", labelEn:"Reinforcement RL", labelFr:"Apprentissage par Renforcement",  labelAr:"التعلم التعزيزي" },
+  foundations:    { color:C.foundations,    emoji:"📐", labelEn:"Foundations",     labelFr:"Fondations",                      labelAr:"الأسس" },
+  regression:     { color:C.regression,     emoji:"📈", labelEn:"Regression",      labelFr:"Régression",                      labelAr:"الانحدار" },
+  classification: { color:C.classification, emoji:"🏷️", labelEn:"Classification",  labelFr:"Classification",                  labelAr:"التصنيف" },
+  ensemble:       { color:C.ensemble,       emoji:"🌲", labelEn:"Ensembles",        labelFr:"Ensembles",                       labelAr:"المجموعة" },
+  evaluation:     { color:C.evaluation,     emoji:"📊", labelEn:"Evaluation",       labelFr:"Évaluation",                      labelAr:"التقييم" },
+  unsupervised:   { color:C.unsupervised,   emoji:"🔮", labelEn:"Unsupervised",     labelFr:"Non supervisé",                   labelAr:"غير مُشرف" },
+  applied:        { color:C.applied,        emoji:"⚙️", labelEn:"Applied ML",       labelFr:"ML Appliqué",                     labelAr:"تطبيقي" },
+  deeplearning:   { color:C.deeplearning,   emoji:"🧠", labelEn:"Deep Learning",    labelFr:"Apprentissage Profond",           labelAr:"التعلم العميق" },
+  vision:         { color:C.vision,         emoji:"👁️", labelEn:"Computer Vision",  labelFr:"Vision par Ordinateur",           labelAr:"رؤية الحاسوب" },
+  audio:          { color:C.audio,          emoji:"🎵", labelEn:"Audio & Speech",   labelFr:"Audio & Parole",                  labelAr:"الصوت" },
+  rl:             { color:C.rl,             emoji:"🎮", labelEn:"Reinforcement RL", labelFr:"Apprentissage par Renforcement",  labelAr:"التعلم التعزيزي" },
 };
 
 export const DIFF_COLOR = { beginner:"#10b981", intermediate:"#f59e0b", advanced:"#ff6b6b" };

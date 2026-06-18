@@ -12,3 +12,4 @@ export * from './learningTopics';
 export * from './blog';
 export * from './faq';
 export * from './gamesDocs';
+export * from './categoryColors';
