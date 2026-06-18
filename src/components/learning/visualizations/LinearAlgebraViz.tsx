@@ -202,8 +202,8 @@ export default function LinearAlgebraViz({ accentColor = "#6c63ff" }: { accentCo
         {/* Left basis vectors */}
         <ArrowHead x1={L_OX} y1={L_OY} x2={L_OX + SCALE} y2={L_OY} color="#ef4444" strokeWidth={2.5} />
         <ArrowHead x1={L_OX} y1={L_OY} x2={L_OX} y2={L_OY - SCALE} color="#22c55e" strokeWidth={2.5} />
-        <text x={L_OX + SCALE + 4} y={L_OY + 4} fontSize={9} fill="#ef4444" fontWeight="bold">e₁</text>
-        <text x={L_OX + 2} y={L_OY - SCALE - 4} fontSize={9} fill="#22c55e" fontWeight="bold">e₂</text>
+        <text x={L_OX + SCALE + 4} y={L_OY + 4} fontSize={9} fill={vt.ink("#ef4444")} fontWeight="bold">e₁</text>
+        <text x={L_OX + 2} y={L_OY - SCALE - 4} fontSize={9} fill={vt.ink("#22c55e")} fontWeight="bold">e₂</text>
 
         {/* ── Right panel: Transformed space ── */}
         <rect x={PAD + HALF + PAD - 4} y={4} width={HALF - 8} height={H - 8} rx={6} fill={vt.surface} />
@@ -233,8 +233,8 @@ export default function LinearAlgebraViz({ accentColor = "#6c63ff" }: { accentCo
             <ArrowHead x1={R_OX} y1={R_OY}
               x2={R_OX + e2tx * SCALE} y2={R_OY - e2ty * SCALE}
               color="#22c55e" strokeWidth={2.5} />
-            <text x={R_OX + e1tx * SCALE + 4} y={R_OY - e1ty * SCALE + 4} fontSize={9} fill="#ef4444" fontWeight="bold">Ae₁</text>
-            <text x={R_OX + e2tx * SCALE + 4} y={R_OY - e2ty * SCALE - 4} fontSize={9} fill="#22c55e" fontWeight="bold">Ae₂</text>
+            <text x={R_OX + e1tx * SCALE + 4} y={R_OY - e1ty * SCALE + 4} fontSize={9} fill={vt.ink("#ef4444")} fontWeight="bold">Ae₁</text>
+            <text x={R_OX + e2tx * SCALE + 4} y={R_OY - e2ty * SCALE - 4} fontSize={9} fill={vt.ink("#22c55e")} fontWeight="bold">Ae₂</text>
           </motion.g>
         </AnimatePresence>
 

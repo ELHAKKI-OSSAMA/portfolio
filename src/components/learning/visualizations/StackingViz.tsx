@@ -343,7 +343,7 @@ function Phase2({ accent, vt }: { accent: string; vt: ReturnType<typeof useVizTh
 
         {/* Bottom label */}
         <text x={startX + 1.5 * CW} y={startY + SAMPLES.length * CH + 16}
-          textAnchor="middle" fontSize={8} fill={accent} fontWeight="bold">
+          textAnchor="middle" fontSize={8} fill={vt.ink(accent)} fontWeight="bold">
           New feature matrix X_meta
         </text>
         <text x={260} y={startY + SAMPLES.length * CH + 32}
@@ -405,7 +405,7 @@ function Phase3({ accent, vt }: { accent: string; vt: ReturnType<typeof useVizTh
         <rect x={392} y={60} width={118} height={60} rx={8}
           fill={vt.isDark ? "#05966920" : "#d1fae520"}
           stroke="#10b981" strokeWidth={1.5} />
-        <text x={451} y={82} textAnchor="middle" fontSize={9} fontWeight="bold" fill="#10b981">Final ŷ</text>
+        <text x={451} y={82} textAnchor="middle" fontSize={9} fontWeight="bold" fill={vt.ink("#10b981")}>Final ŷ</text>
         <text x={451} y={96} textAnchor="middle" fontSize={7.5} fill={vt.textMuted}>combines all</text>
         <text x={451} y={108} textAnchor="middle" fontSize={7.5} fill={vt.textMuted}>base outputs</text>
 
@@ -479,8 +479,8 @@ function Phase4({ accent, vt }: { accent: string; vt: ReturnType<typeof useVizTh
         {/* Final output */}
         <rect x={450} y={74} width={64} height={52} rx={8}
           fill={vt.isDark ? "#05966920" : "#d1fae520"} stroke="#10b981" strokeWidth={2} />
-        <text x={482} y={95} textAnchor="middle" fontSize={9} fontWeight="bold" fill="#10b981">ŷ</text>
-        <text x={482} y={109} textAnchor="middle" fontSize={7.5} fill="#10b981">final</text>
+        <text x={482} y={95} textAnchor="middle" fontSize={9} fontWeight="bold" fill={vt.ink("#10b981")}>ŷ</text>
+        <text x={482} y={109} textAnchor="middle" fontSize={7.5} fill={vt.ink("#10b981")}>final</text>
 
         {/* Stats comparison — pushed below the model fan (bottom of model 3 = 44+2*48+32=172) */}
         <rect x={6} y={188} width={508} height={60} rx={8}

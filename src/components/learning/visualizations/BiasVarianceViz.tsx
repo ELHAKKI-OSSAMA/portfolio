@@ -510,7 +510,7 @@ export default function BiasVarianceViz({ accentColor = "#10b981" }: { accentCol
           <g>
             <rect x={PAD} y={toSY(0.8)} width={W - 2 * PAD} height={toSY(-0.8) - toSY(0.8)}
               fill="#ef444406" stroke="#ef444420" strokeWidth={1} strokeDasharray="4,3" />
-            <text x={toSX(0.5)} y={toSY(1.2)} textAnchor="middle" fontSize={12} fill="#ef4444">
+            <text x={toSX(0.5)} y={toSY(1.2)} textAnchor="middle" fontSize={12} fill={vt.ink("#ef4444")}>
               {L.highBiasAnnotation}
             </text>
           </g>
@@ -518,7 +518,7 @@ export default function BiasVarianceViz({ accentColor = "#10b981" }: { accentCol
 
         {/* High-variance annotation */}
         {degree >= 9 && showGhost && (
-          <text x={toSX(0.85)} y={toSY(1.8)} textAnchor="end" fontSize={12} fill="#f59e0b">
+          <text x={toSX(0.85)} y={toSY(1.8)} textAnchor="end" fontSize={12} fill={vt.ink("#f59e0b")}>
             {L.highVarAnnotation}
           </text>
         )}
@@ -546,7 +546,7 @@ export default function BiasVarianceViz({ accentColor = "#10b981" }: { accentCol
           <>
             <line x1={PAD + 94} y1={H_TOP - 24} x2={PAD + 112} y2={H_TOP - 24}
               stroke="#e94560" strokeWidth={2} strokeDasharray="6,3" />
-            <text x={PAD + 116} y={H_TOP - 20} fontSize={11.5} fill="#e94560">{L.trueFnLegend}</text>
+            <text x={PAD + 116} y={H_TOP - 20} fontSize={11.5} fill={vt.ink("#e94560")}>{L.trueFnLegend}</text>
           </>
         )}
         {showGhost && (
@@ -560,10 +560,10 @@ export default function BiasVarianceViz({ accentColor = "#10b981" }: { accentCol
           <>
             <line x1={PAD + 280} y1={H_TOP - 26} x2={PAD + 270} y2={H_TOP - 18}
               stroke="#3b82f6" strokeWidth={1.5} />
-            <text x={PAD + 286} y={H_TOP - 20} fontSize={11.5} fill="#3b82f6">{L.trainErrLegend}</text>
+            <text x={PAD + 286} y={H_TOP - 20} fontSize={11.5} fill={vt.ink("#3b82f6")}>{L.trainErrLegend}</text>
             <line x1={PAD + 346} y1={H_TOP - 26} x2={PAD + 346} y2={H_TOP - 18}
               stroke="#ef4444" strokeWidth={1.5} />
-            <text x={PAD + 352} y={H_TOP - 20} fontSize={11.5} fill="#ef4444">{L.testErrLegend}</text>
+            <text x={PAD + 352} y={H_TOP - 20} fontSize={11.5} fill={vt.ink("#ef4444")}>{L.testErrLegend}</text>
           </>
         )}
 
@@ -585,11 +585,11 @@ export default function BiasVarianceViz({ accentColor = "#10b981" }: { accentCol
         <line x1={W - 166} y1={MSE_Y0 + 18} x2={W - 152} y2={MSE_Y0 + 18}
           stroke="#3b82f6" strokeWidth={1.5} strokeDasharray="5,3" />
         <circle cx={W - 159} cy={MSE_Y0 + 18} r={2} fill="#3b82f6" />
-        <text x={W - 148} y={MSE_Y0 + 22} fontSize={11.5} fill="#3b82f6">{L.trainLegend}</text>
+        <text x={W - 148} y={MSE_Y0 + 22} fontSize={11.5} fill={vt.ink("#3b82f6")}>{L.trainLegend}</text>
         <line x1={W - 104} y1={MSE_Y0 + 18} x2={W - 90} y2={MSE_Y0 + 18}
           stroke="#ef4444" strokeWidth={1.8} />
         <circle cx={W - 97} cy={MSE_Y0 + 18} r={2} fill="#ef4444" />
-        <text x={W - 86} y={MSE_Y0 + 22} fontSize={11.5} fill="#ef4444">{L.testLegend}</text>
+        <text x={W - 86} y={MSE_Y0 + 22} fontSize={11.5} fill={vt.ink("#ef4444")}>{L.testLegend}</text>
 
         {/* ── Panel A: zone fills — Underfit / Good Balance / Overfit ── */}
         {/* Underfit zone */}
@@ -669,7 +669,7 @@ export default function BiasVarianceViz({ accentColor = "#10b981" }: { accentCol
         )}
         {GOOD_DEG > OPT_DEG && (
           <text x={mseX(Math.round((OPT_DEG + GOOD_DEG) / 2))} y={MSE_Y0 + 52}
-            textAnchor="middle" fontSize={10.5} fill={accentColor} opacity={0.85}>{L.goodZone}</text>
+            textAnchor="middle" fontSize={10.5} fill={vt.ink(accentColor)} opacity={0.85}>{L.goodZone}</text>
         )}
         {GOOD_DEG < MAX_DEGREE && (
           <text x={mseX(Math.round((GOOD_DEG + MAX_DEGREE) / 2))} y={MSE_Y0 + 52}
@@ -689,9 +689,9 @@ export default function BiasVarianceViz({ accentColor = "#10b981" }: { accentCol
         </text>
         {/* Shared legend (center) */}
         <rect x={HALF_W - 52} y={BV_Y0 + 16} width={10} height={10} rx={2} fill="#6c63ff" />
-        <text x={HALF_W - 38} y={BV_Y0 + 26} fontSize={12} fill="#6c63ff">{L.bias2Legend}</text>
+        <text x={HALF_W - 38} y={BV_Y0 + 26} fontSize={12} fill={vt.ink("#6c63ff")}>{L.bias2Legend}</text>
         <rect x={HALF_W + 2} y={BV_Y0 + 16} width={10} height={10} rx={2} fill="#f59e0b" />
-        <text x={HALF_W + 16} y={BV_Y0 + 26} fontSize={12} fill="#f59e0b">{L.varianceLegend}</text>
+        <text x={HALF_W + 16} y={BV_Y0 + 26} fontSize={12} fill={vt.ink("#f59e0b")}>{L.varianceLegend}</text>
         {/* Right label */}
         <text x={W - PAD} y={BV_Y0 + 26} textAnchor="end" fontSize={11.5} fill={vt.textMuted} fontWeight="bold">
           {L.panelBRight}

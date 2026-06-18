@@ -133,7 +133,7 @@ export default function PCAViz({ accentColor = "#6c63ff" }: { accentColor?: stri
             -PC1.dx, PC1.dy, accentColor
           )}
           <text x={CX + PC1.dx*SCALE*(PC1_LEN+0.3)} y={CY - PC1.dy*SCALE*(PC1_LEN+0.3) + 4}
-            textAnchor="middle" fontSize={11} fill={accentColor} fontWeight="bold">PC1</text>
+            textAnchor="middle" fontSize={11} fill={vt.ink(accentColor)} fontWeight="bold">PC1</text>
 
           {/* projection lines */}
           {showProj && RAW_PTS.map(([x,y], i) => {

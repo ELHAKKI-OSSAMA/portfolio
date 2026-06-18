@@ -417,7 +417,7 @@ export default function RNNViz({ accentColor = "#06b6d4" }: { accentColor?: stri
                 width={W - 52} height={24}
                 rx={6} fill="#ff6b6b22" stroke="#ff6b6b60" strokeWidth={1}
               />
-              <text x={52} y={ROW_Y[2] + CELL_H + 20} fontSize={9} fill="#ff6b6b">
+              <text x={52} y={ROW_Y[2] + CELL_H + 20} fontSize={9} fill={vt.ink("#ff6b6b")}>
                 {L.vanishingGrad((0.15 ** (activeStep - 1)).toFixed(4))}
               </text>
             </motion.g>

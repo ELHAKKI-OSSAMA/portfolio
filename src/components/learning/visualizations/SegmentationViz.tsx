@@ -459,7 +459,7 @@ function UNetTab({
         <rect x={U_BN.x} y={U_BN.cy - U_BN.h / 2} width={U_BN.w} height={U_BN.h}
           rx={3} fill={accentColor + "88"} stroke={accentColor} strokeWidth={2} />
         <text x={U_BN.x + U_BN.w / 2} y={U_BN.cy + U_BN.h / 2 + 11}
-          textAnchor="middle" fontSize={6.5} fill={accentColor} fontWeight="700">BN</text>
+          textAnchor="middle" fontSize={6.5} fill={vt.ink(accentColor)} fontWeight="700">BN</text>
         <text x={U_BN.x + U_BN.w / 2} y={U_BN.cy + U_BN.h / 2 + 21}
           textAnchor="middle" fontSize={6} fill={vt.textMuted}>28×28</text>
       </motion.g>
@@ -506,7 +506,7 @@ function UNetTab({
         textAnchor="middle" fontSize={6.5} fill={vt.textMuted}>{L.maskLabel}</text>
 
       <text x={UNET_W / 2} y={12} textAnchor="middle" fontSize={8}
-        fill={accentColor + "bb"} fontWeight="600">{L.skipConnections}</text>
+        fill={vt.ink(accentColor)} fontWeight="600">{L.skipConnections}</text>
     </svg>
   );
 }

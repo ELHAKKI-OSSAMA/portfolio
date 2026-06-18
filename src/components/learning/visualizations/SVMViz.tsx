@@ -284,9 +284,9 @@ export default function SVMViz({ accentColor = "#f97316" }: { accentColor?: stri
               stroke={accentColor} strokeWidth={1} opacity={0.5} strokeDasharray="3,2" />
 
             {/* Class region labels */}
-            <text x={toCX(1.8)} y={toCY(8.5)} fontSize={9} fill="#6c63ff" opacity={0.7}
+            <text x={toCX(1.8)} y={toCY(8.5)} fontSize={9} fill={vt.ink("#6c63ff")} opacity={0.7}
               fontWeight="bold">{L.classPos}</text>
-            <text x={toCX(6.5)} y={toCY(1.5)} fontSize={9} fill="#ff6b6b" opacity={0.7}
+            <text x={toCX(6.5)} y={toCY(1.5)} fontSize={9} fill={vt.ink("#ff6b6b")} opacity={0.7}
               fontWeight="bold">{L.classNeg}</text>
           </>
         )}
@@ -366,7 +366,7 @@ export default function SVMViz({ accentColor = "#f97316" }: { accentColor?: stri
         {/* Kernel label */}
         {kernelMode === "rbf" && (
           <text x={W - PAD - 4} y={PAD + 14} textAnchor="end" fontSize={9}
-            fill={accentColor} fontFamily="monospace">
+            fill={vt.ink(accentColor)} fontFamily="monospace">
             K(x,x&#x27;) = exp(−γ‖x−x&#x27;‖²)
           </text>
         )}

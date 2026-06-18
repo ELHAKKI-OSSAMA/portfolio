@@ -37,13 +37,13 @@ function GANArch({ accent, vt }: { accent: string; vt: VT }) {
       <path d="M 461 100 L 461 158 L 312 158 L 312 120"
         fill="none" stroke="#f59e0b" strokeWidth={1.5} strokeDasharray="5,3"
         markerEnd="url(#arr-gan)" />
-      <text x={386} y={165} textAnchor="middle" fontSize={7} fill="#f59e0b">disc gradient ∇_D</text>
+      <text x={386} y={165} textAnchor="middle" fontSize={7} fill={vt.ink("#f59e0b")}>disc gradient ∇_D</text>
 
       {/* Generator loss feedback */}
       <path d="M 380 52 L 406 52 L 406 20 L 168 20 L 168 28"
         fill="none" stroke="#ff6b6b" strokeWidth={1.5} strokeDasharray="5,3"
         markerEnd="url(#arr-gan)" />
-      <text x={284} y={17} textAnchor="middle" fontSize={7} fill="#ff6b6b">gen gradient ∇_G (fool D)</text>
+      <text x={284} y={17} textAnchor="middle" fontSize={7} fill={vt.ink("#ff6b6b")}>gen gradient ∇_G (fool D)</text>
 
       <text x={W/2} y={H - 4} textAnchor="middle" fontSize={9} fill={vt.textMuted}>
         GAN: min_G max_D E[log D(x)] + E[log(1−D(G(z)))]

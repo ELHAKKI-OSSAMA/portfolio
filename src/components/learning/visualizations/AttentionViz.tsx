@@ -364,7 +364,7 @@ export default function AttentionViz({ accentColor = "#06b6d4" }: { accentColor?
               <text x={bx + (BAR_W - 8) / 2} y={204} textAnchor="middle"
                 fontSize={8} fill={vt.textMuted}>{TOKENS[j]}</text>
               <text x={bx + (BAR_W - 8) / 2} y={by - 3} textAnchor="middle"
-                fontSize={8} fill={accentColor} fontFamily="monospace">
+                fontSize={8} fill={vt.ink(accentColor)} fontFamily="monospace">
                 {(w * 100).toFixed(0)}%
               </text>
             </g>

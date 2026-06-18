@@ -174,7 +174,7 @@ export default function HyperparameterViz({ accentColor = "#f97316" }: { accentC
                 fill={isBest ? `${accentColor}30` : "none"}
                 stroke={accentColor} strokeWidth={isBest ? 2.5 : 1.5} />
               {isBest && <text x={sx} y={sy+4} textAnchor="middle" fontSize={8}
-                fill={accentColor} stroke={vt.isDark ? "rgba(0,0,0,0.5)" : "rgba(255,255,255,0.7)"}
+                fill={vt.ink(accentColor)} stroke={vt.isDark ? "rgba(0,0,0,0.5)" : "rgba(255,255,255,0.7)"}
                 strokeWidth={2.5} paintOrder="stroke" fontWeight="bold">★</text>}
             </motion.g>
           );

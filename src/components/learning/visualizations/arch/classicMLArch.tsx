@@ -30,7 +30,7 @@ function LinearRegressionArch({ accent, vt }: { accent: string; vt: VT }) {
               color={arrowColor} markerId="arr-lr" />
             <text x={(FX + FW + sumX - sumR) / 2 - 8}
               y={fy + (CY - fy) / 2 - 4}
-              fontSize={8} fill={accent} fontFamily="monospace">
+              fontSize={8} fill={vt.ink(accent)} fontFamily="monospace">
               w{i + 1}
             </text>
           </g>
@@ -94,7 +94,7 @@ function SVMArch({ accent, vt }: { accent: string; vt: VT }) {
         <circle key={`n${i}`} cx={px} cy={py} r={8}
           fill={vt.isDark ? "#7f1d1d" : "#dc2626"} opacity={0.85} />
       ))}
-      <text x={220} y={172} fontSize={8} fill="#dc2626">Class −1</text>
+      <text x={220} y={172} fontSize={8} fill={vt.ink("#dc2626")}>Class −1</text>
 
       {/* Decision boundary — animates from initial to optimal */}
       <line x1={130} y1={30} x2={170} y2={185} stroke={accent} strokeWidth={2.5}>
@@ -302,7 +302,7 @@ function MLPArch({ accent, vt }: { accent: string; vt: VT }) {
           </text>
           {acts[li] && (
             <text x={lay.x} y={H - 22} textAnchor="middle" fontSize={8}
-              fill={accent} fontFamily="monospace">{acts[li]}</text>
+              fill={vt.ink(accent)} fontFamily="monospace">{acts[li]}</text>
           )}
         </g>
       ))}

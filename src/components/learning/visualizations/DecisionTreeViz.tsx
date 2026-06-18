@@ -382,7 +382,7 @@ export default function DecisionTreeViz({
                 fill={`${accentColor}20`} stroke={accentColor} strokeWidth={1}
               />
               <text x={toSVGX(currentSplit.x) + 8} y={PAD + 15}
-                fontSize={8.5} fill={accentColor} fontFamily="monospace">
+                fontSize={8.5} fill={vt.ink(accentColor)} fontFamily="monospace">
                 x ≤ {currentSplit.x.toFixed(2)}
               </text>
             </motion.g>

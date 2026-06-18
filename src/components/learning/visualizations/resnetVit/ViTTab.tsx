@@ -140,7 +140,7 @@ export default function ViTTab({ step, accentColor, vt }: {
       {step >= 3 && (
         <g>
           <text x={clsX + tokenW / 2} y={patchTokenY - 8}
-            textAnchor="middle" fontSize={7} fill={accentColor} fontWeight="bold">
+            textAnchor="middle" fontSize={7} fill={vt.ink(accentColor)} fontWeight="bold">
             [CLS]
           </text>
           <rect x={clsX} y={patchTokenY} width={tokenW} height={2 * tokenH + 6} rx={3}
@@ -152,7 +152,7 @@ export default function ViTTab({ step, accentColor, vt }: {
           ))}
           <text x={patchTokenX + (clsX + tokenW - patchTokenX) / 2}
             y={patchTokenY + 2 * tokenH + 6 + 26}
-            textAnchor="middle" fontSize={7} fill={accentColor} opacity={0.85}>
+            textAnchor="middle" fontSize={7} fill={vt.ink(accentColor)} opacity={0.85}>
             {L.posEncoding}
           </text>
         </g>

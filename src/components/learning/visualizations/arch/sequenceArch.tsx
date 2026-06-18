@@ -99,8 +99,8 @@ function LSTMArch({ accent, vt }: { accent: string; vt: VT }) {
         fill={vt.isDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.06)"}
         stroke={vt.border} strokeWidth={1.5} />
       <text x={24} y={TRACK_Y + 5} fontSize={9} fill={vt.textMuted} fontWeight="bold">Cₜ₋₁</text>
-      <text x={87} y={TRACK_Y + 6} fontSize={15} fill="#ef4444" opacity={0.9}>×</text>
-      <text x={208} y={TRACK_Y + 6} fontSize={15} fill="#f59e0b" opacity={0.9}>+</text>
+      <text x={87} y={TRACK_Y + 6} fontSize={15} fill={vt.ink("#ef4444")} opacity={0.9}>×</text>
+      <text x={208} y={TRACK_Y + 6} fontSize={15} fill={vt.ink("#f59e0b")} opacity={0.9}>+</text>
       <text x={W - 46} y={TRACK_Y + 5} fontSize={9} fill={vt.textMuted} fontWeight="bold">Cₜ</text>
 
       {/* ── Gate boxes ── */}

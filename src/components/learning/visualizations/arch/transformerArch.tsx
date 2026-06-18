@@ -35,7 +35,7 @@ function TransformerArch({ accent, vt }: { accent: string; vt: VT }) {
       <rect x={BX - 28} y={114} width={BW + 56} height={220} rx={10}
         fill={`${accent}07`} stroke={`${accent}30`} strokeWidth={1.5} strokeDasharray="6,3" />
       <text x={BX + BW + 34} y={228} textAnchor="start" fontSize={13}
-        fill={accent} fontWeight="bold">×N</text>
+        fill={vt.ink(accent)} fontWeight="bold">×N</text>
 
       {/* ── Multi-Head Attention ── */}
       <Box x={BX} y={270} w={BW} h={40}
@@ -79,17 +79,17 @@ function TransformerArch({ accent, vt }: { accent: string; vt: VT }) {
       {/* Skip around FFN: from Add&Norm1 top (222) to Add&Norm2 bottom (148) */}
       <path d={`M ${BX - 8} 222 L ${BX - 22} 222 L ${BX - 22} 148 L ${BX - 8} 148`}
         fill="none" stroke="#f59e0b" strokeWidth={1.5} strokeDasharray="4,2" />
-      <text x={BX - 30} y={240} fontSize={8} fill="#f59e0b" fontWeight="bold"
+      <text x={BX - 30} y={240} fontSize={8} fill={vt.ink("#f59e0b")} fontWeight="bold"
         transform={`rotate(-90,${BX-30},240)`}>residual</text>
 
       {/* ── BERT annotation ── */}
       <rect x={W - 140} y={268} width={128} height={74} rx={8}
         fill={vt.isDark ? "#1e3a5f30" : "#dbeafe50"} stroke="#3b82f6" strokeWidth={1} strokeDasharray="4,2" />
-      <text x={W - 76} y={284} textAnchor="middle" fontSize={9} fill="#3b82f6" fontWeight="bold">BERT uses encoder</text>
-      <text x={W - 76} y={298} textAnchor="middle" fontSize={8} fill="#3b82f6">bidirectional attention</text>
-      <text x={W - 76} y={312} textAnchor="middle" fontSize={8} fill="#3b82f6">[CLS] cls token</text>
-      <text x={W - 76} y={326} textAnchor="middle" fontSize={8} fill="#3b82f6">MLM + NSP pretrain</text>
-      <text x={W - 76} y={340} textAnchor="middle" fontSize={8} fill="#3b82f6">fine-tune: add head</text>
+      <text x={W - 76} y={284} textAnchor="middle" fontSize={9} fill={vt.ink("#3b82f6")} fontWeight="bold">BERT uses encoder</text>
+      <text x={W - 76} y={298} textAnchor="middle" fontSize={8} fill={vt.ink("#3b82f6")}>bidirectional attention</text>
+      <text x={W - 76} y={312} textAnchor="middle" fontSize={8} fill={vt.ink("#3b82f6")}>[CLS] cls token</text>
+      <text x={W - 76} y={326} textAnchor="middle" fontSize={8} fill={vt.ink("#3b82f6")}>MLM + NSP pretrain</text>
+      <text x={W - 76} y={340} textAnchor="middle" fontSize={8} fill={vt.ink("#3b82f6")}>fine-tune: add head</text>
 
       <text x={W/2} y={H - 6} textAnchor="middle" fontSize={8} fill={vt.textMuted}>
         Transformer: O(n²d) attention — Q=XWQ, K=XWK, V=XWV — fully parallelizable, no recurrence
@@ -125,8 +125,8 @@ function BERTArch({ accent, vt }: { accent: string; vt: VT }) {
       {/* ── Pre-training task cards (top row) ── */}
       <rect x={6} y={24} width={160} height={36} rx={6}
         fill={vt.isDark ? "#7f1d1d30" : "#fee2e220"} stroke="#ef4444" strokeWidth={1} />
-      <text x={86} y={39} textAnchor="middle" fontSize={8.5} fill="#ef4444" fontWeight="bold">MLM: Masked LM</text>
-      <text x={86} y={52} textAnchor="middle" fontSize={7.5} fill="#ef4444">predict [MASK] → rich token ctx</text>
+      <text x={86} y={39} textAnchor="middle" fontSize={8.5} fill={vt.ink("#ef4444")} fontWeight="bold">MLM: Masked LM</text>
+      <text x={86} y={52} textAnchor="middle" fontSize={7.5} fill={vt.ink("#ef4444")}>predict [MASK] → rich token ctx</text>
 
       <rect x={W - 166} y={24} width={160} height={36} rx={6}
         fill={`${purple}20`} stroke={purple} strokeWidth={1} />
@@ -194,7 +194,7 @@ function BERTArch({ accent, vt }: { accent: string; vt: VT }) {
 
       {/* ── Token type labels ── */}
       <text x={startX + CELL_W/2} y={TOK_Y - 4} textAnchor="middle" fontSize={7} fill={vt.ink(accent)}>[CLS] cls</text>
-      <text x={startX + 3*CELL_W + CELL_W/2} y={TOK_Y - 4} textAnchor="middle" fontSize={7} fill="#ef4444">[MASK] ?</text>
+      <text x={startX + 3*CELL_W + CELL_W/2} y={TOK_Y - 4} textAnchor="middle" fontSize={7} fill={vt.ink("#ef4444")}>[MASK] ?</text>
 
       {/* ── Embedding types legend ── */}
       <text x={8} y={H - 18} fontSize={8} fill={vt.textMuted}>Token Emb + Segment Emb + Position Emb → input to encoder</text>

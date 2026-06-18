@@ -219,7 +219,7 @@ export default function NumpyViz({ accentColor = "#6c63ff" }: { accentColor?: st
                     textAnchor="middle"
                     fontSize={12}
                     fontWeight="600"
-                    fill={accentColor}
+                    fill={vt.ink(accentColor)}
                   >
                     {val}
                   </text>
@@ -479,7 +479,7 @@ export default function NumpyViz({ accentColor = "#6c63ff" }: { accentColor?: st
                       y={numpyY - 4}
                       textAnchor="middle"
                       fontSize={9}
-                      fill={accentColor}
+                      fill={vt.ink(accentColor)}
                       fontWeight="bold"
                     >
                       {NUMPY_TIMES[gi]}ms

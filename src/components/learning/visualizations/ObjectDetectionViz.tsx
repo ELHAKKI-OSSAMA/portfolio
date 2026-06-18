@@ -421,7 +421,7 @@ export default function ObjectDetectionViz({ accentColor = "#6c63ff" }: { accent
                           fill={isHL ? accentColor : vt.textFaint} fillOpacity={isHL ? 0.9 : 0.5} />
                         {isHL && (
                           <text x={cx} y={cy - 10} textAnchor="middle" fontSize={8}
-                            fill={accentColor} fontWeight="bold">
+                            fill={vt.ink(accentColor)} fontWeight="bold">
                             cell ({row},{col})
                           </text>
                         )}
@@ -481,7 +481,7 @@ export default function ObjectDetectionViz({ accentColor = "#6c63ff" }: { accent
                 </text>
 
                 {/* Grid spec */}
-                <text x={IMG_X + IMG_W + 20} y={IMG_Y + 185} fontSize={8} fill={accentColor + "cc"}>
+                <text x={IMG_X + IMG_W + 20} y={IMG_Y + 185} fontSize={8} fill={vt.ink(accentColor)}>
                   3×3 grid · 3 anchors/cell
                 </text>
                 <text x={IMG_X + IMG_W + 20} y={IMG_Y + 196} fontSize={8} fill={vt.textFaint}>

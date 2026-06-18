@@ -100,7 +100,7 @@ function GradientBoostingArch({ accent, vt }: { accent: string; vt: VT }) {
               <Arrow x1={t.x + BW/2} y1={SY + BH}
                 x2={t.x + BW/2} y2={120}
                 color={arrowColor} markerId="arr-gb" />
-              <text x={t.x + BW/2 + 5} y={100} fontSize={8} fill="#ff6b6b">r{i+1}=y-F{i}</text>
+              <text x={t.x + BW/2 + 5} y={100} fontSize={8} fill={vt.ink("#ff6b6b")}>r{i+1}=y-F{i}</text>
             </>
           )}
           {i < trees.length - 2 && (

@@ -101,7 +101,7 @@ function ResNetArch({ accent, vt }: { accent: string; vt: VT }) {
         markerEnd="url(#arr-res)" />
       <rect x={118} y={BY - 35} width={174} height={16} rx={3}
         fill={vt.isDark ? "#1a1a30" : "#f7f7ff"} opacity={0.88} />
-      <text x={205} y={BY - 22} textAnchor="middle" fontSize={9} fill="#f59e0b" fontWeight="bold">
+      <text x={205} y={BY - 22} textAnchor="middle" fontSize={9} fill={vt.ink("#f59e0b")} fontWeight="bold">
         Identity shortcut: x
       </text>
 

@@ -366,7 +366,7 @@ export default function GradientBoostingVariantsViz({
             {/* True sine curve (ghost) */}
             <path d={pathD(SINE_PTS)} fill="none" stroke="#e94560"
               strokeWidth={1.5} strokeDasharray="7,4" opacity={0.6} />
-            <text x={PL + PW - 4} y={py(0.82)} textAnchor="end" fontSize={8} fill="#e94560">{L.trueFn}</text>
+            <text x={PL + PW - 4} y={py(0.82)} textAnchor="end" fontSize={8} fill={vt.ink("#e94560")}>{L.trueFn}</text>
 
             {/* Residuals (before round) */}
             {round > 0 && DATA.map((d, i) => {

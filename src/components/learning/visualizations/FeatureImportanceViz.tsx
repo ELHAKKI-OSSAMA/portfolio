@@ -149,7 +149,7 @@ export default function FeatureImportanceViz({ accentColor = "#6c63ff" }: { acce
                 </motion.g>
                 {/* Noise indicator */}
                 {isNoise && (
-                  <text x={PAD.l + barW + 4} y={y + rowH*0.67} fontSize={8} fill="#94a3b8">
+                  <text x={PAD.l + barW + 4} y={y + rowH*0.67} fontSize={8} fill={vt.ink("#94a3b8")}>
                     {L.noiseTag}
                   </text>
                 )}

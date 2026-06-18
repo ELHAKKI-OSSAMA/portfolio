@@ -223,7 +223,7 @@ export default function NeuralNetworkViz({ accentColor = "#ec4899" }: { accentCo
                     stroke={vt.border} strokeWidth={1}
                   />
                   <text x={neuron.x} y={neuron.y - 16} textAnchor="middle" fontSize={9}
-                    fill={accentColor} fontFamily="monospace">
+                    fill={vt.ink(accentColor)} fontFamily="monospace">
                     {neuron.activation.toFixed(2)}
                   </text>
                 </g>

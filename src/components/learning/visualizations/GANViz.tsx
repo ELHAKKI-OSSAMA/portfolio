@@ -244,7 +244,7 @@ export default function GANViz({ accentColor = "#a855f7" }: { accentColor?: stri
               <line x1={PAD} y1={y} x2={W - PAD - 14} y2={y}
                 stroke={vt.grid} strokeWidth={1} />
               {/* Right axis: D(x) label */}
-              <text x={W - PAD - 10} y={y + 4} fontSize={8} fill="#f59e0b" opacity={0.7}>
+              <text x={W - PAD - 10} y={y + 4} fontSize={8} fill={vt.ink("#f59e0b")} opacity={0.7}>
                 {f}
               </text>
             </g>
@@ -283,9 +283,9 @@ export default function GANViz({ accentColor = "#a855f7" }: { accentColor?: stri
         />
 
         {/* ── Right axis label ── */}
-        <text x={W - PAD + 4} y={toSY_disc(1) + 4} fontSize={8} fill="#f59e0b" opacity={0.8}>1</text>
-        <text x={W - PAD + 4} y={toSY_disc(0) + 4} fontSize={8} fill="#f59e0b" opacity={0.8}>0</text>
-        <text x={W - PAD + 2} y={(toSY_disc(0.5))} fontSize={7} fill="#f59e0b" opacity={0.6}
+        <text x={W - PAD + 4} y={toSY_disc(1) + 4} fontSize={8} fill={vt.ink("#f59e0b")} opacity={0.8}>1</text>
+        <text x={W - PAD + 4} y={toSY_disc(0) + 4} fontSize={8} fill={vt.ink("#f59e0b")} opacity={0.8}>0</text>
+        <text x={W - PAD + 2} y={(toSY_disc(0.5))} fontSize={7} fill={vt.ink("#f59e0b")} opacity={0.6}
           transform={`rotate(90,${W - PAD + 12},${toSY_disc(0.5)})`}>D(x)</text>
 
         {/* ── Nash equilibrium indicator ── */}
@@ -294,7 +294,7 @@ export default function GANViz({ accentColor = "#a855f7" }: { accentColor?: stri
             <rect x={toSX(REAL_MU) - 50} y={PAD + 2} width={100} height={18} rx={4}
               fill={`${accentColor}25`} stroke={`${accentColor}50`} strokeWidth={1} />
             <text x={toSX(REAL_MU)} y={PAD + 14} textAnchor="middle" fontSize={8}
-              fill={accentColor} fontWeight="bold">
+              fill={vt.ink(accentColor)} fontWeight="bold">
               {L.nashLabel}
             </text>
           </motion.g>
@@ -311,13 +311,13 @@ export default function GANViz({ accentColor = "#a855f7" }: { accentColor?: stri
         {/* ── Legend ── */}
         <line x1={PAD + 4} y1={PAD + 12} x2={PAD + 22} y2={PAD + 12}
           stroke="#00d4aa" strokeWidth={2.5} />
-        <text x={PAD + 26} y={PAD + 16} fontSize={8} fill="#00d4aa">{L.legendReal}</text>
+        <text x={PAD + 26} y={PAD + 16} fontSize={8} fill={vt.ink("#00d4aa")}>{L.legendReal}</text>
         <line x1={PAD + 4} y1={PAD + 26} x2={PAD + 22} y2={PAD + 26}
           stroke={accentColor} strokeWidth={2.5} />
         <text x={PAD + 26} y={PAD + 30} fontSize={8} fill={vt.ink(accentColor)}>{L.legendGen}</text>
         <line x1={PAD + 4} y1={PAD + 40} x2={PAD + 22} y2={PAD + 40}
           stroke="#f59e0b" strokeWidth={1.5} strokeDasharray="5,4" />
-        <text x={PAD + 26} y={PAD + 44} fontSize={8} fill="#f59e0b">{L.legendDisc}</text>
+        <text x={PAD + 26} y={PAD + 44} fontSize={8} fill={vt.ink("#f59e0b")}>{L.legendDisc}</text>
       </svg>
 
       {/* Progress bar */}

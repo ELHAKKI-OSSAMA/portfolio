@@ -352,7 +352,7 @@ export default function ProbabilityViz({ accentColor = "#6c63ff" }: { accentColo
               x={toSvgX(mu, plotData.xMin, plotData.xMax)}
               y={PLOT_Y0 + 8}
               fontSize={9}
-              fill={accentColor}
+              fill={vt.ink(accentColor)}
               textAnchor="middle"
               opacity={0.8}
             >
@@ -377,7 +377,7 @@ export default function ProbabilityViz({ accentColor = "#6c63ff" }: { accentColo
               x={toSvgX(mu, plotData.xMin, plotData.xMax)}
               y={PLOT_Y1 + 20}
               fontSize={8.5}
-              fill={accentColor}
+              fill={vt.ink(accentColor)}
               textAnchor="middle"
               opacity={0.8}
             >

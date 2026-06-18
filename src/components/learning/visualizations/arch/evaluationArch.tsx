@@ -75,10 +75,10 @@ function BiasVarianceArch({ accent, vt }: { accent: string; vt: VT }) {
       <rect x={14} y={20} width={160} height={130} rx={8}
         fill={vt.isDark ? "rgba(239,68,68,0.1)" : "rgba(239,68,68,0.07)"}
         stroke="#ef4444" strokeWidth={1} strokeDasharray="5,3" />
-      <text x={94} y={36} textAnchor="middle" fontSize={9} fill="#ef4444" fontWeight="bold">
+      <text x={94} y={36} textAnchor="middle" fontSize={9} fill={vt.ink("#ef4444")} fontWeight="bold">
         Underfitting
       </text>
-      <text x={94} y={50} textAnchor="middle" fontSize={8} fill="#ef4444">
+      <text x={94} y={50} textAnchor="middle" fontSize={8} fill={vt.ink("#ef4444")}>
         High Bias
       </text>
 
@@ -94,10 +94,10 @@ function BiasVarianceArch({ accent, vt }: { accent: string; vt: VT }) {
       <rect x={366} y={20} width={160} height={130} rx={8}
         fill={vt.isDark ? "rgba(245,158,11,0.1)" : "rgba(245,158,11,0.07)"}
         stroke="#f59e0b" strokeWidth={1} strokeDasharray="5,3" />
-      <text x={446} y={36} textAnchor="middle" fontSize={9} fill="#f59e0b" fontWeight="bold">
+      <text x={446} y={36} textAnchor="middle" fontSize={9} fill={vt.ink("#f59e0b")} fontWeight="bold">
         Overfitting
       </text>
-      <text x={446} y={50} textAnchor="middle" fontSize={8} fill="#f59e0b">
+      <text x={446} y={50} textAnchor="middle" fontSize={8} fill={vt.ink("#f59e0b")}>
         High Variance
       </text>
 

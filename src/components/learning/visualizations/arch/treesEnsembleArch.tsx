@@ -80,7 +80,7 @@ function XGBoostArch({ accent, vt }: { accent: string; vt: VT }) {
         sublabel="Fₜ(x) = Fₜ₋₁(x) + η · hₜ(x)"
         bg={green} textColor={textOn(green)} rx={8} />
 
-      <text x={LCX + LW / 2} y={218} textAnchor="middle" fontSize={8} fill="#f59e0b">
+      <text x={LCX + LW / 2} y={218} textAnchor="middle" fontSize={8} fill={vt.ink("#f59e0b")}>
         ↺  repeat t = 1…T  →  final prediction: sum of all trees
       </text>
 
@@ -304,7 +304,7 @@ function CatBoostArch({ accent, vt }: { accent: string; vt: VT }) {
       ))}
       <line x1={368 + NW / 2} y1={109} x2={432 - NW / 2} y2={109}
         stroke="#f59e0b" strokeWidth={1} strokeDasharray="3,2" />
-      <text x={400} y={107} textAnchor="middle" fontSize={6.5} fill="#f59e0b">same!</text>
+      <text x={400} y={107} textAnchor="middle" fontSize={6.5} fill={vt.ink("#f59e0b")}>same!</text>
 
       {l2.map((n, i) => (
         <g key={`cl2-${i}`}>

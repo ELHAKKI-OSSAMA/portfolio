@@ -431,7 +431,7 @@ export default function EntropyViz({ accentColor = "#6c63ff" }: { accentColor?: 
                       y={by - 3}
                       textAnchor="middle"
                       fontSize={8}
-                      fill={accentColor}
+                      fill={vt.ink(accentColor)}
                     >
                       {p.toFixed(2)}
                     </text>

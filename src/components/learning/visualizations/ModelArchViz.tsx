@@ -269,7 +269,7 @@ function TransformerArch({ accentColor, vt, labels }: { accentColor: string; vt:
           d={`M ${BX - 8} ${y1} L ${BX - 22} ${y1} L ${BX - 22} ${y2} L ${BX - 8} ${y2}`}
           fill="none" stroke="#f59e0b" strokeWidth={1.5} strokeDasharray="4,2" />
       ))}
-      <text x={BX - 30} y={175} fontSize={8} fill="#f59e0b" transform={`rotate(-90,${BX-30},175)`}>
+      <text x={BX - 30} y={175} fontSize={8} fill={vt.ink("#f59e0b")} transform={`rotate(-90,${BX-30},175)`}>
         {labels.transResidual}
       </text>
 
@@ -303,8 +303,8 @@ function LSTMArch({ accentColor, vt, labels }: { accentColor: string; vt: Return
         stroke={vt.border} strokeWidth={1.5} />
       <text x={10} y={46} fontSize={8} fill={vt.textMuted}>Cₜ₋₁</text>
       {/* Operations on cell state */}
-      <text x={90} y={47} textAnchor="middle" fontSize={16} fill="#ff6b6b" opacity={0.8}>×</text>
-      <text x={200} y={47} textAnchor="middle" fontSize={16} fill="#f59e0b" opacity={0.8}>+</text>
+      <text x={90} y={47} textAnchor="middle" fontSize={16} fill={vt.ink("#ff6b6b")} opacity={0.8}>×</text>
+      <text x={200} y={47} textAnchor="middle" fontSize={16} fill={vt.ink("#f59e0b")} opacity={0.8}>+</text>
       <text x={W_ - 50} y={46} fontSize={8} fill={vt.textMuted}>Cₜ</text>
 
       {/* Arrows from gates to cell track */}
@@ -386,12 +386,12 @@ function GANArch({ accentColor, vt, labels }: { accentColor: string; vt: ReturnT
       {/* Discriminator loss → back to D */}
       <path d="M 450 102 L 450 148 L 305 148 L 305 115" fill="none"
         stroke="#f59e0b" strokeWidth={1.5} strokeDasharray="5,3" markerEnd="url(#arrowhead)" />
-      <text x={360} y={163} textAnchor="middle" fontSize={8} fill="#f59e0b">{labels.ganDiscLoss}</text>
+      <text x={360} y={163} textAnchor="middle" fontSize={8} fill={vt.ink("#f59e0b")}>{labels.ganDiscLoss}</text>
 
       {/* Generator loss → back to G */}
       <path d="M 360 60 L 380 60 L 380 20 L 160 20 L 160 30" fill="none"
         stroke="#ff6b6b" strokeWidth={1.5} strokeDasharray="5,3" markerEnd="url(#arrowhead)" />
-      <text x={270} y={16} textAnchor="middle" fontSize={8} fill="#ff6b6b">{labels.ganGenLoss}</text>
+      <text x={270} y={16} textAnchor="middle" fontSize={8} fill={vt.ink("#ff6b6b")}>{labels.ganGenLoss}</text>
 
       <text x={W_ / 2} y={H_ - 4} textAnchor="middle" fontSize={9} fill={vt.textMuted}>
         {labels.ganCaption}
@@ -464,7 +464,7 @@ function MLPArch({ accentColor, vt, labels }: { accentColor: string; vt: ReturnT
       {/* Activation labels */}
       {[150, 270].map(x => (
         <text key={x} x={x} y={CY + 60} textAnchor="middle" fontSize={8}
-          fill={accentColor} fontFamily="monospace" opacity={0.8}>
+          fill={vt.ink(accentColor)} fontFamily="monospace" opacity={0.8}>
           ReLU
         </text>
       ))}

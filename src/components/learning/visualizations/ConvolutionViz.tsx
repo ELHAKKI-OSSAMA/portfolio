@@ -422,10 +422,10 @@ export default function ConvolutionViz({ accentColor = "#06b6d4" }: { accentColo
                 {/* Arrows */}
                 <text x={OFF_FM + 6 * P_CELL_FM + 6} y={3 * P_CELL_FM + 6} fontSize={14} fill={vt.ink(accentColor)} opacity={0.7}>→</text>
                 <text x={OFF_RELU - 4} y={3 * P_CELL_FM - 12} textAnchor="middle" fontSize={8}
-                  fill={accentColor} fontFamily="monospace">ReLU</text>
+                  fill={vt.ink(accentColor)} fontFamily="monospace">ReLU</text>
                 <text x={OFF_RELU + 6 * P_CELL_FM + 6} y={3 * P_CELL_FM + 6} fontSize={14} fill={vt.ink(accentColor)} opacity={0.7}>→</text>
                 <text x={OFF_RELU + 6 * P_CELL_FM + P_GAP / 2} y={3 * P_CELL_FM - 12} textAnchor="middle" fontSize={8}
-                  fill={accentColor} fontFamily="monospace">MaxPool</text>
+                  fill={vt.ink(accentColor)} fontFamily="monospace">MaxPool</text>
 
                 {/* ── Feature Map (raw conv output, 0-1 normalized) ── */}
                 {Array.from({ length: 6 }, (_, r) =>
