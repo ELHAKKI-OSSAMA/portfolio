@@ -10,6 +10,7 @@ import { projectImages } from "@/lib/data/projects/images";
 import ProjectMarkdown from "@/components/ui/ProjectMarkdown";
 import ProjectImageGallery from "@/components/ui/ProjectImageGallery";
 import { buildMetadata } from "@/lib/seo";
+import RelatedLinks from "@/components/seo/RelatedLinks";
 
 export async function generateStaticParams() {
   return projects.map((p) => ({ id: p.id }));
@@ -71,6 +72,22 @@ export default async function ProjectDetailPage({
   const description = locale === "fr" ? (project.descriptionFr ?? project.description) : locale === "ar" ? (project.descriptionAr ?? project.description) : project.description;
   const dataset = locale === "fr" ? (project.datasetFr ?? project.dataset) : locale === "ar" ? (project.datasetAr ?? project.dataset) : project.dataset;
   const approach = locale === "fr" ? (project.approachFr ?? project.approach) : locale === "ar" ? (project.approachAr ?? project.approach) : project.approach;
+
+  // Related projects: most shared categories first. Internal links in the SSR
+  // HTML help Google crawl and index deeper project pages.
+  const related = projects
+    .filter((p) => p.id !== id)
+    .map((p) => ({ p, score: p.category.filter((c) => project.category.includes(c)).length }))
+    .filter((r) => r.score > 0)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 4)
+    .map((r) => ({
+      title: locale === "fr" ? (r.p.titleFr ?? r.p.title) : locale === "ar" ? (r.p.titleAr ?? r.p.title) : r.p.title,
+      href: `/${locale}/projects/${r.p.id}`,
+      subtitle: locale === "fr" ? (r.p.descriptionFr ?? r.p.description) : locale === "ar" ? (r.p.descriptionAr ?? r.p.description) : r.p.description,
+    }));
+  const relatedHeading =
+    locale === "fr" ? "Projets similaires" : locale === "ar" ? "مشاريع ذات صلة" : "Related projects";
 
   return (
     <div className="min-h-screen pt-24 pb-20 section-padding">
@@ -346,6 +363,7 @@ export default async function ProjectDetailPage({
         </div>
 
       </div>
+      <RelatedLinks heading={relatedHeading} items={related} />
     </div>
   );
 }

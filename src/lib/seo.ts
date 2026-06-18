@@ -39,6 +39,10 @@ interface BuildArgs {
   publishedTime?: string;
   modifiedTime?: string;
   tags?: string[];
+  /** Set false to emit robots noindex (e.g. a locale that only falls back to EN content). */
+  indexable?: boolean;
+  /** Locales that actually have content for this page; limits hreflang alternates. Defaults to all. */
+  availableLocales?: readonly string[];
 }
 
 /**
@@ -56,9 +60,13 @@ export function buildMetadata({
   publishedTime,
   modifiedTime,
   tags,
+  indexable = true,
+  availableLocales = LOCALES,
 }: BuildArgs): Metadata {
   const languages: Record<string, string> = {};
-  for (const l of LOCALES) languages[l] = `${SITE_URL}/${l}${path}`;
+  for (const l of LOCALES) {
+    if (availableLocales.includes(l)) languages[l] = `${SITE_URL}/${l}${path}`;
+  }
   languages["x-default"] = `${SITE_URL}/en${path}`;
 
   const url = `${SITE_URL}/${locale}${path}`;
@@ -72,6 +80,7 @@ export function buildMetadata({
     description,
     keywords,
     alternates: { canonical: url, languages },
+    ...(indexable ? {} : { robots: { index: false, follow: true } }),
     openGraph: {
       type: type === "profile" ? "profile" : type,
       title,

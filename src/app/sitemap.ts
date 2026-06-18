@@ -1,12 +1,12 @@
 import { MetadataRoute } from "next";
-import { blogPosts, projects, learningTopics, gameDocs, SITE_URL } from "@/lib/data";
+import { blogPosts, projects, learningTopics, gameDocs, SITE_URL, hasLocalizedBody } from "@/lib/data";
 
 const locales = ["en", "fr", "ar"] as const;
 
-/** Build hreflang alternates (incl. x-default) for a locale-agnostic path. */
-function alternatesFor(path: string) {
+/** Build hreflang alternates (incl. x-default) limited to the given locales. */
+function alternatesFor(path: string, locs: readonly string[]) {
   const languages: Record<string, string> = {};
-  for (const l of locales) languages[l] = `${SITE_URL}/${l}${path}`;
+  for (const l of locs) languages[l] = `${SITE_URL}/${l}${path}`;
   languages["x-default"] = `${SITE_URL}/en${path}`;
   return { languages };
 }
@@ -15,19 +15,23 @@ type Entry = MetadataRoute.Sitemap[number];
 
 function entriesFor(
   path: string,
-  opts: { changeFrequency?: Entry["changeFrequency"]; priority?: number; lastModified?: Date } = {}
+  opts: { changeFrequency?: Entry["changeFrequency"]; priority?: number; lastModified?: Date; locales?: readonly string[] } = {}
 ): MetadataRoute.Sitemap {
-  const { changeFrequency = "monthly", priority = 0.8, lastModified } = opts;
+  const { changeFrequency = "monthly", priority = 0.8, lastModified, locales: locs = locales } = opts;
   // Only emit <lastmod> when we have a real content date (e.g. blog publish
   // date). Stamping `new Date()` on every deploy makes every URL look freshly
   // modified each build, which teaches Google to distrust our lastmod signal
   // site-wide and wastes crawl budget re-checking unchanged pages.
-  return locales.map((locale) => ({
+  //
+  // `locales` limits which locale URLs are listed: pages whose non-EN locale
+  // only falls back to English content are noindex'd, so we must not list them
+  // here (a noindex URL in the sitemap is a contradictory signal to Google).
+  return locs.map((locale) => ({
     url: `${SITE_URL}/${locale}${path}`,
     ...(lastModified ? { lastModified } : {}),
     changeFrequency,
     priority,
-    alternates: alternatesFor(path),
+    alternates: alternatesFor(path, locs),
   }));
 }
 
@@ -51,6 +55,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     entriesFor(`/blog/${post.slug}`, {
       priority: post.featured ? 0.8 : 0.7,
       lastModified: new Date(post.date),
+      locales: ["en", ...(["fr", "ar"] as const).filter((l) => hasLocalizedBody(post.slug, l))],
     })
   );
 
@@ -63,7 +68,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
   );
 
   const gameEntries = gameDocs.flatMap((g) =>
-    entriesFor(`/games/${g.id}`, { priority: 0.6 })
+    entriesFor(`/games/${g.id}`, {
+      priority: 0.6,
+      locales: ["en", ...(["fr", "ar"] as const).filter((l) => !!g.body[l] && g.body[l] !== g.body.en)],
+    })
   );
 
   return [...staticEntries, ...blogEntries, ...projectEntries, ...learningEntries, ...gameEntries];

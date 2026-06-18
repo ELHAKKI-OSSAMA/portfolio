@@ -24,6 +24,9 @@ export async function generateMetadata({
   const { locale, id } = await params;
   const doc = getGameDoc(id);
   if (!doc) return { title: "Not Found" };
+  // Index a non-English game doc only when its body is genuinely translated.
+  const hasBody = (l: string) => !!doc.body[l as "en"] && doc.body[l as "en"] !== doc.body.en;
+  const availableLocales = ["en", ...(["fr", "ar"] as const).filter(hasBody)];
   return buildMetadata({
     locale,
     path: `/games/${id}`,
@@ -31,6 +34,8 @@ export async function generateMetadata({
     title: `${doc.title[locale as "en"] ?? doc.title.en}`,
     description: doc.summary[locale as "en"] ?? doc.summary.en,
     keywords: [doc.algo, "AI game", "reinforcement learning", "neuroevolution", doc.id, "Ossama Elhakki"],
+    indexable: locale === "en" || hasBody(locale),
+    availableLocales,
   });
 }
 

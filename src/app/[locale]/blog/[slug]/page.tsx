@@ -9,6 +9,7 @@ import { buildMetadata, pick } from "@/lib/seo";
 import BlogArticle from "@/components/blog/BlogArticle";
 import ReadingProgress from "@/components/blog/ReadingProgress";
 import TableOfContents from "@/components/blog/TableOfContents";
+import RelatedLinks from "@/components/seo/RelatedLinks";
 import { ArrowLeft, ArrowRight, Clock, Tag, Calendar } from "lucide-react";
 
 export async function generateStaticParams() {
@@ -30,6 +31,11 @@ export async function generateMetadata({
   const description =
     locale === "fr" ? post.excerptFr : locale === "ar" ? post.excerptAr : post.excerpt;
 
+  // Only index a non-English post once its body is genuinely translated — an
+  // EN-fallback body is duplicate content Google rejects ("crawled, not indexed").
+  const availableLocales = ["en", ...(["fr", "ar"] as const).filter((l) => hasLocalizedBody(slug, l))];
+  const indexable = locale === "en" || hasLocalizedBody(slug, locale);
+
   return {
     ...buildMetadata({
       locale,
@@ -41,6 +47,8 @@ export async function generateMetadata({
       publishedTime: post.date,
       modifiedTime: post.date,
       tags: post.tags,
+      indexable,
+      availableLocales,
     }),
     authors: [{ name: "Ossama Elhakki", url: SITE_URL }],
   };
@@ -77,6 +85,28 @@ export default async function BlogPostPage({
     { year: "numeric", month: "long", day: "numeric" }
   );
   const BackIcon = isRtl ? ArrowRight : ArrowLeft;
+
+  // Related posts: same category or shared tags, most overlap first. Internal
+  // links in the SSR HTML help Google discover and index deeper pages.
+  const related = blogPosts
+    .filter((p) => p.slug !== slug)
+    .map((p) => ({
+      post: p,
+      score:
+        (p.category === post.category ? 2 : 0) +
+        p.tags.filter((tag) => post.tags.includes(tag)).length,
+    }))
+    .filter((r) => r.score > 0)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 4)
+    .map((r) => ({
+      title: locale === "fr" ? r.post.titleFr : locale === "ar" ? r.post.titleAr : r.post.title,
+      href: `/${locale}/blog/${r.post.slug}`,
+      subtitle: `${r.post.readTime} ${t("read")}`,
+    }));
+
+  const relatedHeading =
+    locale === "fr" ? "Articles similaires" : locale === "ar" ? "مقالات ذات صلة" : "Related articles";
 
   return (
     <>
@@ -209,6 +239,7 @@ export default async function BlogPostPage({
             </aside>
           </div>
         </div>
+        <RelatedLinks heading={relatedHeading} items={related} />
       </div>
     </>
   );
