@@ -24,6 +24,12 @@
     --stat-amber:  #f59e0b;
     --stat-red:    #ff6b6b;
     --stat-purple: #8b5cf6;
+    --border-strong: rgba(255, 255, 255, 0.15);
+    --filter-btn-bg: transparent;
+    --filter-btn-border: rgba(255, 255, 255, 0.18);
+    --filter-btn-text: #adb7c5;
+    --tag-bg: rgba(255, 255, 255, 0.05);
+    --tag-color: #adb7c5;
   }
 
   [data-theme="light"] {
@@ -57,16 +63,6 @@
     --filter-btn-text: #5b52e0;
     --tag-bg: rgba(0, 0, 0, 0.06);
     --tag-color: #3d4557;
-  }
-
-  :root,
-  [data-theme="dark"] {
-    --border-strong: rgba(255, 255, 255, 0.15);
-    --filter-btn-bg: transparent;
-    --filter-btn-border: rgba(255, 255, 255, 0.18);
-    --filter-btn-text: #adb7c5;
-    --tag-bg: rgba(255, 255, 255, 0.05);
-    --tag-color: #adb7c5;
   }
 
   html {

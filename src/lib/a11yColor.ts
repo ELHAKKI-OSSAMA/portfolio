@@ -27,7 +27,9 @@ function ratioOnWhite(r: number, g: number, b: number): number {
  * Hue is preserved (channels scale uniformly). Already-dark colors are returned
  * unchanged.
  */
-export function accentInk(hex: string, target = 4.6): string {
+// Default target 5.2 (not 4.5) leaves headroom: chips sit on a faint tinted
+// background rather than pure white, which shaves ~0.3 off the measured ratio.
+export function accentInk(hex: string, target = 5.2): string {
   const parts = hex.replace("#", "").match(/.{2}/g);
   if (!parts || parts.length < 3) return hex;
   const [r, g, b] = parts.map((x) => parseInt(x, 16));
