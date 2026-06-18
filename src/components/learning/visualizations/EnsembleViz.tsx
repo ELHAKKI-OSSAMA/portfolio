@@ -183,7 +183,7 @@ export default function EnsembleViz({ accentColor = "#f59e0b" }: { accentColor?:
         <line x1={PAD + 4} y1={PAD + 12} x2={PAD + 22} y2={PAD + 12} stroke={vt.gridStrong} strokeWidth={2} strokeDasharray="6,4" />
         <text x={PAD + 26} y={PAD + 16} fontSize={9} fill={vt.textMuted}>{L.trueFunc}</text>
         <line x1={PAD + 4} y1={PAD + 26} x2={PAD + 22} y2={PAD + 26} stroke={accentColor} strokeWidth={3} />
-        <text x={PAD + 26} y={PAD + 30} fontSize={9} fill={accentColor}>{L.ensembleMean}</text>
+        <text x={PAD + 26} y={PAD + 30} fontSize={9} fill={vt.ink(accentColor)}>{L.ensembleMean}</text>
       </svg>
 
       {/* Model toggles */}

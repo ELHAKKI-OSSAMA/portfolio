@@ -146,7 +146,7 @@ function SigmaEllipse({ mu, sigma, color, vt }: {
         fill={color} opacity={0.1}
         stroke={color} strokeWidth={1} strokeDasharray="4,3"
       />
-      <text x={cx} y={cy - ry - 5} textAnchor="middle" fontSize={8} fill={color} opacity={0.8}>
+      <text x={cx} y={cy - ry - 5} textAnchor="middle" fontSize={8} fill={vt.ink(color)} opacity={0.8}>
         ±2σ
       </text>
     </>

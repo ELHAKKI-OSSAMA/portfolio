@@ -1,6 +1,7 @@
 "use client";
 import { useMemo } from "react";
 import { useTheme } from "@/contexts/ThemeContext";
+import { accentInk } from "@/lib/a11yColor";
 
 export interface VizTheme {
   isDark: boolean;
@@ -8,6 +9,8 @@ export interface VizTheme {
   text: string;
   textMuted: string;
   textFaint: string;
+  /** A vivid accent hue as readable label text: unchanged in dark mode, AA-darkened in light mode. */
+  ink: (color: string) => string;
   grid: string;
   gridStrong: string;
   axis: string;
@@ -30,9 +33,11 @@ export function useVizTheme(): VizTheme {
   // on every parent re-render — only recalculate when isDark actually changes.
   return useMemo(() => ({
     isDark,
+    ink:               (color: string) => (isDark ? color : accentInk(color)),
     bg:                isDark ? "#0d0d1f"               : "#f7f7ff",
     text:              isDark ? "rgba(255,255,255,0.80)" : "rgba(0,0,0,0.75)",
-    textMuted:         isDark ? "rgba(255,255,255,0.35)" : "rgba(0,0,0,0.42)",
+    // 0.42 only reached ~3:1 on white; 0.56 clears AA for small label text.
+    textMuted:         isDark ? "rgba(255,255,255,0.35)" : "rgba(0,0,0,0.56)",
     textFaint:         isDark ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.10)",
     grid:              isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.07)",
     gridStrong:        isDark ? "rgba(255,255,255,0.14)" : "rgba(0,0,0,0.12)",

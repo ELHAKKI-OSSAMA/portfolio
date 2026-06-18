@@ -286,7 +286,7 @@ export default function LinearRegressionViz({ accentColor = "#6c63ff" }: { accen
 
         {/* GD iteration counter */}
         {isLearning && (
-          <text x={W - PAD - 4} y={PAD + 14} textAnchor="end" fontSize={10} fill={accentColor} fontFamily="monospace">
+          <text x={W - PAD - 4} y={PAD + 14} textAnchor="end" fontSize={10} fill={vt.ink(accentColor)} fontFamily="monospace">
             {L.iterLabel} {gdStep}/{gdPath.length - 1}
           </text>
         )}

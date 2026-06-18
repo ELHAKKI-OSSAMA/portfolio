@@ -176,10 +176,10 @@ export default function SVRViz({ accentColor = "#f97316" }: { accentColor?: stri
             <motion.path d={lowerTubePath} fill="none" stroke={accentColor} strokeWidth={1.5} strokeDasharray="5,4" opacity={0.7}
               animate={{ d: lowerTubePath }} transition={{ duration: 0.3 }} />
             {/* ε label */}
-            <text x={toSVGX(9.5)} y={toSVGY(linearFn(9.5) + epsilon) - 4} fontSize={9} fill={accentColor} textAnchor="end">
+            <text x={toSVGX(9.5)} y={toSVGY(linearFn(9.5) + epsilon) - 4} fontSize={9} fill={vt.ink(accentColor)} textAnchor="end">
               +ε
             </text>
-            <text x={toSVGX(9.5)} y={toSVGY(linearFn(9.5) - epsilon) + 12} fontSize={9} fill={accentColor} textAnchor="end">
+            <text x={toSVGX(9.5)} y={toSVGY(linearFn(9.5) - epsilon) + 12} fontSize={9} fill={vt.ink(accentColor)} textAnchor="end">
               −ε
             </text>
           </>

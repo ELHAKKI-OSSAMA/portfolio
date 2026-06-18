@@ -344,7 +344,7 @@ export default function AttentionViz({ accentColor = "#06b6d4" }: { accentColor?
           stroke={vt.grid} strokeWidth={1} />
 
         {/* Arrow */}
-        <text x={W / 2} y={108} textAnchor="middle" fontSize={11} fill={accentColor}>↓  softmax(·)</text>
+        <text x={W / 2} y={108} textAnchor="middle" fontSize={11} fill={vt.ink(accentColor)}>↓  softmax(·)</text>
 
         {/* Softmax weights */}
         <text x={PAD} y={125} fontSize={9} fill={vt.textMuted} fontFamily="monospace">

@@ -50,7 +50,7 @@ function EvaluationArch({ accent, vt }: { accent: string; vt: VT }) {
         { y: 106, label: "Recall" },
       ].map(m => (
         <g key={m.label}>
-          <text x={492} y={m.y + 12} fontSize={9} fill={accent} fontWeight="500">{m.label}</text>
+          <text x={492} y={m.y + 12} fontSize={9} fill={vt.ink(accent)} fontWeight="500">{m.label}</text>
         </g>
       ))}
 
@@ -84,10 +84,10 @@ function BiasVarianceArch({ accent, vt }: { accent: string; vt: VT }) {
 
       <rect x={188} y={20} width={164} height={130} rx={8}
         fill={`${accent}10`} stroke={accent} strokeWidth={1} strokeDasharray="5,3" />
-      <text x={270} y={36} textAnchor="middle" fontSize={9} fill={accent} fontWeight="bold">
+      <text x={270} y={36} textAnchor="middle" fontSize={9} fill={vt.ink(accent)} fontWeight="bold">
         Sweet Spot
       </text>
-      <text x={270} y={50} textAnchor="middle" fontSize={8} fill={accent}>
+      <text x={270} y={50} textAnchor="middle" fontSize={8} fill={vt.ink(accent)}>
         Low Bias + Low Variance
       </text>
 
@@ -162,7 +162,7 @@ function MulticlassArch({ accent, vt }: { accent: string; vt: VT }) {
       {/* ── OvA section (top row) ── */}
       <rect x={4} y={OVA_BG_Y} width={198} height={OVA_H} rx={8}
         fill={`${accent}07`} stroke={`${accent}25`} strokeWidth={1} strokeDasharray="4,3" />
-      <text x={103} y={OVA_BG_Y + 14} textAnchor="middle" fontSize={9} fontWeight="bold" fill={accent}>
+      <text x={103} y={OVA_BG_Y + 14} textAnchor="middle" fontSize={9} fontWeight="bold" fill={vt.ink(accent)}>
         One-vs-All (OvA) — 3 classifiers
       </text>
       {["A","B","C"].map((c, i) => (

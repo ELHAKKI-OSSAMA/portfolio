@@ -317,7 +317,7 @@ export default function ConvolutionViz({ accentColor = "#06b6d4" }: { accentColo
               />
 
               {/* ✱ */}
-              <text x={KERNEL_OFF - 14} y={4 * CELL + 5} textAnchor="middle" fontSize={16} fill={accentColor} opacity={0.8}>✱</text>
+              <text x={KERNEL_OFF - 14} y={4 * CELL + 5} textAnchor="middle" fontSize={16} fill={vt.ink(accentColor)} opacity={0.8}>✱</text>
 
               {/* Kernel grid */}
               <text x={KERNEL_OFF + 1.5 * CELL} y={8 * CELL + 16} textAnchor="middle" fontSize={9} fill={vt.textMuted}>{L.svgKernel}</text>
@@ -338,7 +338,7 @@ export default function ConvolutionViz({ accentColor = "#06b6d4" }: { accentColo
               )}
 
               {/* = */}
-              <text x={OUTPUT_OFF - 14} y={4 * CELL + 5} textAnchor="middle" fontSize={16} fill={accentColor} opacity={0.8}>=</text>
+              <text x={OUTPUT_OFF - 14} y={4 * CELL + 5} textAnchor="middle" fontSize={16} fill={vt.ink(accentColor)} opacity={0.8}>=</text>
 
               {/* Feature map output */}
               <text x={OUTPUT_OFF + 3 * CELL} y={8 * CELL + 16} textAnchor="middle" fontSize={9} fill={vt.textMuted}>{L.svgFeatureMap}</text>
@@ -420,10 +420,10 @@ export default function ConvolutionViz({ accentColor = "#06b6d4" }: { accentColo
                 <text x={OFF_POOL + 1.5 * P_CELL_PL} y={P_H - 6} textAnchor="middle" fontSize={9} fill={vt.textMuted}>{L.svgPoolLabel}</text>
 
                 {/* Arrows */}
-                <text x={OFF_FM + 6 * P_CELL_FM + 6} y={3 * P_CELL_FM + 6} fontSize={14} fill={accentColor} opacity={0.7}>→</text>
+                <text x={OFF_FM + 6 * P_CELL_FM + 6} y={3 * P_CELL_FM + 6} fontSize={14} fill={vt.ink(accentColor)} opacity={0.7}>→</text>
                 <text x={OFF_RELU - 4} y={3 * P_CELL_FM - 12} textAnchor="middle" fontSize={8}
                   fill={accentColor} fontFamily="monospace">ReLU</text>
-                <text x={OFF_RELU + 6 * P_CELL_FM + 6} y={3 * P_CELL_FM + 6} fontSize={14} fill={accentColor} opacity={0.7}>→</text>
+                <text x={OFF_RELU + 6 * P_CELL_FM + 6} y={3 * P_CELL_FM + 6} fontSize={14} fill={vt.ink(accentColor)} opacity={0.7}>→</text>
                 <text x={OFF_RELU + 6 * P_CELL_FM + P_GAP / 2} y={3 * P_CELL_FM - 12} textAnchor="middle" fontSize={8}
                   fill={accentColor} fontFamily="monospace">MaxPool</text>
 

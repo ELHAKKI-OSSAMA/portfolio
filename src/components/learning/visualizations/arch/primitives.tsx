@@ -8,7 +8,7 @@
  * Fully light/dark-mode aware using CSS custom properties.
  */
 
-import { useVizTheme } from "@/hooks/useVizTheme";
+import { useVizTheme, type VizTheme } from "@/hooks/useVizTheme";
 
 export type ArchType =
   | "linear-regression"
@@ -39,15 +39,8 @@ export type ArchType =
 
 // ── Shared primitives ─────────────────────────────────────────────────────────
 
-interface VT {
-  isDark: boolean;
-  textMuted: string;
-  text: string;
-  axis: string;
-  grid: string;
-  border: string;
-  surface: string;
-}
+// Full viz-theme type (incl. ink()) so arch sub-components stay in sync.
+type VT = VizTheme;
 
 const ARROW_DEFS = (id: string, color: string) => (
   <defs>

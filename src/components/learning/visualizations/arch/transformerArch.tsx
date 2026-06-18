@@ -118,7 +118,7 @@ function BERTArch({ accent, vt }: { accent: string; vt: VT }) {
       {ARROW_DEFS("arr-bert", ac)}
 
       {/* ── Title ── */}
-      <text x={W/2} y={16} textAnchor="middle" fontSize={10} fill={accent} fontWeight="bold">
+      <text x={W/2} y={16} textAnchor="middle" fontSize={10} fill={vt.ink(accent)} fontWeight="bold">
         BERT: Bidirectional Encoder Representations from Transformers
       </text>
 
@@ -134,14 +134,14 @@ function BERTArch({ accent, vt }: { accent: string; vt: VT }) {
       <text x={W - 86} y={52} textAnchor="middle" fontSize={7.5} fill={purple}>Is B the next sentence?</text>
 
       {/* ── Fine-tune note (centered between cards, no overlap) ── */}
-      <text x={W/2} y={40} textAnchor="middle" fontSize={8.5} fill={accent} fontWeight="bold">
+      <text x={W/2} y={40} textAnchor="middle" fontSize={8.5} fill={vt.ink(accent)} fontWeight="bold">
         Fine-tune: add task head on [CLS] output
       </text>
 
       {/* ── Transformer encoder block ── */}
       <rect x={startX - 10} y={72} width={totalW + 20} height={54} rx={8}
         fill={`${accent}10`} stroke={`${accent}35`} strokeWidth={1.5} strokeDasharray="5,3" />
-      <text x={W/2} y={92} textAnchor="middle" fontSize={9} fill={accent} fontWeight="bold">
+      <text x={W/2} y={92} textAnchor="middle" fontSize={9} fill={vt.ink(accent)} fontWeight="bold">
         Transformer Encoder × 12 layers (BERT-base)   |   × 24 (BERT-large)
       </text>
       <text x={W/2} y={107} textAnchor="middle" fontSize={8} fill={vt.textMuted}>
@@ -193,7 +193,7 @@ function BERTArch({ accent, vt }: { accent: string; vt: VT }) {
       </text>
 
       {/* ── Token type labels ── */}
-      <text x={startX + CELL_W/2} y={TOK_Y - 4} textAnchor="middle" fontSize={7} fill={accent}>[CLS] cls</text>
+      <text x={startX + CELL_W/2} y={TOK_Y - 4} textAnchor="middle" fontSize={7} fill={vt.ink(accent)}>[CLS] cls</text>
       <text x={startX + 3*CELL_W + CELL_W/2} y={TOK_Y - 4} textAnchor="middle" fontSize={7} fill="#ef4444">[MASK] ?</text>
 
       {/* ── Embedding types legend ── */}

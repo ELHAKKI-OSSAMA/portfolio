@@ -193,7 +193,7 @@ function WaveformTab({ accentColor, vt }: { accentColor: string; vt: ReturnType<
         return (
           <g key={label}>
             <path d={miniSin(freq, amp, lx, ly)} fill="none" stroke={color} strokeWidth={1.5} />
-            <text x={lx + 32} y={ly + 4} fontSize={8} fill={color}>{label}</text>
+            <text x={lx + 32} y={ly + 4} fontSize={8} fill={vt.ink(color)}>{label}</text>
           </g>
         );
       })}

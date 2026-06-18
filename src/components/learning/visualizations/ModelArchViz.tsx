@@ -236,7 +236,7 @@ function TransformerArch({ accentColor, vt, labels }: { accentColor: string; vt:
       {/* Encoder block (repeated N×) */}
       <rect x={BX - 16} y={94} width={BW + 32} height={134} rx={10}
         fill={`${accentColor}08`} stroke={`${accentColor}35`} strokeWidth={1.5} strokeDasharray="6,3" />
-      <text x={BX + BW + 20} y={162} textAnchor="start" fontSize={8} fill={accentColor}>
+      <text x={BX + BW + 20} y={162} textAnchor="start" fontSize={8} fill={vt.ink(accentColor)}>
         ×N
       </text>
 

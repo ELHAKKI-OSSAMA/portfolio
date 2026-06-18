@@ -180,7 +180,7 @@ function GRUArch({ accent, vt }: { accent: string; vt: VT }) {
       {/* Output equation */}
       <rect x={16} y={36} width={W - 32} height={38} rx={8}
         fill={`${accent}12`} stroke={`${accent}35`} strokeWidth={1.5} />
-      <text x={W / 2} y={53} textAnchor="middle" fontSize={10} fill={accent} fontWeight="bold">
+      <text x={W / 2} y={53} textAnchor="middle" fontSize={10} fill={vt.ink(accent)} fontWeight="bold">
         hₜ = (1 − zₜ) · hₜ₋₁ + zₜ · h̃ₜ
       </text>
       <text x={W / 2} y={68} textAnchor="middle" fontSize={8} fill={vt.textMuted}>

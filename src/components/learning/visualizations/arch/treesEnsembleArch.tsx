@@ -19,7 +19,7 @@ function RandomForestArch({ accent, vt }: { accent: string; vt: VT }) {
       <Box x={8} y={84} w={72} h={42} label="Dataset" sublabel="N samples"
         bg={vt.isDark ? "#334155" : "#e2e8f0"} textColor={vt.text} rx={8} />
       {/* Feature random label */}
-      <text x={140} y={12} textAnchor="middle" fontSize={9} fill={accent} fontWeight="bold">
+      <text x={140} y={12} textAnchor="middle" fontSize={9} fill={vt.ink(accent)} fontWeight="bold">
         Random Feature Subset at each split: √p features
       </text>
       {trees.map((t) => (
@@ -89,7 +89,7 @@ function XGBoostArch({ accent, vt }: { accent: string; vt: VT }) {
       {/* Card 1 — Newton Step */}
       <rect x={228} y={8} width={306} height={66} rx={8}
         fill={`${accent}12`} stroke={`${accent}40`} strokeWidth={1.5} />
-      <text x={240} y={24} fontSize={9} fontWeight="bold" fill={accent}>⚡ Newton Step (2nd-order)</text>
+      <text x={240} y={24} fontSize={9} fontWeight="bold" fill={vt.ink(accent)}>⚡ Newton Step (2nd-order)</text>
       <text x={240} y={39} fontSize={8} fill={vt.text} fontFamily="monospace">wⱼ* = −Gⱼ / (Hⱼ + λ)   ← exact optimal leaf weight</text>
       <text x={240} y={53} fontSize={7.5} fill={vt.textMuted}>Uses hessian (curvature) → better step size than gradient alone</text>
       <text x={240} y={66} fontSize={7.5} fill={vt.textMuted}>Gⱼ = Σᵢ∈ⱼ gᵢ  ·  Hⱼ = Σᵢ∈ⱼ hᵢ  (sums over samples in leaf j)</text>
@@ -149,7 +149,7 @@ function LightGBMArch({ accent, vt }: { accent: string; vt: VT }) {
       <text x={130} y={13} textAnchor="middle" fontSize={9} fill={vt.textMuted} fontWeight="bold">
         Level-wise (XGBoost style)
       </text>
-      <text x={400} y={13} textAnchor="middle" fontSize={9} fill={accent} fontWeight="bold">
+      <text x={400} y={13} textAnchor="middle" fontSize={9} fill={vt.ink(accent)} fontWeight="bold">
         Leaf-wise (LightGBM) ← faster
       </text>
 
@@ -194,11 +194,11 @@ function LightGBMArch({ accent, vt }: { accent: string; vt: VT }) {
           </text>
         </g>
       ))}
-      <text x={lf[1].cx} y={lf[1].y - 7} textAnchor="middle" fontSize={7} fill={accent}>↓ max gain</text>
-      <text x={400} y={118} textAnchor="middle" fontSize={7.5} fill={accent}>
+      <text x={lf[1].cx} y={lf[1].y - 7} textAnchor="middle" fontSize={7} fill={vt.ink(accent)}>↓ max gain</text>
+      <text x={400} y={118} textAnchor="middle" fontSize={7.5} fill={vt.ink(accent)}>
         Always split leaf with highest gain
       </text>
-      <text x={400} y={129} textAnchor="middle" fontSize={7} fill={accent}>
+      <text x={400} y={129} textAnchor="middle" fontSize={7} fill={vt.ink(accent)}>
         → deeper, asymmetric, better accuracy
       </text>
 
@@ -221,11 +221,11 @@ function LightGBMArch({ accent, vt }: { accent: string; vt: VT }) {
       {/* Histogram */}
       <rect x={350} y={140} width={184} height={72} rx={8}
         fill={`${accent}12`} stroke={`${accent}35`} strokeWidth={1.5} />
-      <text x={442} y={157} textAnchor="middle" fontSize={9} fontWeight="bold" fill={accent}>Histogram Binning</text>
+      <text x={442} y={157} textAnchor="middle" fontSize={9} fontWeight="bold" fill={vt.ink(accent)}>Histogram Binning</text>
       <text x={442} y={170} textAnchor="middle" fontSize={7.5} fill={vt.textMuted}>continuous → k discrete bins</text>
       <text x={442} y={183} textAnchor="middle" fontSize={7.5} fill={vt.textMuted}>O(n) → O(kd) split finding</text>
       <text x={442} y={196} textAnchor="middle" fontSize={7.5} fill={vt.textMuted}>subtraction trick from parent</text>
-      <text x={442} y={207} textAnchor="middle" fontSize={7} fill={accent}>→ 10–100× faster than exact</text>
+      <text x={442} y={207} textAnchor="middle" fontSize={7} fill={vt.ink(accent)}>→ 10–100× faster than exact</text>
 
       <text x={W / 2} y={H - 8} textAnchor="middle" fontSize={8.5} fill={vt.textMuted}>
         LightGBM: leaf-wise growth + GOSS + EFB + histogram → faster, lower memory than XGBoost
@@ -255,7 +255,7 @@ function CatBoostArch({ accent, vt }: { accent: string; vt: VT }) {
       {/* ── Left: Ordered Target Statistics ── */}
       <rect x={6} y={8} width={252} height={124} rx={8}
         fill={`${accent}10`} stroke={`${accent}35`} strokeWidth={1.5} />
-      <text x={132} y={24} textAnchor="middle" fontSize={9} fontWeight="bold" fill={accent}>
+      <text x={132} y={24} textAnchor="middle" fontSize={9} fontWeight="bold" fill={vt.ink(accent)}>
         ① Ordered Target Statistics
       </text>
       <text x={132} y={37} textAnchor="middle" fontSize={7.5} fill={vt.text}>
@@ -280,7 +280,7 @@ function CatBoostArch({ accent, vt }: { accent: string; vt: VT }) {
       <text x={16} y={116} fontSize={7.5} fill={vt.textMuted}>
         • No manual one-hot / label encoding needed
       </text>
-      <text x={16} y={128} fontSize={7.5} fill={accent} fontWeight="bold">
+      <text x={16} y={128} fontSize={7.5} fill={vt.ink(accent)} fontWeight="bold">
         → prevents overfitting on high-cardinality cats
       </text>
 
@@ -333,10 +333,10 @@ function CatBoostArch({ accent, vt }: { accent: string; vt: VT }) {
 
       <rect x={350} y={170} width={184} height={70} rx={6}
         fill={`${accent}12`} stroke={`${accent}35`} strokeWidth={1.5} />
-      <text x={442} y={187} textAnchor="middle" fontSize={8.5} fontWeight="bold" fill={accent}>Out-of-the-box</text>
+      <text x={442} y={187} textAnchor="middle" fontSize={8.5} fontWeight="bold" fill={vt.ink(accent)}>Out-of-the-box</text>
       <text x={442} y={201} textAnchor="middle" fontSize={7.5} fill={vt.textMuted}>No manual cat encoding</text>
       <text x={442} y={214} textAnchor="middle" fontSize={7.5} fill={vt.textMuted}>Great defaults, minimal tuning</text>
-      <text x={442} y={227} textAnchor="middle" fontSize={7} fill={accent}>Best for categorical-heavy data</text>
+      <text x={442} y={227} textAnchor="middle" fontSize={7} fill={vt.ink(accent)}>Best for categorical-heavy data</text>
 
       <text x={W / 2} y={H - 8} textAnchor="middle" fontSize={8.5} fill={vt.textMuted}>
         CatBoost: ordered TS + symmetric trees + ordered boosting → top tabular performance out-of-box

@@ -215,7 +215,7 @@ export default function GradientBoostingViz({ accentColor = "#f59e0b" }: { accen
 
         {/* Legend */}
         <text x={PAD + 4} y={PAD + 14} fontSize={10} fill={vt.textMuted}>{L.trueFuncLegend}</text>
-        <text x={PAD + 4} y={PAD + 26} fontSize={10} fill={accentColor}>{L.ensembleLegend}</text>
+        <text x={PAD + 4} y={PAD + 26} fontSize={10} fill={vt.ink(accentColor)}>{L.ensembleLegend}</text>
       </svg>
 
       {/* Tree chips */}

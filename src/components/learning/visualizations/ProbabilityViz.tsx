@@ -435,7 +435,7 @@ export default function ProbabilityViz({ accentColor = "#6c63ff" }: { accentColo
           return (
             <>
               <line x1={mx} y1={PLOT_Y0} x2={mx} y2={PLOT_Y1} stroke={accentColor} strokeWidth={1} strokeDasharray="4,3" opacity={0.5} />
-              <text x={mx} y={PLOT_Y0 + 8} fontSize={9} fill={accentColor} textAnchor="middle" opacity={0.8}>μ={meanK.toFixed(1)}</text>
+              <text x={mx} y={PLOT_Y0 + 8} fontSize={9} fill={vt.ink(accentColor)} textAnchor="middle" opacity={0.8}>μ={meanK.toFixed(1)}</text>
             </>
           );
         })()}
@@ -444,7 +444,7 @@ export default function ProbabilityViz({ accentColor = "#6c63ff" }: { accentColo
           return (
             <>
               <line x1={mx} y1={PLOT_Y0} x2={mx} y2={PLOT_Y1} stroke={accentColor} strokeWidth={1} strokeDasharray="4,3" opacity={0.5} />
-              <text x={mx} y={PLOT_Y0 + 8} fontSize={9} fill={accentColor} textAnchor="middle" opacity={0.8}>λ={lambda.toFixed(1)}</text>
+              <text x={mx} y={PLOT_Y0 + 8} fontSize={9} fill={vt.ink(accentColor)} textAnchor="middle" opacity={0.8}>λ={lambda.toFixed(1)}</text>
             </>
           );
         })()}

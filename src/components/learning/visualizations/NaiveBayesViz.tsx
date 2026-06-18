@@ -151,7 +151,7 @@ export default function NaiveBayesViz({ accentColor = "#8b5cf6" }: { accentColor
         ))}
 
         {/* query label */}
-        <text x={svgQx} y={PAD_T - 6} textAnchor="middle" fontSize={9} fill={accentColor} fontWeight="bold">
+        <text x={svgQx} y={PAD_T - 6} textAnchor="middle" fontSize={9} fill={vt.ink(accentColor)} fontWeight="bold">
           x = {qx}
         </text>
       </svg>

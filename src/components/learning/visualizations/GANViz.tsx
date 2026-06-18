@@ -314,7 +314,7 @@ export default function GANViz({ accentColor = "#a855f7" }: { accentColor?: stri
         <text x={PAD + 26} y={PAD + 16} fontSize={8} fill="#00d4aa">{L.legendReal}</text>
         <line x1={PAD + 4} y1={PAD + 26} x2={PAD + 22} y2={PAD + 26}
           stroke={accentColor} strokeWidth={2.5} />
-        <text x={PAD + 26} y={PAD + 30} fontSize={8} fill={accentColor}>{L.legendGen}</text>
+        <text x={PAD + 26} y={PAD + 30} fontSize={8} fill={vt.ink(accentColor)}>{L.legendGen}</text>
         <line x1={PAD + 4} y1={PAD + 40} x2={PAD + 22} y2={PAD + 40}
           stroke="#f59e0b" strokeWidth={1.5} strokeDasharray="5,4" />
         <text x={PAD + 26} y={PAD + 44} fontSize={8} fill="#f59e0b">{L.legendDisc}</text>

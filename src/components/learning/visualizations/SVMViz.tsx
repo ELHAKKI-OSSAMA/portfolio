@@ -270,7 +270,7 @@ export default function SVMViz({ accentColor = "#f97316" }: { accentColor?: stri
             <path d={plotLine(lineY)} fill="none" stroke={accentColor} strokeWidth={2.5} />
 
             {/* Margin annotation */}
-            <text x={toCX(7.5)} y={toCY(5.5)} fontSize={9} fill={accentColor} opacity={0.9}
+            <text x={toCX(7.5)} y={toCY(5.5)} fontSize={9} fill={vt.ink(accentColor)} opacity={0.9}
               fontFamily="monospace">
               {L.marginLabel(geometricMargin)}
             </text>

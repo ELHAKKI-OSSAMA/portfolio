@@ -138,8 +138,8 @@ function ViTArch({ accent, vt }: { accent: string; vt: VT }) {
       {/* Image → patches */}
       <rect x={8} y={62} width={48} height={48} rx={4}
         fill={accent + "25"} stroke={accent} strokeWidth={1.5} />
-      <text x={32} y={82} textAnchor="middle" fontSize={8} fill={accent} fontWeight="bold">Image</text>
-      <text x={32} y={95} textAnchor="middle" fontSize={7} fill={accent}>H×W×C</text>
+      <text x={32} y={82} textAnchor="middle" fontSize={8} fill={vt.ink(accent)} fontWeight="bold">Image</text>
+      <text x={32} y={95} textAnchor="middle" fontSize={7} fill={vt.ink(accent)}>H×W×C</text>
       {/* Patch grid lines */}
       {[16,32].map(o => (
         <g key={o}>

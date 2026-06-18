@@ -316,7 +316,7 @@ export default function ConfusionMatrixViz({ accentColor = "#06b6d4" }: { accent
               stroke={vt.bg}
               strokeWidth={2}
             />
-            <text x={prDotX + 8} y={prDotY - 4} fontSize={9} fill={accentColor}>
+            <text x={prDotX + 8} y={prDotY - 4} fontSize={9} fill={vt.ink(accentColor)}>
               T={threshold.toFixed(2)}
             </text>
           </svg>

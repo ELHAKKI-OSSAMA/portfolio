@@ -287,7 +287,7 @@ function Phase1({ accent, vt }: { accent: string; vt: ReturnType<typeof useVizTh
         ))}
 
         {/* OOF arrow */}
-        <text x={10} y={175} fontSize={8.5} fill={accent} fontWeight="bold">→ Produces OOF predictions (no leakage!)</text>
+        <text x={10} y={175} fontSize={8.5} fill={vt.ink(accent)} fontWeight="bold">→ Produces OOF predictions (no leakage!)</text>
         <text x={10} y={188} fontSize={7.5} fill={vt.textMuted}>Each sample is predicted exactly once — when its fold is the validation fold.</text>
         <text x={10} y={200} fontSize={7.5} fill={vt.textMuted}>This is the key trick: base models never see the target of the sample they predict.</text>
       </svg>
@@ -392,7 +392,7 @@ function Phase3({ accent, vt }: { accent: string; vt: ReturnType<typeof useVizTh
         {/* Meta-learner box */}
         <rect x={180} y={50} width={160} height={80} rx={10}
           fill={`${accent}15`} stroke={`${accent}50`} strokeWidth={2} />
-        <text x={260} y={76} textAnchor="middle" fontSize={10} fontWeight="bold" fill={accent}>
+        <text x={260} y={76} textAnchor="middle" fontSize={10} fontWeight="bold" fill={vt.ink(accent)}>
           Meta-Learner
         </text>
         <text x={260} y={92} textAnchor="middle" fontSize={8} fill={vt.textMuted}>(Level 1)</text>
@@ -413,7 +413,7 @@ function Phase3({ accent, vt }: { accent: string; vt: ReturnType<typeof useVizTh
         <rect x={6} y={156} width={508} height={52} rx={8}
           fill={vt.isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.02)"}
           stroke={vt.border} strokeWidth={1} />
-        <text x={260} y={172} textAnchor="middle" fontSize={8.5} fontWeight="bold" fill={accent}>
+        <text x={260} y={172} textAnchor="middle" fontSize={8.5} fontWeight="bold" fill={vt.ink(accent)}>
           Why does stacking work?
         </text>
         <text x={260} y={186} textAnchor="middle" fontSize={7.5} fill={vt.textMuted}>
@@ -470,8 +470,8 @@ function Phase4({ accent, vt }: { accent: string; vt: ReturnType<typeof useVizTh
         {/* Meta-learner */}
         <rect x={308} y={68} width={114} height={64} rx={10}
           fill={`${accent}18`} stroke={accent} strokeWidth={2} />
-        <text x={365} y={88} textAnchor="middle" fontSize={9} fontWeight="bold" fill={accent}>Meta-</text>
-        <text x={365} y={101} textAnchor="middle" fontSize={9} fontWeight="bold" fill={accent}>Learner</text>
+        <text x={365} y={88} textAnchor="middle" fontSize={9} fontWeight="bold" fill={vt.ink(accent)}>Meta-</text>
+        <text x={365} y={101} textAnchor="middle" fontSize={9} fontWeight="bold" fill={vt.ink(accent)}>Learner</text>
         <text x={365} y={115} textAnchor="middle" fontSize={7.5} fill={vt.textMuted}>combines outputs</text>
         <line x1={422} y1={100} x2={450} y2={100}
           stroke={accent} strokeWidth={1.5} markerEnd="url(#arr-p4)" />
@@ -486,7 +486,7 @@ function Phase4({ accent, vt }: { accent: string; vt: ReturnType<typeof useVizTh
         <rect x={6} y={188} width={508} height={60} rx={8}
           fill={vt.isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.02)"}
           stroke={vt.border} strokeWidth={1} />
-        <text x={260} y={205} textAnchor="middle" fontSize={9} fontWeight="bold" fill={accent}>
+        <text x={260} y={205} textAnchor="middle" fontSize={9} fontWeight="bold" fill={vt.ink(accent)}>
           Stacking vs Individual Models
         </text>
         <text x={260} y={220} textAnchor="middle" fontSize={7.5} fill={vt.textMuted}>

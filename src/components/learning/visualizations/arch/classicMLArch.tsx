@@ -114,7 +114,7 @@ function SVMArch({ accent, vt }: { accent: string; vt: VT }) {
       {/* Margin bracket */}
       <Arrow x1={122} y1={108} x2={158} y2={118} color={accent} markerId="arr-svm" />
       <Arrow x1={158} y1={118} x2={122} y2={108} color={accent} markerId="arr-svm" />
-      <text x={138} y={106} textAnchor="middle" fontSize={9} fill={accent} fontWeight="bold">2/‖w‖</text>
+      <text x={138} y={106} textAnchor="middle" fontSize={9} fill={vt.ink(accent)} fontWeight="bold">2/‖w‖</text>
 
       {/* Support vector rings — appear with animation */}
       {[[110,90],[150,140],[165,80]].map(([px,py],i) => (
@@ -124,7 +124,7 @@ function SVMArch({ accent, vt }: { accent: string; vt: VT }) {
           <animate attributeName="opacity" values="0;0.3;0.5;0.6;0.6" dur="4s" repeatCount="indefinite" />
         </circle>
       ))}
-      <text x={169} y={194} textAnchor="middle" fontSize={8} fill={accent}>support vectors (circled)</text>
+      <text x={169} y={194} textAnchor="middle" fontSize={8} fill={vt.ink(accent)}>support vectors (circled)</text>
 
       {/* Optimization box */}
       <Box x={340} y={18} w={188} h={54}
@@ -214,7 +214,7 @@ function SVRArch({ accent, vt }: { accent: string; vt: VT }) {
       {/* ε bracket */}
       <line x1={185} y1={72} x2={185} y2={84} stroke={accent} strokeWidth={1} />
       <line x1={185} y1={84} x2={185} y2={96} stroke={accent} strokeWidth={1} />
-      <text x={196} y={90} fontSize={8} fill={accent}>ε-tube</text>
+      <text x={196} y={90} fontSize={8} fill={vt.ink(accent)}>ε-tube</text>
 
       {/* Data points */}
       {[[50,125],[80,110],[120,100],[160,88],[200,76],[240,64],[280,52]].map(([px,py],i) => (
