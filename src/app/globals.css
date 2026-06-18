@@ -17,6 +17,13 @@
     --glow: rgba(108, 99, 255, 0.4);
     --nav-bg: rgba(5, 8, 22, 0.9);
     --scrollbar-track: #050816;
+    /* Accent text colors for stat numbers / colored labels. Dark theme keeps the
+       vivid brand palette (high contrast on the near-black card surface). */
+    --stat-violet: #6c63ff;
+    --stat-teal:   #00d4aa;
+    --stat-amber:  #f59e0b;
+    --stat-red:    #ff6b6b;
+    --stat-purple: #8b5cf6;
   }
 
   [data-theme="light"] {
@@ -25,16 +32,26 @@
     --bg-elevated: #e8edf8;
     --primary: #5b52e0;
     --primary-hover: #4a42c8;
-    --secondary: #00a88a;
-    --accent: #e05555;
+    /* Darkened for WCAG AA: #00a88a only reached 3.0:1 as small text on white;
+       #00806a reaches 4.9:1 while keeping the teal hue. */
+    --secondary: #00806a;
+    --accent: #d64545;
     --text-primary: #0f0f1a;
     --text-secondary: #3d4557;
-    --text-muted: #6b7280;
+    /* #6b7280 fell just under 4.5:1 on the light page background; #5b6270 passes. */
+    --text-muted: #5b6270;
     --border: rgba(0, 0, 0, 0.12);
     --border-strong: rgba(0, 0, 0, 0.2);
     --glow: rgba(108, 99, 255, 0.15);
     --nav-bg: rgba(240, 244, 255, 0.94);
     --scrollbar-track: #e8edf8;
+    /* Darkened so colored stat numbers / labels clear WCAG AA on the light
+       (white) card surface; the vivid palette only reached 1.9–2.8:1. */
+    --stat-violet: #5b52e0;
+    --stat-teal:   #00806a;
+    --stat-amber:  #a86700;
+    --stat-red:    #dc2626;
+    --stat-purple: #7c3aed;
     --filter-btn-bg: transparent;
     --filter-btn-border: rgba(91, 82, 224, 0.35);
     --filter-btn-text: #5b52e0;

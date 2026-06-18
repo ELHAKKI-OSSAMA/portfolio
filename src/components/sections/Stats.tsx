@@ -1,12 +1,15 @@
 import { getTranslations } from "next-intl/server";
 import { BrainCircuit, BookOpen, Gamepad2, Layers, GraduationCap } from "lucide-react";
 
+// `color` drives the decorative icon + tinted tile (vivid in every theme).
+// `ink` is a theme-aware CSS var used for the number text so it clears WCAG AA
+// contrast on the light (white) card surface while staying vivid in dark mode.
 const stats = [
-  { key: "projects",  value: "42+", icon: BrainCircuit,  color: "#6c63ff" },
-  { key: "notebooks", value: "40+", icon: BookOpen,       color: "#00d4aa" },
-  { key: "learning",  value: "34",  icon: GraduationCap,  color: "#f59e0b" },
-  { key: "games",     value: "10",  icon: Gamepad2,       color: "#ff6b6b" },
-  { key: "domains",   value: "10+", icon: Layers,         color: "#8b5cf6" },
+  { key: "projects",  value: "42+", icon: BrainCircuit,  color: "#6c63ff", ink: "var(--stat-violet)" },
+  { key: "notebooks", value: "40+", icon: BookOpen,       color: "#00d4aa", ink: "var(--stat-teal)" },
+  { key: "learning",  value: "34",  icon: GraduationCap,  color: "#f59e0b", ink: "var(--stat-amber)" },
+  { key: "games",     value: "10",  icon: Gamepad2,       color: "#ff6b6b", ink: "var(--stat-red)" },
+  { key: "domains",   value: "10+", icon: Layers,         color: "#8b5cf6", ink: "var(--stat-purple)" },
 ];
 
 export default async function Stats() {
@@ -28,7 +31,7 @@ export default async function Stats() {
               >
                 <stat.icon size={20} style={{ color: stat.color }} />
               </div>
-              <div className="text-2xl font-bold mb-1" style={{ color: stat.color }}>
+              <div className="text-2xl font-bold mb-1" style={{ color: stat.ink }}>
                 {stat.value}
               </div>
               <div className="text-xs leading-snug" style={{ color: "var(--text-secondary)" }}>
