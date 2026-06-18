@@ -179,7 +179,12 @@ export default function ContactPage() {
                   <p className="text-sm max-w-xs" style={{ color: "var(--text-secondary)" }}>{t("success")}</p>
                 </div>
               ) : (
-                <form onSubmit={handleSubmit} className="space-y-5">
+                <form
+                  onSubmit={handleSubmit}
+                  className="space-y-5"
+                  toolname="send_contact_message"
+                  tooldescription="Send a message to Ossama Elhakki (AI Engineer). Use this to get in touch about job offers, freelance ML projects, or consulting."
+                >
                   {/* Honeypot — hidden from humans, bots fill it */}
                   <input
                     type="text" name="company" tabIndex={-1} autoComplete="off"
@@ -189,17 +194,17 @@ export default function ContactPage() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--text-secondary)" }}>{t("name")}</label>
-                      <input type="text" name="name" required maxLength={200} className={inputCls} style={inputStyle} placeholder={t("name")} />
+                      <input type="text" name="name" required maxLength={200} className={inputCls} style={inputStyle} placeholder={t("name")} toolparamdescription="The sender's full name." />
                     </div>
                     <div>
                       <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--text-secondary)" }}>{t("email")}</label>
-                      <input type="email" name="email" required className={inputCls} style={inputStyle} placeholder={t("email")} />
+                      <input type="email" name="email" required className={inputCls} style={inputStyle} placeholder={t("email")} toolparamdescription="The sender's email address for the reply." />
                     </div>
                   </div>
 
                   <div>
                     <label className="block text-xs font-medium mb-1.5" style={{ color: "var(--text-secondary)" }}>{t("subject")}</label>
-                    <input type="text" name="subject" required maxLength={300} className={inputCls} style={inputStyle} placeholder={t("subject")} />
+                    <input type="text" name="subject" required maxLength={300} className={inputCls} style={inputStyle} placeholder={t("subject")} toolparamdescription="Short subject line for the message." />
                   </div>
 
                   <div>
@@ -213,6 +218,7 @@ export default function ContactPage() {
                       style={inputStyle}
                       placeholder={t("message")}
                       onChange={(e) => setMsgLen(e.target.value.length)}
+                      toolparamdescription="The full message body describing the request or opportunity."
                     />
                   </div>
 

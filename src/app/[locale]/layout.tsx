@@ -10,6 +10,17 @@ import { GameProvider } from "@/contexts/GameContext";
 import PersistentGameOverlay from "@/components/games/PersistentGameOverlay";
 import { PersonSchema, WebsiteSchema, OrganizationSchema } from "@/components/seo/JsonLd";
 import Analytics from "@/components/analytics/Analytics";
+import WebMCP from "@/components/webmcp/WebMCP";
+import {
+  projects,
+  blogPosts,
+  learningTopics,
+  EMAIL,
+  PHONE,
+  GITHUB_URL,
+  LINKEDIN_URL,
+  KAGGLE_URL,
+} from "@/lib/data";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://ossamaelhakki.com"),
@@ -109,6 +120,16 @@ export default async function LocaleLayout({
 
   const messages = await getMessages();
 
+  // Compact catalog handed to the WebMCP client component so in-browser AI
+  // agents can search and navigate the site (registered on every page).
+  const webmcpProjects = projects.map((p) => ({
+    title: p.title,
+    path: `/projects/${p.id}`,
+    category: Array.isArray(p.category) ? p.category[0] : (p.category as string | undefined),
+  }));
+  const webmcpPosts = blogPosts.map((p) => ({ title: p.title, path: `/blog/${p.slug}`, category: p.category }));
+  const webmcpTopics = learningTopics.map((t) => ({ title: t.title, path: `/learning/${t.id}`, category: t.category }));
+
   return (
     <>
       <link rel="alternate" type="application/rss+xml" title="Ossama Elhakki Blog" href="/feed.xml" />
@@ -125,6 +146,14 @@ export default async function LocaleLayout({
           </GameProvider>
         </ThemeProvider>
       </NextIntlClientProvider>
+      <WebMCP
+        locale={locale}
+        sections={["projects", "blog", "learning", "games", "services", "about", "contact"]}
+        projects={webmcpProjects}
+        posts={webmcpPosts}
+        topics={webmcpTopics}
+        contact={{ email: EMAIL, phone: PHONE, github: GITHUB_URL, linkedin: LINKEDIN_URL, kaggle: KAGGLE_URL }}
+      />
       <Analytics />
     </>
   );
