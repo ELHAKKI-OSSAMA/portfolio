@@ -7,6 +7,7 @@ const nextConfig: NextConfig = {
   // ── Performance ─────────────────────────────────────────────────────────────
   compress: true,              // Gzip/Brotli responses
   poweredByHeader: false,      // Remove X-Powered-By header
+  productionBrowserSourceMaps: true, // ship source maps (Lighthouse best-practice; aids debugging)
 
   // ── Turbopack dev-server ────────────────────────────────────────────────────
   turbopack: {

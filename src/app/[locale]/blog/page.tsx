@@ -131,11 +131,11 @@ export default async function BlogPage({
                       style={{ backgroundColor: "var(--bg-card)", borderColor: "var(--border)" }}>
                       <div className="flex flex-wrap items-center gap-2 mb-3">
                         <span className="text-xs px-2.5 py-1 rounded-full font-medium"
-                          style={{ backgroundColor: "var(--primary)20", color: "var(--primary)" }}>
+                          style={{ backgroundColor: "color-mix(in srgb, var(--primary) 12%, transparent)", color: "var(--primary)" }}>
                           {post.category}
                         </span>
                         <span className="text-xs px-2.5 py-1 rounded-full font-medium"
-                          style={{ backgroundColor: "var(--secondary)20", color: "var(--secondary)" }}>
+                          style={{ backgroundColor: "color-mix(in srgb, var(--secondary) 14%, transparent)", color: "var(--secondary)" }}>
                           {featuredLabel}
                         </span>
                         <span className="ml-auto text-xs" style={{ color: "var(--text-muted)" }}>
@@ -177,7 +177,7 @@ export default async function BlogPage({
                       style={{ backgroundColor: "var(--bg-card)", borderColor: "var(--border)" }}>
                       <div className="flex flex-wrap items-center gap-2 mb-3">
                         <span className="text-xs px-2.5 py-1 rounded-full font-medium"
-                          style={{ backgroundColor: "var(--primary)20", color: "var(--primary)" }}>
+                          style={{ backgroundColor: "color-mix(in srgb, var(--primary) 12%, transparent)", color: "var(--primary)" }}>
                           {post.category}
                         </span>
                         <span className="ml-auto text-xs" style={{ color: "var(--text-muted)" }}>

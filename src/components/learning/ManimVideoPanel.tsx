@@ -140,9 +140,10 @@ function VideoPlayer({
 
   useEffect(() => { setSpeed(1); setVideoLoaded(false); }, [videoSrc, ytId]);
 
-  // YouTube embed URL — rel=0 hides related, modestbranding=1 minimal logo
+  // YouTube embed URL — privacy-enhanced (youtube-nocookie) so the iframe sets
+  // no tracking cookies until playback; rel=0 hides related, modestbranding=1 minimal logo
   const ytSrc = ytId
-    ? `https://www.youtube.com/embed/${ytId}?rel=0&modestbranding=1&color=white`
+    ? `https://www.youtube-nocookie.com/embed/${ytId}?rel=0&modestbranding=1&color=white`
     : null;
 
   return (

@@ -108,6 +108,17 @@ export default function WebMCP({ locale, sections, projects, posts, topics, cont
         execute: () => JSON.stringify(contact),
       },
       {
+        name: "get_page_summary",
+        description: "Summarize the page the user is currently viewing: its title, URL, and main heading text.",
+        annotations: { readOnlyHint: true },
+        inputSchema: { type: "object", properties: {} },
+        execute: () => {
+          const heading = document.querySelector("h1")?.textContent?.trim() ?? "";
+          const desc = document.querySelector('meta[name="description"]')?.getAttribute("content") ?? "";
+          return JSON.stringify({ title: document.title, url: window.location.href, heading, description: desc });
+        },
+      },
+      {
         name: "set_theme",
         description: "Switch the site's color theme between light and dark mode.",
         inputSchema: {
