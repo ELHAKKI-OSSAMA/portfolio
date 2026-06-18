@@ -6,7 +6,6 @@ import { useTranslations } from "next-intl";
 import { useParams } from "next/navigation";
 import { topicContents } from "@/lib/learningContent";
 import { useTopicProgress } from "@/hooks/useTopicProgress";
-import MathBlock from "@/components/learning/MathBlock";
 import CodeBlock from "@/components/learning/CodeBlock";
 import InsightBox from "@/components/learning/InsightBox";
 import AlgorithmSteps from "@/components/learning/AlgorithmSteps";
@@ -17,6 +16,14 @@ import { quizData } from "@/lib/quizData";
 import { getSectionI18n, getKeyFormulaI18n } from "@/lib/learningContent/i18n";
 import { getTopicVideos } from "@/lib/learningContent/manim-videos";
 import { VizPlaceholder, VisualizationSelector } from "./VizSelector";
+
+// KaTeX is ~280 KB and MathBlock renders formulas client-side in a useEffect
+// (never in the SSR HTML), so lazy-loading it splits KaTeX into its own chunk
+// and keeps it out of the initial bundle — lowering TBT/bootup on topic pages.
+const MathBlock = dynamic(() => import("@/components/learning/MathBlock"), {
+  ssr: false,
+  loading: () => <div aria-hidden style={{ minHeight: 44 }} />,
+});
 
 const ManimVideoPanel = dynamic(() => import("@/components/learning/ManimVideoPanel"), { ssr: false });
 const QuizBlock = dynamic(() => import("@/components/learning/QuizBlock"), { ssr: false });
