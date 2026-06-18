@@ -9,6 +9,7 @@ import { GithubIcon } from "@/components/ui/SocialIcons";
 import { projects, type ProjectCategory } from "@/lib/data";
 import { projectImages } from "@/lib/data/projects/images";
 import HireCTA from "@/components/sections/HireCTA";
+import { accentInk } from "@/lib/a11yColor";
 
 const categoryColors: Record<string, string> = {
   fraud:      "#ff6b6b",
@@ -206,8 +207,8 @@ export default function ProjectsPage() {
                       {project.category.slice(0, 2).map((cat) => (
                         <span
                           key={cat}
-                          className="px-2 py-0.5 rounded-md text-xs font-medium"
-                          style={{ backgroundColor: `${categoryColors[cat]}15`, color: categoryColors[cat] }}
+                          className="px-2 py-0.5 rounded-md text-xs font-medium acc-ink"
+                          style={{ backgroundColor: `${categoryColors[cat]}15`, ["--acc" as string]: categoryColors[cat], ["--acc-ink" as string]: accentInk(categoryColors[cat]) }}
                         >
                           {t(`cat_${cat}` as Parameters<typeof t>[0])}
                         </span>

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Clock, Tag, Zap, ChevronRight, CheckCircle2, Circle, BookMarked } from "lucide-react";
 import type { LearningTopic } from "@/lib/data";
 import { useTopicProgress } from "@/hooks/useTopicProgress";
+import { accentInk } from "@/lib/a11yColor";
 
 // ── Category config ──────────────────────────────────────────────────────────
 export const CAT_META: Record<string, { color: string; emoji: string; labelEn: string; labelFr: string; labelAr: string }> = {
@@ -88,8 +89,8 @@ export function TopicCard({
         <div className="absolute inset-0 bg-grid opacity-20" />
 
         {/* Step badge */}
-        <div className="absolute top-2 left-2 flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-bold"
-          style={{ backgroundColor:`${meta.color}25`, color: meta.color }}>
+        <div className="absolute top-2 left-2 flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-bold acc-ink"
+          style={{ backgroundColor:`${meta.color}25`, ["--acc" as string]: meta.color, ["--acc-ink" as string]: accentInk(meta.color) }}>
           {topic.phase}.{topic.order}
         </div>
 
@@ -109,12 +110,12 @@ export function TopicCard({
       <div className="flex-1 px-4 pt-3 pb-0">
         {/* Badges row */}
         <div className="flex items-center gap-1.5 mb-2.5 flex-wrap">
-          <span className="px-2 py-0.5 rounded-md text-xs font-medium"
-            style={{ backgroundColor:`${meta.color}18`, color: meta.color }}>
+          <span className="px-2 py-0.5 rounded-md text-xs font-medium acc-ink"
+            style={{ backgroundColor:`${meta.color}18`, ["--acc" as string]: meta.color, ["--acc-ink" as string]: accentInk(meta.color) }}>
             {locale === "fr" ? meta.labelFr : locale === "ar" ? meta.labelAr : meta.labelEn}
           </span>
-          <span className="px-2 py-0.5 rounded-md text-xs font-medium"
-            style={{ backgroundColor:`${DIFF_COLOR[topic.difficulty]}15`, color: DIFF_COLOR[topic.difficulty] }}>
+          <span className="px-2 py-0.5 rounded-md text-xs font-medium acc-ink"
+            style={{ backgroundColor:`${DIFF_COLOR[topic.difficulty]}15`, ["--acc" as string]: DIFF_COLOR[topic.difficulty], ["--acc-ink" as string]: accentInk(DIFF_COLOR[topic.difficulty]) }}>
             {t(`difficulty_${topic.difficulty}`)}
           </span>
           <span className="flex items-center gap-1 text-xs ml-auto" style={{ color:"var(--text-muted)" }}>

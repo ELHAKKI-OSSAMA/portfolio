@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useGame } from "@/contexts/GameContext";
+import { accentInk } from "@/lib/a11yColor";
 
 interface GameCardProps {
   id: string;
@@ -18,6 +19,8 @@ interface GameCardProps {
 
 export default function GameCard({ id, num, icon, title, desc, tags, accent, playLabel, docHref, docLabel }: GameCardProps) {
   const { launchGame } = useGame();
+  // vivid accent in dark mode, AA-darkened ink in light mode (see .acc-ink)
+  const accVars = { ["--acc" as string]: accent, ["--acc-ink" as string]: accentInk(accent) };
 
   return (
     <div className="flex flex-col">
@@ -34,7 +37,7 @@ export default function GameCard({ id, num, icon, title, desc, tags, accent, pla
         (e.currentTarget as HTMLElement).style.boxShadow = "none";
       }}
     >
-      <span className="absolute top-3 end-3 text-xs font-mono opacity-30" style={{ color: accent }}>
+      <span className="absolute top-3 end-3 text-xs font-mono opacity-30 acc-ink" style={accVars}>
         {num}
       </span>
 
@@ -45,7 +48,7 @@ export default function GameCard({ id, num, icon, title, desc, tags, accent, pla
         {icon}
       </div>
 
-      <div className="font-bold text-sm tracking-wide" style={{ color: accent }}>
+      <div className="font-bold text-sm tracking-wide acc-ink" style={accVars}>
         {title}
       </div>
 
@@ -57,8 +60,8 @@ export default function GameCard({ id, num, icon, title, desc, tags, accent, pla
         {tags.map(tag => (
           <span
             key={tag}
-            className="text-xs px-2 py-0.5 rounded-md font-mono"
-            style={{ backgroundColor: accent + "12", color: accent + "cc", border: `0.5px solid ${accent}25` }}
+            className="text-xs px-2 py-0.5 rounded-md font-mono acc-ink"
+            style={{ backgroundColor: accent + "12", border: `0.5px solid ${accent}25`, ...accVars }}
           >
             {tag}
           </span>
@@ -66,8 +69,8 @@ export default function GameCard({ id, num, icon, title, desc, tags, accent, pla
       </div>
 
       <div
-        className="text-xs font-mono tracking-widest px-3 py-1.5 rounded-lg w-fit transition-all"
-        style={{ backgroundColor: accent + "10", color: accent, border: `0.5px solid ${accent}30` }}
+        className="text-xs font-mono tracking-widest px-3 py-1.5 rounded-lg w-fit transition-all acc-ink"
+        style={{ backgroundColor: accent + "10", border: `0.5px solid ${accent}30`, ...accVars }}
       >
         {playLabel}
       </div>
