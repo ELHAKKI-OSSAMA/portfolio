@@ -7,6 +7,12 @@ const handle = createMiddleware(routing);
 // Countries whose visitors we default to French (Morocco + Maghreb + France).
 const FRENCH_COUNTRIES = new Set(["MA", "DZ", "TN", "FR"]);
 
+// Search engine / AI crawlers. We never geo-redirect them: a bot must always
+// resolve the bare domain to the stable default locale (/en = x-default
+// canonical) so crawling is consistent and not skewed by the edge IP's country.
+const BOT_UA =
+  /bot|crawl|spider|slurp|gptbot|oai-searchbot|chatgpt|claude|anthropic|perplexity|googlebot|bingbot|duckduck|yandex|baidu|applebot|amazonbot|bytespider|ccbot|facebookexternalhit|embedly|quora|slackbot|whatsapp|telegram|discord|twitterbot|linkedinbot/i;
+
 export function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
@@ -15,8 +21,9 @@ export function proxy(req: NextRequest) {
   );
   // next-intl persists the visitor's explicit choice in this cookie — never override it.
   const hasLocaleCookie = req.cookies.has("NEXT_LOCALE");
+  const isBot = BOT_UA.test(req.headers.get("user-agent") || "");
 
-  if (!hasLocalePrefix && !hasLocaleCookie) {
+  if (!hasLocalePrefix && !hasLocaleCookie && !isBot) {
     const country = (
       req.headers.get("x-vercel-ip-country") ||
       req.headers.get("cf-ipcountry") ||
