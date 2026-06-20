@@ -23,6 +23,16 @@ export function proxy(req: NextRequest) {
   const hasLocaleCookie = req.cookies.has("NEXT_LOCALE");
   const isBot = BOT_UA.test(req.headers.get("user-agent") || "");
 
+  // Serve the bare domain "/" to crawlers as 200 content in place (rewrite, not
+  // redirect) so fetchers that don't follow redirects (e.g. some AI tools) still
+  // read the homepage. The page's canonical is /en, so indexing consolidates
+  // there. Humans keep the locale redirect below.
+  if (isBot && pathname === "/") {
+    const url = req.nextUrl.clone();
+    url.pathname = "/en";
+    return NextResponse.rewrite(url);
+  }
+
   if (!hasLocalePrefix && !hasLocaleCookie && !isBot) {
     const country = (
       req.headers.get("x-vercel-ip-country") ||
