@@ -214,7 +214,7 @@ Client (Vue.js) → Nginx (SSL + Load Balancing)
 | دورة الإصدار | 5 أيام | 3 أيام (-40%) |`,
     category: ["genai", "deployment"],
     tags: ["Stable Diffusion", "ControlNet", "FastAPI", "Vue.js", "Docker", "Nginx", "GPU"],
-    githubUrl: GITHUB_URL,
+    githubUrl: "https://github.com/ELHAKKI-OSSAMA/image_generation",
     featured: true,
     metrics: "99.9% uptime, -35% latency",
     results: [
