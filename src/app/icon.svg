@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Ossama Elhakki">
+  <defs>
+    <linearGradient id="oe" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#6c63ff"/>
+      <stop offset="1" stop-color="#00d4aa"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="15" fill="url(#oe)"/>
+  <text x="32" y="34" text-anchor="middle" dominant-baseline="central"
+        font-family="Arial, Helvetica, sans-serif" font-weight="800" font-size="30"
+        letter-spacing="-1.5" fill="#ffffff">OE</text>
+</svg>
